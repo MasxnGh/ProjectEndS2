@@ -1,0 +1,129 @@
+#!/usr/bin/env node
+// Downloads real, licensed photography from the Pexels API for every place
+// and guide cover in the site, saves them under public/images/, and
+// regenerates src/data/photo-manifest.ts so <PlaceImage> picks them up
+// automatically. Requires PEXELS_API_KEY (see .env.local.example).
+//
+// Usage: node scripts/fetch-place-photos.mjs
+
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, "..");
+
+const API_KEY = process.env.PEXELS_API_KEY;
+if (!API_KEY) {
+  console.error(
+    "Missing PEXELS_API_KEY. Get a free key at https://www.pexels.com/api/ and add it to .env.local, then re-run with:\n" +
+      "  PEXELS_API_KEY=your_key node scripts/fetch-place-photos.mjs"
+  );
+  process.exit(1);
+}
+
+const places = [
+  { slug: "wat-phra-that-doi-suthep", query: "Wat Phra That Doi Suthep Chiang Mai golden temple" },
+  { slug: "wat-chedi-luang", query: "Wat Chedi Luang Chiang Mai ruined temple" },
+  { slug: "wat-phra-singh", query: "Wat Phra Singh Chiang Mai temple" },
+  { slug: "wat-umong", query: "Wat Umong Chiang Mai forest temple tunnel" },
+  { slug: "wat-sri-suphan", query: "silver temple Chiang Mai Wua Lai" },
+  { slug: "wat-suan-dok", query: "Wat Suan Dok Chiang Mai white chedi sunset" },
+  { slug: "doi-inthanon", query: "Doi Inthanon Thailand mountain chedi" },
+  { slug: "bua-tong-sticky-waterfall", query: "sticky waterfall Chiang Mai Bua Tong" },
+  { slug: "chiang-mai-grand-canyon", query: "Chiang Mai grand canyon water park" },
+  { slug: "doi-pui", query: "Doi Pui Hmong village Chiang Mai" },
+  { slug: "mon-cham", query: "Mon Cham Chiang Mai mountain fog" },
+  { slug: "huay-tung-tao", query: "Huay Tung Tao lake Chiang Mai" },
+  { slug: "mae-kampong", query: "Mae Kampong village Chiang Mai mountain" },
+  { slug: "baan-tawai", query: "wood carving village Thailand craft" },
+  { slug: "wua-lai-silver-village", query: "Wua Lai silversmith Chiang Mai" },
+  { slug: "nimmanhaemin", query: "Nimman Chiang Mai cafe street" },
+  { slug: "riverside-ping", query: "Ping river Chiang Mai restaurant evening" },
+  { slug: "old-city-coffee-trail", query: "specialty coffee shop Thailand" },
+  { slug: "ban-kang-wat", query: "artisan village Chiang Mai ceramics" },
+  { slug: "sunday-walking-street-thapae", query: "Chiang Mai walking street night market" },
+  { slug: "saturday-walking-street-wualai", query: "Chiang Mai night market street food" },
+  { slug: "warorot-market", query: "Warorot market Chiang Mai" },
+  { slug: "night-bazaar", query: "Chiang Mai night bazaar" },
+  { slug: "thai-cooking-class", query: "Thai cooking class market herbs" },
+  { slug: "thai-massage-spa", query: "Thai massage spa herbal" },
+  { slug: "ethical-elephant-sanctuary", query: "elephant sanctuary Thailand river" },
+  { slug: "48-hours-in-nimman", query: "Nimman Chiang Mai coffee shop", kind: "guides" },
+  { slug: "cafe-hopping-route", query: "Thailand coffee roastery pour over", kind: "guides" },
+  { slug: "temples-of-the-old-city", query: "Chiang Mai old city temple walk", kind: "guides" },
+];
+
+async function searchPexels(query) {
+  const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`;
+  const res = await fetch(url, { headers: { Authorization: API_KEY } });
+  if (!res.ok) throw new Error(`Pexels search failed (${res.status}): ${await res.text()}`);
+  const data = await res.json();
+  return data.photos?.[0] ?? null;
+}
+
+async function downloadImage(url, destPath) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Download failed (${res.status})`);
+  const buffer = Buffer.from(await res.arrayBuffer());
+  await fs.mkdir(path.dirname(destPath), { recursive: true });
+  await fs.writeFile(destPath, buffer);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function main() {
+  const manifest = {};
+  const attributions = [];
+
+  for (const [i, item] of places.entries()) {
+    const kind = item.kind ?? "places";
+    process.stdout.write(`[${i + 1}/${places.length}] ${item.slug} … `);
+    try {
+      const photo = await searchPexels(item.query);
+      if (!photo) {
+        console.log("no result, skipped");
+        continue;
+      }
+      const publicPath = `/images/${kind}/${item.slug}.jpg`;
+      const destPath = path.join(ROOT, "public", "images", kind, `${item.slug}.jpg`);
+      await downloadImage(photo.src.large2x ?? photo.src.large, destPath);
+      manifest[item.slug] = publicPath;
+      attributions.push({
+        slug: item.slug,
+        photographer: photo.photographer,
+        photographerUrl: photo.photographer_url,
+        pexelsUrl: photo.url,
+      });
+      console.log("done");
+    } catch (err) {
+      console.log(`failed (${err.message})`);
+    }
+    await sleep(300);
+  }
+
+  const manifestSource = `// Auto-generated by scripts/fetch-place-photos.mjs — do not edit by hand.
+// Re-run "npm run fetch:photos" to refresh.
+const photoManifest: Record<string, string> = ${JSON.stringify(manifest, null, 2)};
+
+export function getPlacePhoto(slug: string): string | undefined {
+  return photoManifest[slug];
+}
+
+export default photoManifest;
+`;
+  await fs.writeFile(path.join(ROOT, "src", "data", "photo-manifest.ts"), manifestSource, "utf-8");
+  await fs.writeFile(
+    path.join(ROOT, "public", "images", "ATTRIBUTIONS.json"),
+    JSON.stringify(attributions, null, 2),
+    "utf-8"
+  );
+
+  console.log(`\nSaved ${Object.keys(manifest).length}/${places.length} photos.`);
+  console.log("Updated src/data/photo-manifest.ts and public/images/ATTRIBUTIONS.json.");
+  console.log("Pexels license: free to use, attribution appreciated but not required — see ATTRIBUTIONS.json.");
+}
+
+main();
