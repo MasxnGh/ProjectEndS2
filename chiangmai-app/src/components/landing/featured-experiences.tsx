@@ -60,13 +60,13 @@ export function FeaturedExperiences() {
                   <span className="w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
                     {dict.common.categories[place.category]}
                   </span>
-                  <h3 className="font-serif-display text-2xl text-background lg:text-3xl">
+                  <h3 className="font-serif-display text-2xl text-[#f3efe4] lg:text-3xl">
                     {place.name[locale]}
                   </h3>
-                  <p className="line-clamp-2 max-w-md text-sm text-background/80">
+                  <p className="line-clamp-2 max-w-md text-sm text-[#f3efe4]/80">
                     {place.shortDescription[locale]}
                   </p>
-                  <span className="flex items-center gap-1 text-xs text-background/80">
+                  <span className="flex items-center gap-1 text-xs text-[#f3efe4]/80">
                     <Star className="h-3.5 w-3.5 fill-accent text-accent-text" />
                     {place.rating} · {dict.common.districts[place.district]}
                   </span>

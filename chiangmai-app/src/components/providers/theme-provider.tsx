@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 type Theme = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
@@ -27,15 +28,26 @@ function applyTheme(resolved: ResolvedTheme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   useEffect(() => {
     const stored = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? "system";
+    const resolved = stored === "system" ? systemTheme() : stored;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading persisted theme is only possible client-side, after mount
     setThemeState(stored);
-    setResolvedTheme(stored === "system" ? systemTheme() : stored);
+    setResolvedTheme(resolved);
+    applyTheme(resolved);
   }, []);
+
+  useEffect(() => {
+    // Next.js resets <html>'s className when the locale-segment layout
+    // re-renders on navigation (e.g. switching language), which strips the
+    // theme class applied outside of React. Re-apply it after every route
+    // change so the saved theme survives a locale switch.
+    applyTheme(resolvedTheme);
+  }, [pathname, resolvedTheme]);
 
   useEffect(() => {
     if (theme !== "system") return;
