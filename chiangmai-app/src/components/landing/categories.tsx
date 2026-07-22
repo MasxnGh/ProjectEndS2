@@ -50,12 +50,13 @@ export function Categories() {
                 paletteSeed={seed}
                 className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-110"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />
               <div className="absolute inset-0 flex items-end p-5">
-                <span className="font-serif-display text-xl text-background sm:text-2xl">
+                <span className="font-serif-display text-xl text-[#f3efe4] sm:text-2xl">
                   {dict.common.categories[category]}
                 </span>
               </div>
-              <ArrowUpRight className="absolute right-4 top-4 h-5 w-5 text-background/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <ArrowUpRight className="absolute right-4 top-4 h-5 w-5 text-[#f3efe4]/80 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
             </Link>
           </motion.div>
         ))}
