@@ -74,6 +74,7 @@ export default async function PlaceDetailPage({
     <div>
       <script
         type="application/ld+json"
+        suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       <section className="relative flex h-[60vh] min-h-[420px] items-end overflow-hidden">

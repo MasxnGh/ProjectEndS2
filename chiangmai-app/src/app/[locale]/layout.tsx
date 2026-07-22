@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { Fraunces, Inter, IBM_Plex_Sans_Thai, Noto_Serif_Thai } from "next/font/google";
 import { notFound } from "next/navigation";
 import "@/app/globals.css";
@@ -99,9 +98,9 @@ export default async function LocaleLayout({
       className={`${fraunces.variable} ${inter.variable} ${plexThai.variable} ${notoSerifThai.variable}`}
     >
       <body className="min-h-dvh bg-background text-foreground antialiased">
-        <Script
+        <script
           id="theme-init"
-          strategy="beforeInteractive"
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem("theme")||"system";var r=t==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;document.documentElement.classList.add(r);document.documentElement.style.colorScheme=r;}catch(e){}})();`,
           }}
