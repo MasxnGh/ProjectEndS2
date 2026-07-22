@@ -1,7 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+
+// Runs synchronously before paint on the client (avoiding a visible flash),
+// but falls back to useEffect during SSR where useLayoutEffect would warn.
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 type Theme = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
@@ -41,11 +45,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyTheme(resolved);
   }, []);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     // Next.js resets <html>'s className when the locale-segment layout
     // re-renders on navigation (e.g. switching language), which strips the
-    // theme class applied outside of React. Re-apply it after every route
-    // change so the saved theme survives a locale switch.
+    // theme class applied outside of React. Re-apply it synchronously,
+    // before the browser paints, so switching locale never flashes the
+    // other theme.
     applyTheme(resolvedTheme);
   }, [pathname, resolvedTheme]);
 
