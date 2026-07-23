@@ -5,6 +5,7 @@ import "@/app/globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
+import { ToastProvider } from "@/components/toast/toast-provider";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
 import { locales, isLocale, getDictionary } from "@/i18n";
@@ -107,17 +108,19 @@ export default async function LocaleLayout({
         />
         <ThemeProvider>
           <LocaleProvider locale={locale} dict={dict}>
-            <SmoothScrollProvider>
-              <a
-                href="#main-content"
-                className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
-              >
-                Skip to content
-              </a>
-              <NavBar />
-              <main id="main-content">{children}</main>
-              <Footer />
-            </SmoothScrollProvider>
+            <ToastProvider>
+              <SmoothScrollProvider>
+                <a
+                  href="#main-content"
+                  className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
+                >
+                  Skip to content
+                </a>
+                <NavBar />
+                <main id="main-content">{children}</main>
+                <Footer />
+              </SmoothScrollProvider>
+            </ToastProvider>
           </LocaleProvider>
         </ThemeProvider>
       </body>

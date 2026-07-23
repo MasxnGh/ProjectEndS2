@@ -7,9 +7,11 @@ import { SortablePlaceItem } from "@/components/planner/sortable-place-item";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { UNSCHEDULED } from "@/lib/trip-store";
+import { useToast } from "@/components/toast/toast-provider";
 
 export function UnscheduledPanel({ places }: { places: Place[] }) {
   const { dict } = useLocale();
+  const { showToast } = useToast();
   const removeFromPlan = useTripStore((s) => s.removeFromPlan);
   const dayIds = useTripStore((s) => s.dayIds);
   const containers = useTripStore((s) => s.containers);
@@ -18,6 +20,7 @@ export function UnscheduledPanel({ places }: { places: Place[] }) {
 
   const targetDayId = dayIds[0];
   const quickAddLabel = `${dict.planner.addTo} ${dict.planner.day} 1`;
+  const t = dict.planner.toast;
 
   return (
     <div className="rounded-lg border border-dashed border-border-strong bg-surface-muted/40 p-4">
@@ -35,15 +38,31 @@ export function UnscheduledPanel({ places }: { places: Place[] }) {
             <SortablePlaceItem
               key={place.slug}
               place={place}
-              onRemove={() => removeFromPlan(place.slug)}
+              onRemove={() => {
+                removeFromPlan(place.slug, UNSCHEDULED);
+                showToast({
+                  message: t.removed,
+                  actions: [
+                    {
+                      label: t.undo,
+                      onClick: () =>
+                        moveItem({ slug: place.slug, toContainer: UNSCHEDULED, toIndex: 0 }),
+                    },
+                  ],
+                });
+              }}
               onQuickAdd={
                 targetDayId
-                  ? () =>
-                      moveItem({
-                        slug: place.slug,
-                        toContainer: targetDayId,
-                        toIndex: containers[targetDayId]?.length ?? 0,
-                      })
+                  ? () => {
+                      const toIndex = containers[targetDayId]?.length ?? 0;
+                      moveItem({ slug: place.slug, toContainer: targetDayId, toIndex });
+                      showToast({
+                        message: t.addedToDay.replace("{day}", "1"),
+                        actions: [
+                          { label: t.undo, onClick: () => removeFromPlan(place.slug, targetDayId) },
+                        ],
+                      });
+                    }
                   : undefined
               }
               quickAddLabel={quickAddLabel}

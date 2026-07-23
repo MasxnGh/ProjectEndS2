@@ -33,13 +33,15 @@ export default async function ExplorePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; from?: string; day?: string }>;
 }) {
   const { locale } = await params;
   const loc = isLocale(locale) ? locale : "en";
   const dict = getDictionary(loc);
-  const { category, q } = await searchParams;
+  const { category, q, from, day } = await searchParams;
   const initialCategory = isPlaceCategory(category) ? category : null;
+  const parsedDay = Number(day);
+  const plannerDayNumber = from === "planner" && Number.isInteger(parsedDay) && parsedDay > 0 ? parsedDay : null;
 
   return (
     <>
@@ -51,7 +53,12 @@ export default async function ExplorePage({
           ])
         )}
       />
-      <ExploreClient places={places} initialCategory={initialCategory} initialQuery={q ?? ""} />
+      <ExploreClient
+        places={places}
+        initialCategory={initialCategory}
+        initialQuery={q ?? ""}
+        plannerDayNumber={plannerDayNumber}
+      />
     </>
   );
 }

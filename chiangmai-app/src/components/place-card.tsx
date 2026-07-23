@@ -6,7 +6,8 @@ import type { Place } from "@/data/types";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { useLocale } from "@/components/providers/locale-provider";
-import { useTripStore } from "@/lib/trip-store";
+import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
+import { useToast } from "@/components/toast/toast-provider";
 import { cn } from "@/lib/utils";
 
 function formatDuration(minutes: number, locale: "en" | "th", labels: { minutes: string; hours: string }) {
@@ -15,11 +16,76 @@ function formatDuration(minutes: number, locale: "en" | "th", labels: { minutes:
   return `${hours} ${labels.hours}`;
 }
 
-export function PlaceCard({ place, className }: { place: Place; className?: string }) {
+export function PlaceCard({
+  place,
+  className,
+  plannerDayId,
+  plannerDayNumber,
+}: {
+  place: Place;
+  className?: string;
+  /** When set, the add button targets this specific planner day instead of the general Unscheduled inbox. */
+  plannerDayId?: string;
+  plannerDayNumber?: number;
+}) {
   const { locale, dict } = useLocale();
+  const { showToast } = useToast();
   const isPlanned = useTripStore((s) => s.isPlanned(place.slug));
   const addPlace = useTripStore((s) => s.addPlace);
   const removeFromPlan = useTripStore((s) => s.removeFromPlan);
+  const location = useTripStore((s) => s.locationOf(place.slug));
+  const dayIds = useTripStore((s) => s.dayIds);
+  const moveToDay = useTripStore((s) => s.moveToDay);
+  const duplicateToDay = useTripStore((s) => s.duplicateToDay);
+
+  const inPlannerMode = Boolean(plannerDayId && plannerDayNumber);
+  const isActive = inPlannerMode ? location === plannerDayId : isPlanned;
+  const pt = dict.planner.toast;
+  const pp = dict.planner.picker;
+
+  function handlePlannerClick() {
+    if (!plannerDayId || !plannerDayNumber) return;
+
+    if (location === plannerDayId) {
+      removeFromPlan(place.slug, plannerDayId);
+      showToast({
+        message: pt.removedFromDay.replace("{day}", String(plannerDayNumber)),
+        actions: [{ label: pt.undo, onClick: () => moveToDay(place.slug, plannerDayId) }],
+      });
+      return;
+    }
+
+    if (location && location !== UNSCHEDULED) {
+      const fromDayNumber = dayIds.indexOf(location) + 1;
+      showToast({
+        message: pp.duplicateWarning.replace("{day}", String(fromDayNumber)),
+        durationMs: 8000,
+        actions: [
+          {
+            label: pp.addDuplicate,
+            onClick: () => {
+              duplicateToDay(place.slug, plannerDayId);
+              showToast({ message: pt.duplicated.replace("{day}", String(plannerDayNumber)) });
+            },
+          },
+          {
+            label: pp.moveHere,
+            onClick: () => {
+              moveToDay(place.slug, plannerDayId);
+              showToast({ message: pt.moved.replace("{day}", String(plannerDayNumber)) });
+            },
+          },
+        ],
+      });
+      return;
+    }
+
+    moveToDay(place.slug, plannerDayId);
+    showToast({
+      message: pt.addedToDay.replace("{day}", String(plannerDayNumber)),
+      actions: [{ label: pt.undo, onClick: () => removeFromPlan(place.slug, plannerDayId) }],
+    });
+  }
 
   return (
     <div
@@ -72,17 +138,35 @@ export function PlaceCard({ place, className }: { place: Place; className?: stri
 
       <button
         type="button"
-        onClick={() => (isPlanned ? removeFromPlan(place.slug) : addPlace(place.slug))}
+        onClick={
+          inPlannerMode ? handlePlannerClick : () => (isPlanned ? removeFromPlan(place.slug) : addPlace(place.slug))
+        }
         className={cn(
-          "absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full border transition-colors duration-200",
-          isPlanned
+          "absolute right-3 top-3 z-10 flex items-center justify-center gap-1.5 rounded-full border backdrop-blur-sm transition-colors duration-200",
+          inPlannerMode ? "px-3.5 py-2 text-xs font-medium" : "h-9 w-9",
+          isActive
             ? "border-accent bg-accent text-accent-foreground"
-            : "border-border-strong bg-background/85 text-foreground hover:bg-accent hover:text-accent-foreground backdrop-blur-sm"
+            : "border-border-strong bg-background/85 text-foreground hover:bg-accent hover:text-accent-foreground"
         )}
-        aria-label={isPlanned ? dict.common.addedToPlan : dict.common.addToPlan}
-        aria-pressed={isPlanned}
+        aria-label={
+          inPlannerMode
+            ? (isActive ? dict.explore.plannerContext.inDay : dict.explore.plannerContext.addToDay).replace(
+                "{day}",
+                String(plannerDayNumber)
+              )
+            : isPlanned
+              ? dict.common.addedToPlan
+              : dict.common.addToPlan
+        }
+        aria-pressed={isActive}
       >
-        {isPlanned ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+        {isActive ? <Check className="h-3.5 w-3.5 shrink-0" /> : <Plus className="h-3.5 w-3.5 shrink-0" />}
+        {inPlannerMode
+          ? (isActive ? dict.explore.plannerContext.inDay : dict.explore.plannerContext.addToDay).replace(
+              "{day}",
+              String(plannerDayNumber)
+            )
+          : null}
       </button>
 
       <Link
