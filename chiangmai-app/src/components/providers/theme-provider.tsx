@@ -1,7 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+
+// Runs synchronously before paint on the client (avoiding a visible flash),
+// but falls back to useEffect during SSR where useLayoutEffect would warn.
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 type Theme = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
@@ -13,6 +17,7 @@ interface ThemeContextValue {
 }
 
 const STORAGE_KEY = "theme";
+const DEFAULT_THEME: Theme = "system";
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
@@ -29,11 +34,11 @@ function applyTheme(resolved: ResolvedTheme) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [theme, setThemeState] = useState<Theme>("system");
+  const [theme, setThemeState] = useState<Theme>(DEFAULT_THEME);
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   useEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? "system";
+    const stored = (localStorage.getItem(STORAGE_KEY) as Theme | null) ?? DEFAULT_THEME;
     const resolved = stored === "system" ? systemTheme() : stored;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reading persisted theme is only possible client-side, after mount
     setThemeState(stored);
@@ -41,11 +46,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     applyTheme(resolved);
   }, []);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     // Next.js resets <html>'s className when the locale-segment layout
     // re-renders on navigation (e.g. switching language), which strips the
-    // theme class applied outside of React. Re-apply it after every route
-    // change so the saved theme survives a locale switch.
+    // theme class applied outside of React. Re-apply it synchronously,
+    // before the browser paints, so switching locale never flashes the
+    // other theme.
     applyTheme(resolvedTheme);
   }, [pathname, resolvedTheme]);
 
@@ -70,7 +76,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+      {children}
+    </ThemeContext.Provider>
   );
 }
 
