@@ -2,7 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Sparkles, Trash2 } from "lucide-react";
+import { Plus, Sparkles, Trash2 } from "lucide-react";
 import type { Place } from "@/data/types";
 import type { AirQualityResponse, DailyForecastEntry } from "@/lib/weather/types";
 import { SortablePlaceItem } from "@/components/planner/sortable-place-item";
@@ -12,6 +12,8 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { dayStats, formatMinutes, formatThb } from "@/lib/trip-calculations";
 import { pickDaySuggestion } from "@/lib/weather/day-forecast";
+import { useToast } from "@/components/toast/toast-provider";
+import { cn } from "@/lib/utils";
 
 export function DayColumn({
   dayId,
@@ -22,6 +24,8 @@ export function DayColumn({
   forecastEntry,
   isToday,
   airQuality,
+  onAddPlace,
+  highlighted,
 }: {
   dayId: string;
   dayNumber: number;
@@ -31,13 +35,18 @@ export function DayColumn({
   forecastEntry?: DailyForecastEntry;
   isToday?: boolean;
   airQuality?: AirQualityResponse;
+  onAddPlace: (trigger: HTMLElement) => void;
+  highlighted?: boolean;
 }) {
   const { dict } = useLocale();
+  const { showToast } = useToast();
   const removeDay = useTripStore((s) => s.removeDay);
   const removeFromPlan = useTripStore((s) => s.removeFromPlan);
+  const moveItem = useTripStore((s) => s.moveItem);
   const autoArrangeDay = useTripStore((s) => s.autoArrangeDay);
   const travelers = useTripStore((s) => s.travelers);
   const { setNodeRef, isOver } = useDroppable({ id: dayId });
+  const t = dict.planner.toast;
 
   const stats = dayStats(places);
   const suggestion = pickDaySuggestion({
@@ -48,21 +57,37 @@ export function DayColumn({
   });
 
   return (
-    <div className="flex w-[300px] shrink-0 flex-col rounded-lg border border-border bg-surface">
+    <div
+      id={dayId}
+      className={cn(
+        "flex w-[300px] shrink-0 scroll-mx-6 flex-col rounded-lg border bg-surface transition-shadow duration-500",
+        highlighted ? "border-accent shadow-[0_0_0_3px_var(--color-accent)]" : "border-border"
+      )}
+    >
       <div className="flex items-center justify-between border-b border-border p-4 pb-3">
         <h3 className="font-serif-display text-lg">
           {dict.planner.day} {dayNumber}
         </h3>
-        {canRemove ? (
+        <div className="flex items-center gap-1">
           <button
             type="button"
-            onClick={() => removeDay(dayId)}
-            className="no-print rounded-full p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-destructive"
-            aria-label={dict.planner.removeDay}
+            onClick={(event) => onAddPlace(event.currentTarget)}
+            className="no-print rounded-full p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-accent-text"
+            aria-label={dict.planner.addPlace}
           >
-            <Trash2 className="h-4 w-4" />
+            <Plus className="h-4 w-4" />
           </button>
-        ) : null}
+          {canRemove ? (
+            <button
+              type="button"
+              onClick={() => removeDay(dayId)}
+              className="no-print rounded-full p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-destructive"
+              aria-label={dict.planner.removeDay}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          ) : null}
+        </div>
       </div>
       <DayWeatherHeader entry={forecastEntry} isToday={Boolean(isToday)} airQuality={airQuality} />
       <DayWeatherSuggestion suggestion={suggestion} />
@@ -79,7 +104,18 @@ export function DayColumn({
               key={place.slug}
               place={place}
               index={i}
-              onRemove={() => removeFromPlan(place.slug)}
+              onRemove={() => {
+                removeFromPlan(place.slug, dayId);
+                showToast({
+                  message: t.removedFromDay.replace("{day}", String(dayNumber)),
+                  actions: [
+                    {
+                      label: t.undo,
+                      onClick: () => moveItem({ slug: place.slug, toContainer: dayId, toIndex: i }),
+                    },
+                  ],
+                });
+              }}
             />
           ))}
         </SortableContext>

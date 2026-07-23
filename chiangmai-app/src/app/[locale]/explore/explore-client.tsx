@@ -1,13 +1,25 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Check, ChevronDown, LayoutGrid, Map as MapIcon, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  LayoutGrid,
+  Map as MapIcon,
+  MapPin,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import type { BestTime, District, Place, PlaceCategory, PriceLevel } from "@/data/types";
 import { PlaceCard } from "@/components/place-card";
 import { GoogleMap } from "@/components/map/google-map";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
 import { useLocale } from "@/components/providers/locale-provider";
+import { useTripStore } from "@/lib/trip-store";
 import { distanceBucketFrom, type DistanceBucket } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 
@@ -57,12 +69,16 @@ export function ExploreClient({
   places,
   initialCategory,
   initialQuery,
+  plannerDayNumber,
 }: {
   places: Place[];
   initialCategory: PlaceCategory | null;
   initialQuery: string;
+  plannerDayNumber: number | null;
 }) {
   const { locale, dict } = useLocale();
+  const plannerDayId = plannerDayNumber ? `day-${plannerDayNumber}` : null;
+  const plannerDayCount = useTripStore((s) => (plannerDayId ? (s.containers[plannerDayId]?.length ?? 0) : 0));
 
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<PlaceCategory | null>(initialCategory);
@@ -113,6 +129,24 @@ export function ExploreClient({
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+      {plannerDayId && plannerDayNumber ? (
+        <div className="no-print sticky top-20 z-30 -mx-6 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/95 px-6 py-3 backdrop-blur-md lg:-mx-10 lg:px-10">
+          <Link
+            href={`/${locale}/planner`}
+            className="flex items-center gap-1.5 text-sm font-medium hover:text-accent-text"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {dict.explore.plannerContext.backToPlan}
+          </Link>
+          <span className="text-sm font-medium text-accent-text">
+            {dict.explore.plannerContext.addingToDay.replace("{day}", String(plannerDayNumber))}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {dict.explore.plannerContext.addedCount.replace("{count}", String(plannerDayCount))}
+          </span>
+        </div>
+      ) : null}
+
       <Reveal>
         <SectionHeading kicker={dict.nav.explore} title={dict.explore.title} subtitle={dict.explore.subtitle} />
       </Reveal>
@@ -284,7 +318,11 @@ export function ExploreClient({
             const selected = compareSlugs.includes(place.slug);
             return (
               <div key={place.slug} className="relative">
-                <PlaceCard place={place} />
+                <PlaceCard
+                  place={place}
+                  plannerDayId={plannerDayId ?? undefined}
+                  plannerDayNumber={plannerDayNumber ?? undefined}
+                />
                 <button
                   type="button"
                   onClick={() => toggleCompare(place.slug)}
@@ -371,6 +409,18 @@ export function ExploreClient({
               {dict.explore.compare.clear}
             </button>
           </div>
+        </div>
+      ) : null}
+
+      {plannerDayId && plannerDayNumber && compareSlugs.length === 0 ? (
+        <div className="no-print fixed inset-x-0 bottom-6 z-40 flex justify-center px-6 sm:hidden">
+          <Link
+            href={`/${locale}/planner?highlight=${plannerDayId}`}
+            className="flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground shadow-elevated"
+          >
+            <Check className="h-4 w-4" />
+            {dict.explore.plannerContext.doneCta.replace("{count}", String(plannerDayCount))}
+          </Link>
         </div>
       ) : null}
     </div>

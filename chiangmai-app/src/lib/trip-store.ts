@@ -32,8 +32,11 @@ export interface TripState {
   accommodationThb: number;
   packingItems: PackingItem[];
   addPlace: (slug: string) => void;
-  removeFromPlan: (slug: string) => void;
+  removeFromPlan: (slug: string, containerId?: string) => void;
   isPlanned: (slug: string) => boolean;
+  locationOf: (slug: string) => string | undefined;
+  moveToDay: (slug: string, dayId: string) => void;
+  duplicateToDay: (slug: string, dayId: string) => void;
   addDay: () => void;
   removeDay: (dayId: string) => void;
   moveItem: (params: {
@@ -95,19 +98,53 @@ export const useTripStore = create<TripState>()(
         });
       },
 
-      removeFromPlan: (slug) => {
+      removeFromPlan: (slug, containerId) => {
         const state = get();
-        const container = findContainer(state.containers, slug);
-        if (!container) return;
-        set({
-          containers: {
-            ...state.containers,
-            [container]: state.containers[container].filter((s) => s !== slug),
-          },
-        });
+        if (containerId) {
+          if (!state.containers[containerId]?.includes(slug)) return;
+          set({
+            containers: {
+              ...state.containers,
+              [containerId]: state.containers[containerId].filter((s) => s !== slug),
+            },
+          });
+          return;
+        }
+        // No container specified: clear this place from every container
+        // (a place can briefly exist in two days at once via "add duplicate").
+        let changed = false;
+        const next: Record<string, string[]> = {};
+        for (const [key, arr] of Object.entries(state.containers)) {
+          if (arr.includes(slug)) changed = true;
+          next[key] = arr.filter((s) => s !== slug);
+        }
+        if (changed) set({ containers: next });
       },
 
       isPlanned: (slug) => Boolean(findContainer(get().containers, slug)),
+
+      locationOf: (slug) => findContainer(get().containers, slug),
+
+      moveToDay: (slug, dayId) => {
+        const state = get();
+        const next: Record<string, string[]> = {};
+        for (const [key, arr] of Object.entries(state.containers)) {
+          next[key] = arr.filter((s) => s !== slug);
+        }
+        next[dayId] = [...(next[dayId] ?? []), slug];
+        set({ containers: next });
+      },
+
+      duplicateToDay: (slug, dayId) => {
+        const state = get();
+        if (state.containers[dayId]?.includes(slug)) return;
+        set({
+          containers: {
+            ...state.containers,
+            [dayId]: [...(state.containers[dayId] ?? []), slug],
+          },
+        });
+      },
 
       addDay: () => {
         const state = get();

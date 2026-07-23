@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -20,6 +21,9 @@ import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
 import { useLocale } from "@/components/providers/locale-provider";
 import { dayStats } from "@/lib/trip-calculations";
 import { PlanImportListener } from "@/components/planner/plan-import-listener";
+import { PlacePickerUrlSync } from "@/components/planner/place-picker-url-sync";
+import { PlacePickerPanel } from "@/components/planner/place-picker-panel";
+import { PlannerHighlightSync } from "@/components/planner/planner-highlight-sync";
 import { UnscheduledPanel } from "@/components/planner/unscheduled-panel";
 import { DayColumn } from "@/components/planner/day-column";
 import { GoogleTripMap } from "@/components/planner/google-trip-map";
@@ -43,6 +47,8 @@ function findContainerOf(containers: Record<string, string[]>, slug: string) {
 
 export function PlannerBoard() {
   const { locale, dict } = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const dayIds = useTripStore((s) => s.dayIds);
   const containers = useTripStore((s) => s.containers);
@@ -56,6 +62,10 @@ export function PlannerBoard() {
   const [savedMessage, setSavedMessage] = useState(false);
   const [sharedMessage, setSharedMessage] = useState(false);
   const [reflowStatus, setReflowStatus] = useState<"idle" | "applied" | "noChange" | "needsDate">("idle");
+  const [pickerDayId, setPickerDayId] = useState<string | null>(null);
+  const pickerTriggerRef = useRef<HTMLElement | null>(null);
+  const pickerPushedRef = useRef(false);
+  const [highlightedDayId, setHighlightedDayId] = useState<string | null>(null);
 
   const weatherBundle = useWeatherBundle(CHIANGMAI_CENTER.lat, CHIANGMAI_CENTER.lng);
 
@@ -209,11 +219,69 @@ export function PlannerBoard() {
     setTimeout(() => setSavedMessage(false), 2500);
   }
 
+  function openPicker(targetDayId: string, trigger: HTMLElement) {
+    pickerTriggerRef.current = trigger;
+    const wasAlreadyOpen = pickerDayId !== null;
+    setPickerDayId(targetDayId);
+    if (wasAlreadyOpen) {
+      router.replace(`${pathname}?add=${targetDayId}`, { scroll: false });
+    } else {
+      pickerPushedRef.current = true;
+      router.push(`${pathname}?add=${targetDayId}`, { scroll: false });
+    }
+  }
+
+  function closePicker() {
+    setPickerDayId(null);
+    if (pickerPushedRef.current) {
+      pickerPushedRef.current = false;
+      router.back();
+    } else {
+      router.replace(pathname, { scroll: false });
+    }
+  }
+
+  function handlePickerOpenFromUrl(dayIdFromUrl: string) {
+    setPickerDayId(dayIdFromUrl);
+  }
+
+  function handlePickerCloseFromUrl() {
+    pickerPushedRef.current = false;
+    setPickerDayId(null);
+  }
+
+  function handleHighlightDay(dayIdToHighlight: string) {
+    setHighlightedDayId(dayIdToHighlight);
+    document
+      .getElementById(dayIdToHighlight)
+      ?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    setTimeout(() => {
+      setHighlightedDayId((current) => (current === dayIdToHighlight ? null : current));
+    }, 2500);
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
       <Suspense fallback={null}>
         <PlanImportListener />
       </Suspense>
+      <Suspense fallback={null}>
+        <PlacePickerUrlSync
+          dayIds={dayIds}
+          openDayId={pickerDayId}
+          onOpenFromUrl={handlePickerOpenFromUrl}
+          onCloseFromUrl={handlePickerCloseFromUrl}
+        />
+      </Suspense>
+      <Suspense fallback={null}>
+        <PlannerHighlightSync onHighlight={handleHighlightDay} />
+      </Suspense>
+      <PlacePickerPanel
+        dayId={pickerDayId}
+        dayNumber={pickerDayId ? dayIds.indexOf(pickerDayId) + 1 : null}
+        onClose={closePicker}
+        triggerRef={pickerTriggerRef}
+      />
       <SectionHeading kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
 
       <div className="mt-8">
@@ -240,9 +308,16 @@ export function PlannerBoard() {
           <Compass className="h-8 w-8 text-accent-text" />
           <h2 className="font-serif-display text-2xl">{dict.planner.emptyTitle}</h2>
           <p className="max-w-sm text-muted-foreground">{dict.planner.emptyBody}</p>
+          <button
+            type="button"
+            onClick={(event) => openPicker(dayIds[0], event.currentTarget)}
+            className="mt-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
+          >
+            {dict.planner.emptyCta}
+          </button>
           <Link
             href={`/${locale}/explore`}
-            className="mt-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
+            className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-accent-text hover:underline"
           >
             {dict.planner.exploreButton}
           </Link>
@@ -363,6 +438,8 @@ export function PlannerBoard() {
                       forecastEntry={forecast?.entry}
                       isToday={forecast?.isToday}
                       airQuality={weatherBundle.airQuality}
+                      onAddPlace={(trigger) => openPicker(day.id, trigger)}
+                      highlighted={highlightedDayId === day.id}
                     />
                   );
                 })}
