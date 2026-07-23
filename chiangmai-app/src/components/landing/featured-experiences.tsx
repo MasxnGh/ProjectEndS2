@@ -26,6 +26,15 @@ const spans = [
   "md:col-span-3 md:row-span-1",
 ];
 
+// Matches each item's actual rendered width at the md:grid-cols-6 breakpoint above.
+const imageSizes = [
+  "(max-width: 768px) 100vw, 66vw",
+  "(max-width: 768px) 100vw, 33vw",
+  "(max-width: 768px) 100vw, 33vw",
+  "(max-width: 768px) 100vw, 50vw",
+  "(max-width: 768px) 100vw, 50vw",
+];
+
 export function FeaturedExperiences() {
   const { locale, dict } = useLocale();
   const items = featuredSlugs.map((slug) => getPlaceBySlug(slug)).filter(Boolean);
@@ -54,6 +63,8 @@ export function FeaturedExperiences() {
                   paletteSeed={place.paletteSeed}
                   label={place.name[locale]}
                   photoSrc={getPlacePhoto(place.slug)}
+                  sizes={imageSizes[i]}
+                  quality={70}
                   className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
                 />
                 <div className="absolute inset-0 flex flex-col justify-end gap-2 bg-gradient-to-t from-black/70 via-black/10 to-transparent p-6">

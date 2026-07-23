@@ -27,6 +27,35 @@ function pickBestTimeKey(
   return "bestTimeAfternoon";
 }
 
+/**
+ * Mirrors PlaceWeatherPanel's real layout height (title, temp row, AQI bar,
+ * 5-day strip, best-time badge) so showing it never causes layout shift once
+ * the real data replaces it — used both as PlaceWeatherPanel's own loading
+ * state and as the Suspense fallback around it.
+ */
+export function WeatherPanelSkeleton() {
+  const { dict } = useLocale();
+  return (
+    <div className="rounded-lg border border-border p-6">
+      <h3 className="font-serif-display text-lg">{dict.weather.place.forecastTitle}</h3>
+      <div className="mt-4 flex items-center gap-3">
+        <div className="h-7 w-7 animate-pulse rounded-full bg-surface-muted" />
+        <div className="h-9 w-20 animate-pulse rounded-full bg-surface-muted" />
+      </div>
+      <div className="mt-4 space-y-1.5 border-t border-border pt-4">
+        <div className="h-3 w-24 animate-pulse rounded-full bg-surface-muted" />
+        <div className="h-1.5 w-full animate-pulse rounded-full bg-surface-muted" />
+      </div>
+      <div className="mt-4 flex gap-1.5">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="h-16 flex-1 animate-pulse rounded-md bg-surface-muted/50" />
+        ))}
+      </div>
+      <div className="mt-4 h-7 w-40 animate-pulse rounded-full bg-surface-muted" />
+    </div>
+  );
+}
+
 export function PlaceWeatherPanel({ place }: { place: Place }) {
   const { locale, dict } = useLocale();
   const { unit } = useUnitStore();
@@ -53,16 +82,7 @@ export function PlaceWeatherPanel({ place }: { place: Place }) {
   }
 
   if (bundle.status === "loading" || !bundle.weather || !bundle.airQuality) {
-    return (
-      <div className="rounded-lg border border-border p-6">
-        <h3 className="font-serif-display text-lg">{dict.weather.place.forecastTitle}</h3>
-        <div className="mt-4 space-y-3">
-          <div className="h-9 w-28 animate-pulse rounded-full bg-surface-muted" />
-          <div className="h-2 w-full animate-pulse rounded-full bg-surface-muted" />
-          <div className="h-12 w-full animate-pulse rounded-lg bg-surface-muted" />
-        </div>
-      </div>
-    );
+    return <WeatherPanelSkeleton />;
   }
 
   const todayEntry = bundle.weather.daily[0];

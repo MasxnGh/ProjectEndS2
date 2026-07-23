@@ -136,8 +136,13 @@ body {
   color: var(--color-accent-foreground);
 }
 
+/* !important guards this baseline focus indicator against being silenced by
+   an `outline-none` utility on individual inputs (several currently rely on
+   focus-visible:border-accent for a color change but still need a visible
+   outline for keyboard users generally, and per-component overrides here
+   are easy to miss as new fields get added). */
 :focus-visible {
-  outline: 2px solid var(--color-ring);
+  outline: 2px solid var(--color-ring) !important;
   outline-offset: 3px;
   border-radius: 2px;
 }

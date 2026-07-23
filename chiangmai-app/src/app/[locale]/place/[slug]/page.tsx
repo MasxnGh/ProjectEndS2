@@ -5,12 +5,18 @@ import { getPlaceBySlug, getRelatedPlaces, places } from "@/data/places";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
+import { getPlaceBlurDataURL } from "@/data/blur-manifest";
 import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
 import { AddToPlanButton } from "@/components/add-to-plan-button";
 import { Reveal } from "@/components/reveal";
-import { PlaceWeatherPanel } from "@/components/weather/place-weather-panel";
+import { Suspense } from "react";
+import { PlaceWeatherPanel, WeatherPanelSkeleton } from "@/components/weather/place-weather-panel";
+import { WeatherErrorBoundary } from "@/components/weather/weather-error-boundary";
 import { SeasonalSmogBanner } from "@/components/weather/seasonal-smog-banner";
+import { buildPageMetadata } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site";
+import { breadcrumbJsonLd, jsonLdScriptProps, parseDailyOpeningHours } from "@/lib/json-ld";
 
 export function generateStaticParams() {
   return places.map((p) => ({ slug: p.slug }));
@@ -25,11 +31,12 @@ export async function generateMetadata({
   const loc: Locale = isLocale(locale) ? locale : "en";
   const place = getPlaceBySlug(slug);
   if (!place) return {};
-  return {
+  return buildPageMetadata({
+    locale: loc,
+    path: `/place/${slug}`,
     title: place.name[loc],
     description: place.shortDescription[loc],
-    openGraph: { title: place.name[loc], description: place.shortDescription[loc] },
-  };
+  });
 }
 
 function formatDuration(minutes: number, labels: { minutes: string; hours: string }) {
@@ -50,6 +57,8 @@ export default async function PlaceDetailPage({
   if (!place) notFound();
 
   const related = getRelatedPlaces(place, 3);
+  const photoPath = getPlacePhoto(place.slug);
+  const openingHoursSpecification = parseDailyOpeningHours(place.openingHours.en);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -57,12 +66,14 @@ export default async function PlaceDetailPage({
     name: place.name[locale],
     description: place.shortDescription[locale],
     touristType: dict.common.categories[place.category],
+    ...(photoPath ? { image: `${SITE_URL}${photoPath}` } : {}),
     geo: {
       "@type": "GeoCoordinates",
       latitude: place.coordinates.lat,
       longitude: place.coordinates.lng,
     },
     address: place.address[locale],
+    ...(openingHoursSpecification ? { openingHoursSpecification } : {}),
     aggregateRating: {
       "@type": "AggregateRating",
       ratingValue: place.rating,
@@ -72,9 +83,15 @@ export default async function PlaceDetailPage({
 
   return (
     <div>
+      <script {...jsonLdScriptProps(jsonLd)} />
       <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+        {...jsonLdScriptProps(
+          breadcrumbJsonLd(locale, [
+            { name: dict.nav.home, path: "" },
+            { name: dict.nav.explore, path: "/explore" },
+            { name: place.name[locale], path: `/place/${place.slug}` },
+          ])
+        )}
       />
       <section className="relative flex h-[60vh] min-h-[420px] items-end overflow-hidden">
         <PlaceImage
@@ -83,6 +100,9 @@ export default async function PlaceDetailPage({
           label={place.name[locale]}
           photoSrc={getPlacePhoto(place.slug)}
           priority
+          sizes="100vw"
+          placeholder={getPlaceBlurDataURL(place.slug) ? "blur" : undefined}
+          blurDataURL={getPlaceBlurDataURL(place.slug)}
           className="absolute inset-0 h-full w-full"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
@@ -126,27 +146,6 @@ export default async function PlaceDetailPage({
               </p>
               <p className="mt-3 text-lg leading-relaxed text-pretty">{place.localTip[locale]}</p>
             </Reveal>
-
-            <Reveal delay={0.15} className="mt-12">
-              <h2 className="font-serif-display text-2xl">{dict.place.gallery}</h2>
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                <PlaceImage
-                  category={place.category}
-                  paletteSeed={place.paletteSeed}
-                  className="aspect-square rounded-lg"
-                />
-                <PlaceImage
-                  category={place.category}
-                  paletteSeed={place.paletteSeed + 2}
-                  className="aspect-square rounded-lg"
-                />
-                <PlaceImage
-                  category={place.category}
-                  paletteSeed={place.paletteSeed + 4}
-                  className="aspect-square rounded-lg"
-                />
-              </div>
-            </Reveal>
           </div>
 
           <Reveal delay={0.1} className="space-y-6">
@@ -180,7 +179,18 @@ export default async function PlaceDetailPage({
               <AddToPlanButton slug={place.slug} className="mt-6 w-full justify-center" />
             </div>
 
-            <PlaceWeatherPanel place={place} />
+            <WeatherErrorBoundary
+              fallback={
+                <div className="rounded-lg border border-border p-6">
+                  <h3 className="font-serif-display text-lg">{dict.weather.place.forecastTitle}</h3>
+                  <p className="mt-3 text-sm text-foreground/70">{dict.weather.error}</p>
+                </div>
+              }
+            >
+              <Suspense fallback={<WeatherPanelSkeleton />}>
+                <PlaceWeatherPanel place={place} />
+              </Suspense>
+            </WeatherErrorBoundary>
 
             {place.outdoor ? <SeasonalSmogBanner /> : null}
 

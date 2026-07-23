@@ -6,7 +6,7 @@ import { SITE_URL } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
-  const staticPaths = ["", "/explore", "/planner", "/guides"];
+  const staticPaths = ["", "/explore", "/planner", "/guides", "/contact", "/privacy", "/terms"];
 
   for (const locale of locales) {
     for (const path of staticPaths) {

@@ -1,10 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Check, ChevronDown, LayoutGrid, Map as MapIcon, MapPin, SlidersHorizontal, X } from "lucide-react";
-import { places } from "@/data/places";
-import type { BestTime, District, PlaceCategory, PriceLevel } from "@/data/types";
+import { Check, ChevronDown, LayoutGrid, Map as MapIcon, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
+import type { BestTime, District, Place, PlaceCategory, PriceLevel } from "@/data/types";
 import { PlaceCard } from "@/components/place-card";
 import { GoogleMap } from "@/components/map/google-map";
 import { SectionHeading } from "@/components/section-heading";
@@ -55,13 +53,19 @@ function FilterPill({
   );
 }
 
-export function ExploreClient() {
+export function ExploreClient({
+  places,
+  initialCategory,
+  initialQuery,
+}: {
+  places: Place[];
+  initialCategory: PlaceCategory | null;
+  initialQuery: string;
+}) {
   const { locale, dict } = useLocale();
-  const searchParams = useSearchParams();
 
-  const [category, setCategory] = useState<PlaceCategory | null>(
-    (searchParams.get("category") as PlaceCategory) || null
-  );
+  const [query, setQuery] = useState(initialQuery);
+  const [category, setCategory] = useState<PlaceCategory | null>(initialCategory);
   const [district, setDistrict] = useState<District | null>(null);
   const [price, setPrice] = useState<PriceLevel | null>(null);
   const [time, setTime] = useState<BestTime | null>(null);
@@ -71,7 +75,12 @@ export function ExploreClient() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
     return places.filter((place) => {
+      if (q) {
+        const haystack = `${place.name.en} ${place.name.th} ${place.shortDescription.en} ${place.shortDescription.th}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
       if (category && place.category !== category) return false;
       if (district && place.district !== district) return false;
       if (price && place.priceLevel !== price) return false;
@@ -79,17 +88,18 @@ export function ExploreClient() {
       if (distance && distanceBucketFrom(place.coordinates) !== distance) return false;
       return true;
     });
-  }, [category, district, price, time, distance]);
+  }, [places, query, category, district, price, time, distance]);
 
-  const hasFilters = Boolean(category || district || price || time || distance);
+  const hasFilters = Boolean(query || category || district || price || time || distance);
   const secondaryActiveCount = [district, price, time, distance].filter(Boolean).length;
   const comparePlaces = useMemo(
     () => compareSlugs.map((slug) => places.find((p) => p.slug === slug)).filter((p): p is NonNullable<typeof p> => Boolean(p)),
-    [compareSlugs]
+    [places, compareSlugs]
   );
   const mapPlaces = compareSlugs.length > 0 ? comparePlaces : filtered;
 
   function clearFilters() {
+    setQuery("");
     setCategory(null);
     setDistrict(null);
     setPrice(null);
@@ -108,6 +118,18 @@ export function ExploreClient() {
       </Reveal>
 
       <div className="mt-10 space-y-4">
+        <div className="relative max-w-md">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={dict.explore.search.placeholder}
+            aria-label={dict.explore.search.ariaLabel}
+            className="w-full rounded-full border border-border bg-transparent py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-accent"
+          />
+        </div>
+
         <div>
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {dict.explore.filters.category}

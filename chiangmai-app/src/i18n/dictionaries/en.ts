@@ -5,6 +5,7 @@ const en = {
     titleSuffix: "Doi & Delta — Chiang Mai",
   },
   nav: {
+    home: "Home",
     explore: "Explore",
     planner: "Trip Planner",
     guides: "Guides",
@@ -115,6 +116,10 @@ const en = {
   explore: {
     title: "Explore Chiang Mai",
     subtitle: "Filter by mood, district, budget or time of day.",
+    search: {
+      placeholder: "Search places…",
+      ariaLabel: "Search places",
+    },
     filters: {
       category: "Category",
       district: "District",
@@ -141,7 +146,6 @@ const en = {
   },
   place: {
     localTip: "A local's tip",
-    gallery: "Gallery",
     overview: "Overview",
     practicalInfo: "Practical information",
     nearby: "Nearby places",
@@ -315,10 +319,85 @@ const en = {
     explore: "Explore",
     company: "About",
     contact: "Contact",
+    privacy: "Privacy Policy",
+    terms: "Terms of Use",
     language: "Language",
     theme: "Theme",
     rights: "All rights reserved.",
     madeIn: "Written and designed for Chiang Mai.",
+  },
+  notFound: {
+    title: "This page wandered off",
+    body: "We couldn't find the page you were looking for — it may have moved, or the link might be out of date.",
+    cta: "Explore places instead",
+  },
+  legal: {
+    updated: "Last updated",
+    updatedDate: "January 2026",
+    privacy: {
+      title: "Privacy Policy",
+      intro:
+        "Doi & Delta (\"we\", \"us\") respects your privacy. This page explains what information we collect through this site and how we use it.",
+      sections: [
+        {
+          heading: "What we collect",
+          body: "Your email address — only if you choose to subscribe to our newsletter using the form in the footer. Your trip plan (places, days, budget, packing list) — this stays in your own browser's local storage and is never sent to our servers unless you use \"Copy share link\" to generate a link yourself. Your language and theme preference — stored as a small cookie and in local storage so the site remembers your choice.",
+        },
+        {
+          heading: "What we don't collect",
+          body: "We don't require an account, don't ask for payment details, and don't run analytics or advertising trackers on this site.",
+        },
+        {
+          heading: "Third-party services",
+          body: "Place maps are rendered using Google Maps, subject to Google's own privacy policy. Weather and air-quality data comes from Open-Meteo, requested using only a place's coordinates — no personal data is sent with those requests.",
+        },
+        {
+          heading: "How we use your email",
+          body: "Solely to send the occasional newsletter described at signup. We never sell or share it with anyone else.",
+        },
+        {
+          heading: "Your rights",
+          body: "You can unsubscribe at any time, and you can ask us to delete any data we hold about you by writing to the email address on our Contact page.",
+        },
+        {
+          heading: "Changes to this policy",
+          body: "If this policy changes, we'll update the date at the top of this page.",
+        },
+      ],
+    },
+    terms: {
+      title: "Terms of Use",
+      intro: "By using this site, you agree to the following terms.",
+      sections: [
+        {
+          heading: "Editorial content",
+          body: "Descriptions, opening hours, prices and local tips are provided for inspiration and planning purposes only. Please verify opening hours, prices and availability directly with each place before visiting, as they can change without notice.",
+        },
+        {
+          heading: "No warranty",
+          body: "We make a genuine effort to keep information accurate, but we can't guarantee it is complete or error-free, and we're not liable for decisions made based on it.",
+        },
+        {
+          heading: "The trip planner",
+          body: "The trip planner is a personal planning tool. Travel times, routes and cost estimates are approximations, not guarantees — please build in buffer time and double-check transport options yourself.",
+        },
+        {
+          heading: "External links",
+          body: "Links to third-party sites (maps, booking pages, etc.) are provided for convenience. We don't control and aren't responsible for their content.",
+        },
+        {
+          heading: "Changes to these terms",
+          body: "We may update these terms occasionally. Continuing to use the site after a change means you accept the update.",
+        },
+      ],
+    },
+    contact: {
+      title: "Contact",
+      intro:
+        "Questions about a place, spotted something out of date, or just want to say hello? We'd love to hear from you.",
+      emailLabel: "Email",
+      email: "hello@doianddelta.example.com",
+    },
   },
 };
 
