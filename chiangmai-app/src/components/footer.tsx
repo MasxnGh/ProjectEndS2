@@ -42,6 +42,9 @@ export function Footer() {
             </h3>
             <ul className="mt-4 space-y-2 text-sm">
               <li className="text-muted-foreground">{dict.footer.madeIn}</li>
+              <li><Link href={`/${locale}/contact`} className="hover:text-accent-text">{dict.footer.contact}</Link></li>
+              <li><Link href={`/${locale}/privacy`} className="hover:text-accent-text">{dict.footer.privacy}</Link></li>
+              <li><Link href={`/${locale}/terms`} className="hover:text-accent-text">{dict.footer.terms}</Link></li>
             </ul>
           </div>
 
@@ -49,7 +52,7 @@ export function Footer() {
             <h3 className="font-serif-display text-lg">{dict.home.newsletter.title}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{dict.home.newsletter.body}</p>
             {subscribed ? (
-              <p className="mt-4 flex items-center gap-2 text-sm text-secondary">
+              <p role="status" className="mt-4 flex items-center gap-2 text-sm text-secondary">
                 <Check className="h-4 w-4" /> {dict.home.newsletter.success}
               </p>
             ) : (

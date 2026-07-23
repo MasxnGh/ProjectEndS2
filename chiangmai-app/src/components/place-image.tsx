@@ -29,6 +29,8 @@ const motifs: Record<PlaceCategory, string> = {
     "M50 90 C50 60 30 55 30 30 C30 15 42 6 50 6 C58 6 70 15 70 30 C70 55 50 60 50 90 Z M50 50 C50 50 40 40 40 28 M50 50 C50 50 60 40 60 28",
 };
 
+const DEFAULT_SIZES = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw";
+
 export function PlaceImage({
   category,
   paletteSeed = 1,
@@ -36,6 +38,10 @@ export function PlaceImage({
   label,
   photoSrc,
   priority,
+  sizes = DEFAULT_SIZES,
+  quality,
+  placeholder,
+  blurDataURL,
 }: {
   category: PlaceCategory;
   paletteSeed?: number;
@@ -43,6 +49,10 @@ export function PlaceImage({
   label?: string;
   photoSrc?: string;
   priority?: boolean;
+  sizes?: string;
+  quality?: number;
+  placeholder?: "blur" | "empty";
+  blurDataURL?: string;
 }) {
   const angle = 100 + ((paletteSeed * 23) % 140);
 
@@ -59,7 +69,10 @@ export function PlaceImage({
           alt={label ?? ""}
           fill
           priority={priority}
-          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+          sizes={sizes}
+          quality={quality}
+          placeholder={placeholder}
+          blurDataURL={blurDataURL}
           className="object-cover"
         />
       ) : (

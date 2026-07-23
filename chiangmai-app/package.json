@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "fetch:photos": "node --env-file-if-exists=.env.local scripts/fetch-place-photos.mjs"
+    "fetch:photos": "node --env-file-if-exists=.env.local scripts/fetch-place-photos.mjs",
+    "generate:blur": "node scripts/generate-blur-placeholders.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

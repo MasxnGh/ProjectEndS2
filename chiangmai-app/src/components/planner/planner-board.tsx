@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -20,6 +19,7 @@ import { places } from "@/data/places";
 import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
 import { useLocale } from "@/components/providers/locale-provider";
 import { dayStats } from "@/lib/trip-calculations";
+import { PlanImportListener } from "@/components/planner/plan-import-listener";
 import { UnscheduledPanel } from "@/components/planner/unscheduled-panel";
 import { DayColumn } from "@/components/planner/day-column";
 import { GoogleTripMap } from "@/components/planner/google-trip-map";
@@ -43,15 +43,11 @@ function findContainerOf(containers: Record<string, string[]>, slug: string) {
 
 export function PlannerBoard() {
   const { locale, dict } = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
 
   const dayIds = useTripStore((s) => s.dayIds);
   const containers = useTripStore((s) => s.containers);
   const addDay = useTripStore((s) => s.addDay);
   const moveItem = useTripStore((s) => s.moveItem);
-  const loadPlan = useTripStore((s) => s.loadPlan);
   const travelers = useTripStore((s) => s.travelers);
   const travelDate = useTripStore((s) => s.travelDate);
 
@@ -67,21 +63,6 @@ export function PlannerBoard() {
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-
-  useEffect(() => {
-    const encoded = searchParams.get("plan");
-    if (!encoded) return;
-    try {
-      const decoded = JSON.parse(atob(decodeURIComponent(encoded)));
-      if (decoded && Array.isArray(decoded.dayIds) && decoded.containers) {
-        loadPlan(decoded);
-      }
-    } catch {
-      // ignore malformed share links
-    }
-    router.replace(pathname);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const resolvedDays = useMemo(
     () =>
@@ -217,7 +198,7 @@ export function PlannerBoard() {
   function handleShare() {
     const data = { dayIds, containers };
     const encoded = encodeURIComponent(btoa(JSON.stringify(data)));
-    const url = `${window.location.origin}${pathname}?plan=${encoded}`;
+    const url = `${window.location.origin}${window.location.pathname}?plan=${encoded}`;
     navigator.clipboard?.writeText(url);
     setSharedMessage(true);
     setTimeout(() => setSharedMessage(false), 2500);
@@ -230,6 +211,9 @@ export function PlannerBoard() {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+      <Suspense fallback={null}>
+        <PlanImportListener />
+      </Suspense>
       <SectionHeading kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
 
       <div className="mt-8">
@@ -399,6 +383,7 @@ export function PlannerBoard() {
                       category={activePlace.category}
                       paletteSeed={activePlace.paletteSeed}
                       photoSrc={getPlacePhoto(activePlace.slug)}
+                      sizes="40px"
                       className="h-10 w-10 shrink-0 rounded"
                     />
                     <p className="text-sm font-medium">{activePlace.name[locale]}</p>

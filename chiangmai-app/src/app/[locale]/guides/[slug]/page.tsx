@@ -6,8 +6,12 @@ import { getPlaceBySlug } from "@/data/places";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
+import { getPlaceBlurDataURL } from "@/data/blur-manifest";
 import { PlaceCard } from "@/components/place-card";
 import { Reveal } from "@/components/reveal";
+import { buildPageMetadata } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site";
+import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
 
 export function generateStaticParams() {
   return guides.map((g) => ({ slug: g.slug }));
@@ -22,11 +26,12 @@ export async function generateMetadata({
   const loc: Locale = isLocale(locale) ? locale : "en";
   const guide = getGuideBySlug(slug);
   if (!guide) return {};
-  return {
+  return buildPageMetadata({
+    locale: loc,
+    path: `/guides/${slug}`,
     title: guide.title[loc],
     description: guide.dek[loc],
-    openGraph: { title: guide.title[loc], description: guide.dek[loc] },
-  };
+  });
 }
 
 export default async function GuideDetailPage({
@@ -49,8 +54,29 @@ export default async function GuideDetailPage({
     { year: "numeric", month: "long", day: "numeric" }
   );
 
+  const photoPath = getPlacePhoto(guide.slug);
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: guide.title[locale],
+    description: guide.dek[locale],
+    datePublished: guide.publishedAt,
+    ...(photoPath ? { image: `${SITE_URL}${photoPath}` } : {}),
+    author: { "@type": "Organization", name: "Doi & Delta" },
+  };
+
   return (
     <article>
+      <script {...jsonLdScriptProps(articleJsonLd)} />
+      <script
+        {...jsonLdScriptProps(
+          breadcrumbJsonLd(locale, [
+            { name: dict.nav.home, path: "" },
+            { name: dict.nav.guides, path: "/guides" },
+            { name: guide.title[locale], path: `/guides/${guide.slug}` },
+          ])
+        )}
+      />
       <section className="relative flex h-[50vh] min-h-[360px] items-end overflow-hidden">
         <PlaceImage
           category="cafe"
@@ -58,6 +84,9 @@ export default async function GuideDetailPage({
           label={guide.title[locale]}
           photoSrc={getPlacePhoto(guide.slug)}
           priority
+          sizes="100vw"
+          placeholder={getPlaceBlurDataURL(guide.slug) ? "blur" : undefined}
+          blurDataURL={getPlaceBlurDataURL(guide.slug)}
           className="absolute inset-0 h-full w-full"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />

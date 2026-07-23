@@ -34,6 +34,7 @@ export function PlaceCard({ place, className }: { place: Place; className?: stri
           paletteSeed={place.paletteSeed}
           label={place.name[locale]}
           photoSrc={getPlacePhoto(place.slug)}
+          quality={70}
           className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
         />
         <span className="absolute left-3 top-3 rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground backdrop-blur-sm">

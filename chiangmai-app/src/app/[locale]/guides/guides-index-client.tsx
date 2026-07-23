@@ -29,6 +29,7 @@ export function GuidesIndexClient() {
                   paletteSeed={guide.coverSeed}
                   label={guide.title[locale]}
                   photoSrc={getPlacePhoto(guide.slug)}
+                  quality={70}
                   className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
                 />
               </div>

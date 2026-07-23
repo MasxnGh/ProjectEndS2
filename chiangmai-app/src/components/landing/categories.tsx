@@ -48,6 +48,8 @@ export function Categories() {
               <PlaceImage
                 category={category}
                 paletteSeed={seed}
+                sizes="(max-width: 768px) 50vw, 33vw"
+                quality={70}
                 className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/5 to-transparent" />

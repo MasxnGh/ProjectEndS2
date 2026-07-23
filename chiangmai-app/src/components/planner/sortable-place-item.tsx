@@ -63,6 +63,7 @@ export function SortablePlaceItem({
           category={place.category}
           paletteSeed={place.paletteSeed}
           photoSrc={getPlacePhoto(place.slug)}
+          sizes="40px"
           className="h-10 w-10 shrink-0 rounded"
         />
 
