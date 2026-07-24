@@ -1,27 +1,45 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Check,
   ChevronDown,
   LayoutGrid,
+  LocateFixed,
   Map as MapIcon,
   MapPin,
   Search,
   SlidersHorizontal,
+  Wind,
   X,
 } from "lucide-react";
 import type { BestTime, District, Place, PlaceCategory, PriceLevel } from "@/data/types";
 import { PlaceCard } from "@/components/place-card";
-import { GoogleMap } from "@/components/map/google-map";
+import { ExploreMapLoader } from "@/components/map/explore-map-loader";
+import { ExploreViewUrlSync } from "./explore-view-url-sync";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { distanceBucketFrom, type DistanceBucket } from "@/lib/geo";
+import { findNearby } from "@/lib/geo/nearby";
+import { computeBoundingBox, boundingBoxCenter } from "@/lib/geo/bbox";
+import { estimateTravelMinutes } from "@/lib/geo/travelTime";
+import type { LatLng } from "@/lib/geo/distance";
+import { useAirQualityLayer } from "@/lib/weather/use-air-quality-layer";
+import { AqiDot } from "@/components/weather/aqi-meter";
+import { AQI_LABELS } from "@/lib/weather/aqi";
 import { cn } from "@/lib/utils";
+
+const RADIUS_STEPS_KM = [1, 3, 5, 10, 25] as const;
+
+interface ProximityReference {
+  source: "geolocation" | "map-click" | "district";
+  coords: LatLng;
+}
 
 const categories: PlaceCategory[] = ["temple", "nature", "village", "cafe", "market", "activity"];
 const districts: District[] = [
@@ -69,14 +87,18 @@ export function ExploreClient({
   places,
   initialCategory,
   initialQuery,
+  initialView,
   plannerDayNumber,
 }: {
   places: Place[];
   initialCategory: PlaceCategory | null;
   initialQuery: string;
+  initialView: "grid" | "map";
   plannerDayNumber: number | null;
 }) {
   const { locale, dict } = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
   const plannerDayId = plannerDayNumber ? `day-${plannerDayNumber}` : null;
   const plannerDayCount = useTripStore((s) => (plannerDayId ? (s.containers[plannerDayId]?.length ?? 0) : 0));
 
@@ -86,11 +108,78 @@ export function ExploreClient({
   const [price, setPrice] = useState<PriceLevel | null>(null);
   const [time, setTime] = useState<BestTime | null>(null);
   const [distance, setDistance] = useState<DistanceBucket | null>(null);
-  const [view, setView] = useState<"grid" | "map">("grid");
+  const [view, setView] = useState<"grid" | "map">(initialView);
   const [compareSlugs, setCompareSlugs] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
+  const [proximityOpen, setProximityOpen] = useState(false);
+  const [reference, setReference] = useState<ProximityReference | null>(null);
+  const [radiusIndex, setRadiusIndex] = useState(2);
+  const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "denied" | "error">("idle");
+  const [pickingOnMap, setPickingOnMap] = useState(false);
+  const [districtRef, setDistrictRef] = useState<District | "">("");
+  const radiusKm = RADIUS_STEPS_KM[radiusIndex];
+  const [airQualityOn, setAirQualityOn] = useState(false);
+
+  function handleSetView(next: "grid" | "map") {
+    setView(next);
+    const params = new URLSearchParams(window.location.search);
+    if (next === "map") params.set("view", "map");
+    else params.delete("view");
+    const nextQuery = params.toString();
+    router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+  }
+
+  function requestGeolocation() {
+    if (!navigator.geolocation) {
+      setGeoStatus("error");
+      return;
+    }
+    setGeoStatus("loading");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setReference({
+          source: "geolocation",
+          coords: { lat: position.coords.latitude, lng: position.coords.longitude },
+        });
+        setGeoStatus("idle");
+      },
+      (error) => {
+        setGeoStatus(error.code === error.PERMISSION_DENIED ? "denied" : "error");
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 }
+    );
+  }
+
+  function handlePickDistrict(value: District | "") {
+    setDistrictRef(value);
+    if (!value) return;
+    const districtPlaces = places.filter((p) => p.district === value);
+    const box = computeBoundingBox(districtPlaces.map((p) => p.coordinates));
+    const coords = box ? boundingBoxCenter(box) : districtPlaces[0]?.coordinates;
+    if (!coords) return;
+    setReference({ source: "district", coords });
+  }
+
+  function startPickingOnMap() {
+    setPickingOnMap(true);
+    if (view !== "map") handleSetView("map");
+  }
+
+  function handleMapPick(coords: LatLng) {
+    setReference({ source: "map-click", coords });
+    setPickingOnMap(false);
+  }
+
+  function clearProximity() {
+    setReference(null);
+    setGeoStatus("idle");
+    setPickingOnMap(false);
+    setDistrictRef("");
+  }
+
+  const filteredBase = useMemo(() => {
     const q = query.trim().toLowerCase();
     return places.filter((place) => {
       if (q) {
@@ -106,6 +195,23 @@ export function ExploreClient({
     });
   }, [places, query, category, district, price, time, distance]);
 
+  const proximityResults = useMemo(() => {
+    if (!reference) return null;
+    return findNearby(reference.coords, filteredBase, radiusKm, (p) => p.coordinates);
+  }, [reference, filteredBase, radiusKm]);
+
+  const filtered = proximityResults ? proximityResults.map((r) => r.item) : filteredBase;
+
+  const proximityDetailsBySlug = useMemo(() => {
+    if (!proximityResults || !reference) return new Map<string, { distanceKm: number; travelMinutes: number }>();
+    return new Map(
+      proximityResults.map((r) => [
+        r.item.slug,
+        { distanceKm: r.distanceKm, travelMinutes: estimateTravelMinutes(reference.coords, r.item.coordinates) },
+      ])
+    );
+  }, [proximityResults, reference]);
+
   const hasFilters = Boolean(query || category || district || price || time || distance);
   const secondaryActiveCount = [district, price, time, distance].filter(Boolean).length;
   const comparePlaces = useMemo(
@@ -113,6 +219,8 @@ export function ExploreClient({
     [places, compareSlugs]
   );
   const mapPlaces = compareSlugs.length > 0 ? comparePlaces : filtered;
+  const aqiPoints = useMemo(() => mapPlaces.map((p) => ({ slug: p.slug, coordinates: p.coordinates })), [mapPlaces]);
+  const aqiLayer = useAirQualityLayer(aqiPoints, airQualityOn);
 
   function clearFilters() {
     setQuery("");
@@ -129,6 +237,10 @@ export function ExploreClient({
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+      <Suspense fallback={null}>
+        <ExploreViewUrlSync view={view} onViewChangeFromUrl={setView} />
+      </Suspense>
+
       {plannerDayId && plannerDayNumber ? (
         <div className="no-print sticky top-20 z-30 -mx-6 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/95 px-6 py-3 backdrop-blur-md lg:-mx-10 lg:px-10">
           <Link
@@ -183,6 +295,52 @@ export function ExploreClient({
         <div className="flex flex-wrap items-center gap-4">
           <button
             type="button"
+            onClick={() => setProximityOpen((v) => !v)}
+            aria-expanded={proximityOpen}
+            className={cn(
+              "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              reference
+                ? "border-accent bg-accent text-accent-foreground"
+                : "border-border hover:border-accent hover:text-accent-text"
+            )}
+          >
+            <LocateFixed className="h-3.5 w-3.5" />
+            {dict.explore.nearMe.button}
+            {reference ? (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-background/30 px-1 text-[10px] font-semibold">
+                {proximityResults?.length ?? 0}
+              </span>
+            ) : null}
+          </button>
+
+          {reference ? (
+            <button
+              type="button"
+              onClick={clearProximity}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive"
+            >
+              <X className="h-3.5 w-3.5" />
+              {dict.explore.nearMe.clear}
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={() => setAirQualityOn((v) => !v)}
+            aria-pressed={airQualityOn}
+            className={cn(
+              "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              airQualityOn
+                ? "border-accent bg-accent text-accent-foreground"
+                : "border-border hover:border-accent hover:text-accent-text"
+            )}
+          >
+            <Wind className="h-3.5 w-3.5" />
+            {dict.explore.airQuality.toggle}
+          </button>
+
+          <button
+            type="button"
             onClick={() => setFiltersOpen((v) => !v)}
             aria-expanded={filtersOpen}
             className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
@@ -208,6 +366,84 @@ export function ExploreClient({
             </button>
           ) : null}
         </div>
+
+        {proximityOpen ? (
+          <div className="space-y-4 rounded-lg border border-border bg-surface-muted/40 p-4">
+            <p className="text-xs text-muted-foreground">{dict.explore.nearMe.explain}</p>
+
+            {!reference ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={requestGeolocation}
+                  disabled={geoStatus === "loading"}
+                  className="flex items-center gap-1.5 rounded-full border border-accent bg-accent px-4 py-2 text-xs font-medium text-accent-foreground disabled:opacity-60"
+                >
+                  <LocateFixed className="h-3.5 w-3.5" />
+                  {geoStatus === "loading" ? dict.explore.nearMe.locating : dict.explore.nearMe.useMyLocation}
+                </button>
+                <span className="text-xs text-muted-foreground">{dict.explore.nearMe.or}</span>
+                <button
+                  type="button"
+                  onClick={startPickingOnMap}
+                  className="rounded-full border border-border-strong px-4 py-2 text-xs font-medium hover:border-accent hover:text-accent-text"
+                >
+                  {dict.explore.nearMe.pickOnMap}
+                </button>
+                <select
+                  value={districtRef}
+                  onChange={(e) => handlePickDistrict(e.target.value as District | "")}
+                  aria-label={dict.explore.nearMe.pickDistrict}
+                  className="rounded-full border border-border-strong bg-background px-3 py-2 text-xs font-medium outline-none focus-visible:border-accent"
+                >
+                  <option value="">{dict.explore.nearMe.pickDistrict}</option>
+                  {districts.map((d) => (
+                    <option key={d} value={d}>
+                      {dict.common.districts[d]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+
+            {geoStatus === "denied" ? (
+              <p className="text-xs text-destructive">{dict.explore.nearMe.denied}</p>
+            ) : geoStatus === "error" ? (
+              <p className="text-xs text-destructive">{dict.explore.nearMe.error}</p>
+            ) : null}
+
+            {pickingOnMap ? <p className="text-xs text-accent-text">{dict.explore.nearMe.pickingHint}</p> : null}
+
+            {reference ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>
+                    {dict.explore.nearMe.radius}: {radiusKm} km
+                  </span>
+                  <span>
+                    {proximityResults?.length ?? 0} {dict.explore.filters.results}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={RADIUS_STEPS_KM.length - 1}
+                  step={1}
+                  value={radiusIndex}
+                  onChange={(e) => setRadiusIndex(Number(e.target.value))}
+                  aria-label={dict.explore.nearMe.radius}
+                  aria-valuetext={`${radiusKm} km`}
+                  className="w-full accent-accent"
+                />
+                <div className="flex justify-between text-[10px] text-muted-foreground">
+                  {RADIUS_STEPS_KM.map((km) => (
+                    <span key={km}>{km} km</span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
 
         {filtersOpen ? (
           <div className="space-y-4 rounded-lg border border-border bg-surface-muted/40 p-4">
@@ -278,6 +514,35 @@ export function ExploreClient({
             </div>
           </div>
         ) : null}
+
+        {airQualityOn ? (
+          <div className="space-y-3 rounded-lg border border-border bg-surface-muted/40 p-4">
+            <p className="text-xs text-muted-foreground">{dict.explore.airQuality.explain}</p>
+            {aqiLayer.isLoading ? (
+              <p className="text-xs text-muted-foreground">{dict.explore.airQuality.loading}</p>
+            ) : (
+              <ul className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+                {mapPlaces.map((place) => {
+                  const reading = aqiLayer.dataBySlug.get(place.slug);
+                  if (!reading) return null;
+                  return (
+                    <li key={place.slug} className="flex items-center gap-1.5 text-xs">
+                      <AqiDot level={reading.level} />
+                      <span className="truncate">{place.name[locale]}</span>
+                      <span className="ml-auto shrink-0 text-muted-foreground">
+                        {AQI_LABELS[reading.level][locale]} · {Math.round(reading.pm2_5)} {dict.weather.pm25Unit}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {!aqiLayer.isLoading && aqiLayer.dataBySlug.size === 0 ? (
+              <p className="text-xs text-muted-foreground">{dict.explore.airQuality.unavailable}</p>
+            ) : null}
+            <p className="text-[11px] text-muted-foreground/70">{dict.weather.attribution}</p>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-8 flex items-center justify-between border-y border-border py-3">
@@ -287,7 +552,7 @@ export function ExploreClient({
         <div className="flex items-center gap-1 rounded-full border border-border p-1">
           <button
             type="button"
-            onClick={() => setView("grid")}
+            onClick={() => handleSetView("grid")}
             className={cn(
               "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
               view === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
@@ -298,7 +563,7 @@ export function ExploreClient({
           </button>
           <button
             type="button"
-            onClick={() => setView("map")}
+            onClick={() => handleSetView("map")}
             className={cn(
               "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
               view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
@@ -316,12 +581,15 @@ export function ExploreClient({
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((place) => {
             const selected = compareSlugs.includes(place.slug);
+            const proximity = proximityDetailsBySlug.get(place.slug);
             return (
               <div key={place.slug} className="relative">
                 <PlaceCard
                   place={place}
                   plannerDayId={plannerDayId ?? undefined}
                   plannerDayNumber={plannerDayNumber ?? undefined}
+                  distanceKm={proximity?.distanceKm}
+                  travelMinutes={proximity?.travelMinutes}
                 />
                 <button
                   type="button"
@@ -350,9 +618,15 @@ export function ExploreClient({
               return (
                 <div
                   key={place.slug}
+                  onMouseEnter={() => setHoveredSlug(place.slug)}
+                  onMouseLeave={() => setHoveredSlug(null)}
                   className={cn(
-                    "flex items-center gap-3 rounded-md border p-3",
-                    selected ? "border-secondary bg-secondary/10" : "border-border"
+                    "flex items-center gap-3 rounded-md border p-3 transition-colors",
+                    selected
+                      ? "border-secondary bg-secondary/10"
+                      : hoveredSlug === place.slug
+                        ? "border-accent bg-accent/10"
+                        : "border-border"
                   )}
                 >
                   <button
@@ -377,11 +651,16 @@ export function ExploreClient({
               );
             })}
           </div>
-          <GoogleMap
+          <ExploreMapLoader
             places={mapPlaces}
             highlightSlugs={compareSlugs}
-            showRoute={compareSlugs.length > 1}
-            className="h-[400px] lg:h-[720px]"
+            hoveredSlug={hoveredSlug}
+            onHoverPlace={setHoveredSlug}
+            reference={reference?.coords ?? null}
+            radiusKm={reference ? radiusKm : null}
+            pickingOnMap={pickingOnMap}
+            onMapPick={handleMapPick}
+            airQualityBySlug={airQualityOn ? aqiLayer.dataBySlug : null}
           />
         </div>
       )}
@@ -394,7 +673,7 @@ export function ExploreClient({
             </span>
             <button
               type="button"
-              onClick={() => setView("map")}
+              onClick={() => handleSetView("map")}
               className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-medium text-accent-foreground"
             >
               <MapIcon className="h-3.5 w-3.5" />

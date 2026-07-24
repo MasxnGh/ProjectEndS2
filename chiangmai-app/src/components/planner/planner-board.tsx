@@ -26,7 +26,7 @@ import { PlacePickerPanel } from "@/components/planner/place-picker-panel";
 import { PlannerHighlightSync } from "@/components/planner/planner-highlight-sync";
 import { UnscheduledPanel } from "@/components/planner/unscheduled-panel";
 import { DayColumn } from "@/components/planner/day-column";
-import { GoogleTripMap } from "@/components/planner/google-trip-map";
+import { PlannerMapLoader } from "@/components/planner/planner-map-loader";
 import { TripDetailsForm } from "@/components/planner/trip-details-form";
 import { SummaryView } from "@/components/planner/summary-view";
 import { PlaceImage } from "@/components/place-image";
@@ -411,7 +411,7 @@ export function PlannerBoard() {
             </div>
           ) : view === "map" ? (
             <div className="mt-8">
-              <GoogleTripMap days={resolvedDays} className="h-[420px]" />
+              <PlannerMapLoader days={resolvedDays} />
             </div>
           ) : (
             <DndContext

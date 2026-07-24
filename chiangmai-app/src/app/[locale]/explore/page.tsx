@@ -33,13 +33,14 @@ export default async function ExplorePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string; q?: string; from?: string; day?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; from?: string; day?: string; view?: string }>;
 }) {
   const { locale } = await params;
   const loc = isLocale(locale) ? locale : "en";
   const dict = getDictionary(loc);
-  const { category, q, from, day } = await searchParams;
+  const { category, q, from, day, view } = await searchParams;
   const initialCategory = isPlaceCategory(category) ? category : null;
+  const initialView = view === "map" ? "map" : "grid";
   const parsedDay = Number(day);
   const plannerDayNumber = from === "planner" && Number.isInteger(parsedDay) && parsedDay > 0 ? parsedDay : null;
 
@@ -57,6 +58,7 @@ export default async function ExplorePage({
         places={places}
         initialCategory={initialCategory}
         initialQuery={q ?? ""}
+        initialView={initialView}
         plannerDayNumber={plannerDayNumber}
       />
     </>
