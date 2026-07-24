@@ -67,6 +67,13 @@ export function PlannerMap({ days, className }: { days: TripDay[]; className?: s
     if (!map || !bounds) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     map.fitBounds(bounds, { padding: 56, duration: reduced ? 0 : 800, maxZoom: 14 });
+    // Cancel any in-flight camera animation before the map is torn down or
+    // re-triggered — otherwise its completion callback can fire against an
+    // already-removed map instance and throw inside react-map-gl's internal
+    // camera-event handler.
+    return () => {
+      map.stop();
+    };
   }, [bounds]);
 
   useEffect(() => {
