@@ -76,13 +76,21 @@ export function PlannerMap({ days, className }: { days: TripDay[]; className?: s
       return;
     }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    map.fitBounds(bounds, { padding: 56, duration: reduced ? 0 : 800, maxZoom: 14 });
+    try {
+      map.fitBounds(bounds, { padding: 56, duration: reduced ? 0 : 800, maxZoom: 14 });
+    } catch (err) {
+      console.error("Planner map fitBounds failed", err);
+    }
     // Cancel any in-flight camera animation before the map is torn down or
     // re-triggered — otherwise its completion callback can fire against an
     // already-removed map instance and throw inside react-map-gl's internal
     // camera-event handler.
     return () => {
-      map.stop();
+      try {
+        map.stop();
+      } catch (err) {
+        console.error("Planner map stop() failed", err);
+      }
     };
   }, [bounds]);
 
@@ -100,7 +108,11 @@ export function PlannerMap({ days, className }: { days: TripDay[]; className?: s
     const box = computeBoundingBox(day.places.map((p) => p.coordinates));
     if (!map || !box) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    map.fitBounds(boundingBoxToLngLatBounds(box), { padding: 72, duration: reduced ? 0 : 800, maxZoom: 15 });
+    try {
+      map.fitBounds(boundingBoxToLngLatBounds(box), { padding: 72, duration: reduced ? 0 : 800, maxZoom: 15 });
+    } catch (err) {
+      console.error("Planner map flyToDay failed", err);
+    }
   }
 
   const popupDay = popup ? days.find((d) => d.id === popup.dayId) : null;

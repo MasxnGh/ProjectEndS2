@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { Place } from "@/data/types";
 import { MapSkeleton } from "@/components/map/map-skeleton";
+import { MapErrorBoundary, MapErrorFallback } from "@/components/map/map-error-boundary";
 
 // MapLibre needs `window`, so the real map component can only run on the
 // client — but this wrapper is the only thing that needs to know that.
@@ -17,5 +18,9 @@ export function PlaceMapLoader(props: {
   nearbyPlaces?: Place[];
   comparePlace?: Place | null;
 }) {
-  return <PlaceMap {...props} className="h-64" />;
+  return (
+    <MapErrorBoundary fallback={(retry) => <MapErrorFallback className="h-64" onRetry={retry} />}>
+      <PlaceMap {...props} className="h-64" />
+    </MapErrorBoundary>
+  );
 }

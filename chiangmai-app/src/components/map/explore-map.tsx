@@ -136,13 +136,21 @@ export function ExploreMap({
       return;
     }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    map.fitBounds(bounds, { padding: 64, duration: reduced ? 0 : 800, maxZoom: 15 });
+    try {
+      map.fitBounds(bounds, { padding: 64, duration: reduced ? 0 : 800, maxZoom: 15 });
+    } catch (err) {
+      console.error("Explore map fitBounds failed", err);
+    }
     // Cancel any in-flight camera animation before the map is torn down or
     // re-triggered — otherwise its completion callback can fire against an
     // already-removed map instance and throw inside react-map-gl's internal
     // camera-event handler.
     return () => {
-      map.stop();
+      try {
+        map.stop();
+      } catch (err) {
+        console.error("Explore map stop() failed", err);
+      }
     };
   }, [bounds]);
 
@@ -250,8 +258,12 @@ export function ExploreMap({
                   onClick={() => {
                     const map = mapRef.current?.getMap();
                     if (!map) return;
-                    const zoom = Math.min(index.getClusterExpansionZoom(feature.properties.cluster_id), 17);
-                    map.flyTo({ center: [lng, lat], zoom });
+                    try {
+                      const zoom = Math.min(index.getClusterExpansionZoom(feature.properties.cluster_id), 17);
+                      map.flyTo({ center: [lng, lat], zoom });
+                    } catch (err) {
+                      console.error("Explore map cluster flyTo failed", err);
+                    }
                   }}
                   className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-accent bg-background/95 text-xs font-semibold text-accent-text shadow-elevated focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >

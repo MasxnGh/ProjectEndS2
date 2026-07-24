@@ -5,6 +5,7 @@ import type { Place } from "@/data/types";
 import type { LatLng } from "@/lib/geo/distance";
 import type { AirQualityResponse } from "@/lib/weather/types";
 import { MapSkeleton } from "@/components/map/map-skeleton";
+import { MapErrorBoundary, MapErrorFallback } from "@/components/map/map-error-boundary";
 
 const ExploreMap = dynamic(() => import("@/components/map/explore-map").then((mod) => mod.ExploreMap), {
   ssr: false,
@@ -22,5 +23,11 @@ export function ExploreMapLoader(props: {
   onMapPick?: (coords: LatLng) => void;
   airQualityBySlug?: Map<string, AirQualityResponse> | null;
 }) {
-  return <ExploreMap {...props} className="h-[400px] lg:h-[720px]" />;
+  return (
+    <MapErrorBoundary
+      fallback={(retry) => <MapErrorFallback className="h-[400px] lg:h-[720px]" onRetry={retry} />}
+    >
+      <ExploreMap {...props} className="h-[400px] lg:h-[720px]" />
+    </MapErrorBoundary>
+  );
 }
