@@ -62,9 +62,19 @@ export function PlannerMap({ days, className }: { days: TripDay[]; className?: s
     return box ? boundingBoxToLngLatBounds(box) : null;
   }, [allPlaces]);
 
+  // initialViewState already places the camera on mount, so skip the very
+  // first run here — an animated fitBounds() firing at the same moment the
+  // freshly-mounted container's ResizeObserver settles its size corrupts
+  // MapLibre's internal camera state (a known race in react-map-gl's
+  // camera-event handling). Only animate on genuine later bounds changes.
+  const isFirstBoundsRun = useRef(true);
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map || !bounds) return;
+    if (isFirstBoundsRun.current) {
+      isFirstBoundsRun.current = false;
+      return;
+    }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     map.fitBounds(bounds, { padding: 56, duration: reduced ? 0 : 800, maxZoom: 14 });
     // Cancel any in-flight camera animation before the map is torn down or

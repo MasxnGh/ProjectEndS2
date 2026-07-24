@@ -122,10 +122,19 @@ export function ExploreMap({
     return turfCircle([reference.lng, reference.lat], radiusKm, { units: "kilometers", steps: 64 });
   }, [reference, radiusKm]);
 
-  // Fly the map to the new result set whenever the filtered places change.
+  // initialViewState already places the camera on mount, so skip the very
+  // first run here — an animated fitBounds() firing at the same moment the
+  // freshly-mounted container's ResizeObserver settles its size corrupts
+  // MapLibre's internal camera state (a known race in react-map-gl's
+  // camera-event handling). Only animate when the result set actually changes.
+  const isFirstBoundsRun = useRef(true);
   useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map || !bounds) return;
+    if (isFirstBoundsRun.current) {
+      isFirstBoundsRun.current = false;
+      return;
+    }
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     map.fitBounds(bounds, { padding: 64, duration: reduced ? 0 : 800, maxZoom: 15 });
     // Cancel any in-flight camera animation before the map is torn down or
