@@ -4,10 +4,14 @@ import { useMemo, useState } from "react";
 import { Navigation, Route } from "lucide-react";
 import type { Place } from "@/data/types";
 import { places } from "@/data/places";
-import { GoogleMap } from "@/components/map/google-map";
+import { PlaceMapLoader } from "@/components/map/place-map-loader";
 import { useLocale } from "@/components/providers/locale-provider";
 import { haversineKm } from "@/lib/geo";
+import { findNearby } from "@/lib/geo/nearby";
 import { estimateTravelMinutes } from "@/lib/trip-calculations";
+
+const NEARBY_RADIUS_KM = 5;
+const MAX_NEARBY_MARKERS = 6;
 
 export function CompareMap({ place }: { place: Place }) {
   const { locale, dict } = useLocale();
@@ -21,16 +25,33 @@ export function CompareMap({ place }: { place: Place }) {
     [locale, place.slug]
   );
 
-  const compared = comparedSlug ? places.find((p) => p.slug === comparedSlug) ?? null : null;
-  const mapPlaces = compared ? [place, compared] : [place];
+  const compared = comparedSlug ? (places.find((p) => p.slug === comparedSlug) ?? null) : null;
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${place.coordinates.lat},${place.coordinates.lng}`;
+
+  const nearbyPlaces = useMemo(
+    () =>
+      findNearby(place.coordinates, otherPlaces, NEARBY_RADIUS_KM, (p) => p.coordinates)
+        .slice(0, MAX_NEARBY_MARKERS)
+        .map((result) => result.item),
+    [place.coordinates, otherPlaces]
+  );
 
   return (
     <div>
-      <GoogleMap places={mapPlaces} showRoute={Boolean(compared)} className="h-64" />
+      <PlaceMapLoader mainPlace={place} nearbyPlaces={nearbyPlaces} comparePlace={compared} />
+
+      <p className="mt-3 text-xs text-muted-foreground">
+        {dict.place.coordinates}: {place.coordinates.lat.toFixed(4)}, {place.coordinates.lng.toFixed(4)}
+        {place.elevation
+          ? ` · ${dict.place.elevationMeters.replace("{elevation}", String(place.elevation))}`
+          : ""}
+      </p>
 
       <div className="mt-3 space-y-2">
-        <label htmlFor="compare-select" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <label
+          htmlFor="compare-select"
+          className="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+        >
           {dict.place.compareLabel}
         </label>
         <select
@@ -62,7 +83,7 @@ export function CompareMap({ place }: { place: Place }) {
           className="flex items-center gap-1.5 text-sm font-medium text-accent-text hover:underline"
         >
           <Navigation className="h-3.5 w-3.5" />
-          {dict.common.address}
+          {dict.place.navigateGoogleMaps}
         </a>
       </div>
     </div>

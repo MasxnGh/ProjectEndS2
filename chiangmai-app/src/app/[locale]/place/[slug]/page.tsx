@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Clock, MapPin, Star, Wallet } from "lucide-react";
-import { getPlaceBySlug, getRelatedPlaces, places } from "@/data/places";
+import { getPlaceBySlug, places } from "@/data/places";
+import { findNearbyExcluding } from "@/lib/geo/nearby";
+import { estimateTravelMinutes } from "@/lib/geo/travelTime";
+import type { TerrainType } from "@/lib/geo/distance";
+import type { Place } from "@/data/types";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
@@ -45,6 +49,13 @@ function formatDuration(minutes: number, labels: { minutes: string; hours: strin
   return `${hours} ${labels.hours}`;
 }
 
+const NEARBY_RADIUS_KM = 20;
+const NEARBY_LIMIT = 3;
+
+function terrainBetween(a: Place, b: Place): TerrainType {
+  return a.elevation || b.elevation ? "mountain" : "urban";
+}
+
 export default async function PlaceDetailPage({
   params,
 }: {
@@ -56,7 +67,13 @@ export default async function PlaceDetailPage({
   const place = getPlaceBySlug(slug);
   if (!place) notFound();
 
-  const related = getRelatedPlaces(place, 3);
+  const nearby = findNearbyExcluding(
+    place.coordinates,
+    places,
+    NEARBY_RADIUS_KM,
+    (p) => p.coordinates,
+    (p) => p.slug === place.slug
+  ).slice(0, NEARBY_LIMIT);
   const photoPath = getPlacePhoto(place.slug);
   const openingHoursSpecification = parseDailyOpeningHours(place.openingHours.en);
 
@@ -198,12 +215,17 @@ export default async function PlaceDetailPage({
           </Reveal>
         </div>
 
-        {related.length > 0 ? (
+        {nearby.length > 0 ? (
           <div className="mt-20 border-t border-border pt-12">
             <h2 className="font-serif-display text-2xl">{dict.place.nearby}</h2>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {related.map((p) => (
-                <PlaceCard key={p.slug} place={p} />
+              {nearby.map(({ item: p, distanceKm }) => (
+                <PlaceCard
+                  key={p.slug}
+                  place={p}
+                  distanceKm={distanceKm}
+                  travelMinutes={estimateTravelMinutes(place.coordinates, p.coordinates, terrainBetween(place, p))}
+                />
               ))}
             </div>
           </div>

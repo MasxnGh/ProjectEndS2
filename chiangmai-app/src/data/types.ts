@@ -41,6 +41,8 @@ export interface Place {
   openingHours: LocalizedText;
   address: LocalizedText;
   coordinates: { lat: number; lng: number };
+  /** Metres above sea level — set for hill/mountain places to flag altitude-sensitive routing and display. */
+  elevation?: number;
   tags: string[];
   paletteSeed: number;
   /** Primarily an outdoor experience — used for weather-aware itinerary suggestions. */

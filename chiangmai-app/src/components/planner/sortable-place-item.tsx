@@ -16,12 +16,21 @@ export function SortablePlaceItem({
   index,
   onQuickAdd,
   quickAddLabel,
+  arrival,
+  departure,
+  travelMinutesFromPrevious,
+  outsideOpeningHours,
 }: {
   place: Place;
   onRemove: () => void;
   index?: number;
   onQuickAdd?: () => void;
   quickAddLabel?: string;
+  /** Approximate schedule for this stop, when a day schedule has been computed. */
+  arrival?: string;
+  departure?: string;
+  travelMinutesFromPrevious?: number;
+  outsideOpeningHours?: boolean;
 }) {
   const { locale, dict } = useLocale();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -76,6 +85,18 @@ export function SortablePlaceItem({
             {formatMinutes(place.durationMinutes)} · {formatThb(SPEND_ESTIMATE_THB[place.priceLevel])}{" "}
             {dict.planner.perPerson}
           </p>
+          {arrival && departure ? (
+            <p
+              className={cn(
+                "truncate text-xs font-medium",
+                outsideOpeningHours ? "text-destructive" : "text-accent-text"
+              )}
+            >
+              {arrival}–{departure}
+              {travelMinutesFromPrevious ? ` · +${travelMinutesFromPrevious} ${dict.common.minutes}` : ""}
+              {outsideOpeningHours ? ` · ${dict.planner.route.outsideHours}` : ""}
+            </p>
+          ) : null}
         </div>
 
         <button

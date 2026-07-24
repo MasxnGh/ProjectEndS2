@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Clock, MapPin, Plus, Star } from "lucide-react";
+import { Check, Clock, MapPin, Plus, Route, Star } from "lucide-react";
 import type { Place } from "@/data/types";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
@@ -21,12 +21,17 @@ export function PlaceCard({
   className,
   plannerDayId,
   plannerDayNumber,
+  distanceKm,
+  travelMinutes,
 }: {
   place: Place;
   className?: string;
   /** When set, the add button targets this specific planner day instead of the general Unscheduled inbox. */
   plannerDayId?: string;
   plannerDayNumber?: number;
+  /** Real distance from a reference point (current place, or a proximity-search origin) — shown as a badge when set. */
+  distanceKm?: number;
+  travelMinutes?: number;
 }) {
   const { locale, dict } = useLocale();
   const { showToast } = useToast();
@@ -133,6 +138,13 @@ export function PlaceCard({
           <span aria-label={dict.common.price[place.priceLevel]}>
             {"฿".repeat(place.priceLevel)}
           </span>
+          {typeof distanceKm === "number" ? (
+            <span className="flex items-center gap-1 text-accent-text">
+              <Route className="h-3.5 w-3.5" />
+              {distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `${distanceKm.toFixed(1)} km`}
+              {typeof travelMinutes === "number" ? ` · ~${travelMinutes} ${dict.common.minutes}` : ""}
+            </span>
+          ) : null}
         </div>
       </div>
 

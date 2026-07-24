@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { places } from "@/data/places";
 
 export const UNSCHEDULED = "unscheduled";
 
@@ -45,7 +44,6 @@ export interface TripState {
     toIndex: number;
   }) => void;
   reorderDay: (dayId: string, orderedSlugs: string[]) => void;
-  autoArrangeDay: (dayId: string) => void;
   clearAll: () => void;
   loadPlan: (data: { dayIds: string[]; containers: Record<string, string[]> }) => void;
   setTripName: (name: string) => void;
@@ -60,18 +58,6 @@ export interface TripState {
 
 function findContainer(containers: Record<string, string[]>, slug: string) {
   return Object.keys(containers).find((key) => containers[key].includes(slug));
-}
-
-function haversine(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
-  return 2 * R * Math.asin(Math.sqrt(h));
 }
 
 export const useTripStore = create<TripState>()(
@@ -199,35 +185,6 @@ export const useTripStore = create<TripState>()(
           containers: {
             ...state.containers,
             [dayId]: orderedSlugs,
-          },
-        });
-      },
-
-      autoArrangeDay: (dayId) => {
-        const state = get();
-        const slugs = state.containers[dayId] ?? [];
-        if (slugs.length < 3) return;
-
-        const items = slugs
-          .map((slug) => places.find((p) => p.slug === slug))
-          .filter((p): p is NonNullable<typeof p> => Boolean(p));
-
-        const remaining = [...items];
-        const ordered = [remaining.shift()!];
-        while (remaining.length) {
-          const last = ordered[ordered.length - 1];
-          remaining.sort(
-            (a, b) =>
-              haversine(last.coordinates, a.coordinates) -
-              haversine(last.coordinates, b.coordinates)
-          );
-          ordered.push(remaining.shift()!);
-        }
-
-        set({
-          containers: {
-            ...state.containers,
-            [dayId]: ordered.map((p) => p.slug),
           },
         });
       },

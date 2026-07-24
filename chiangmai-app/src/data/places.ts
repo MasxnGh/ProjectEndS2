@@ -26,6 +26,7 @@ export const places: Place[] = [
     openingHours: { en: "Daily, 6:00 AM – 6:00 PM", th: "ทุกวัน 06:00 – 18:00 น." },
     address: { en: "Doi Suthep, Suthep, Mueang Chiang Mai", th: "ดอยสุเทพ ต.สุเทพ อ.เมืองเชียงใหม่" },
     coordinates: { lat: 18.8047, lng: 98.9217 },
+    elevation: 1073,
     tags: ["temple", "viewpoint", "pilgrimage", "sunrise"],
     paletteSeed: 1,
     outdoor: true,
@@ -196,6 +197,7 @@ export const places: Place[] = [
     openingHours: { en: "Daily, 5:30 AM – 6:00 PM", th: "ทุกวัน 05:30 – 18:00 น." },
     address: { en: "Chom Thong District", th: "อ.จอมทอง" },
     coordinates: { lat: 18.5896, lng: 98.4867 },
+    elevation: 2565,
     tags: ["nature", "hiking", "waterfall", "cool climate", "day trip"],
     paletteSeed: 1,
     outdoor: true,
@@ -280,6 +282,7 @@ export const places: Place[] = [
     openingHours: { en: "Daily, 7:00 AM – 5:00 PM", th: "ทุกวัน 07:00 – 17:00 น." },
     address: { en: "Doi Suthep-Pui National Park", th: "อุทยานแห่งชาติดอยสุเทพ-ปุย" },
     coordinates: { lat: 18.8384, lng: 98.8814 },
+    elevation: 1300,
     tags: ["nature", "hill tribe", "flowers", "cool climate"],
     paletteSeed: 4,
     outdoor: true,
@@ -308,6 +311,7 @@ export const places: Place[] = [
     openingHours: { en: "Daily, 24 hours (cafés from 6:00 AM)", th: "เปิดตลอด 24 ชั่วโมง (คาเฟ่เปิดตั้งแต่ 06:00 น.)" },
     address: { en: "Pong Yaeng, Mae Rim–Samoeng ridge", th: "ต.โป่งแยง สันเขาแม่ริม–สะเมิง" },
     coordinates: { lat: 19.1067, lng: 98.7935 },
+    elevation: 1300,
     tags: ["nature", "sunrise", "fog sea", "cafe", "viewpoint"],
     paletteSeed: 5,
     outdoor: true,
@@ -366,6 +370,7 @@ export const places: Place[] = [
     openingHours: { en: "Always open (village)", th: "เปิดตลอดเวลา (หมู่บ้าน)" },
     address: { en: "Mae Kampong, Mae On District", th: "บ้านแม่กำปอง อ.แม่ออน" },
     coordinates: { lat: 18.8654, lng: 99.2939 },
+    elevation: 1300,
     tags: ["village", "homestay", "coffee", "overnight", "nature"],
     paletteSeed: 1,
     outdoor: true,
@@ -744,19 +749,4 @@ export const places: Place[] = [
 
 export function getPlaceBySlug(slug: string) {
   return places.find((p) => p.slug === slug);
-}
-
-export function getRelatedPlaces(place: Place, limit = 3) {
-  return places
-    .filter((p) => p.slug !== place.slug)
-    .map((p) => ({
-      place: p,
-      score:
-        (p.district === place.district ? 2 : 0) +
-        (p.category === place.category ? 1 : 0) +
-        p.tags.filter((t) => place.tags.includes(t)).length,
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((r) => r.place);
 }
