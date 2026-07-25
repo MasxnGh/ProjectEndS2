@@ -15,7 +15,8 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { Check, CloudSun, Compass, Copy, Plus, Printer, Save } from "lucide-react";
+import { Calendar, Check, CloudSun, Compass, Copy, Plus, Printer, QrCode, Save } from "lucide-react";
+import QRCode from "qrcode";
 import { places } from "@/data/places";
 import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -26,6 +27,9 @@ import { PlacePickerPanel } from "@/components/planner/place-picker-panel";
 import { PlannerHighlightSync } from "@/components/planner/planner-highlight-sync";
 import { UnscheduledPanel } from "@/components/planner/unscheduled-panel";
 import { DayColumn } from "@/components/planner/day-column";
+import { DayTimeline } from "@/components/planner/day-timeline";
+import { NarrativeItinerary } from "@/components/planner/narrative-itinerary";
+import { BaseLocationPicker } from "@/components/planner/base-location-picker";
 import { PlannerMapLoader } from "@/components/planner/planner-map-loader";
 import { TripDetailsForm } from "@/components/planner/trip-details-form";
 import { SummaryView } from "@/components/planner/summary-view";
@@ -33,10 +37,15 @@ import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { SectionHeading } from "@/components/section-heading";
 import { SeasonalSmogBanner } from "@/components/weather/seasonal-smog-banner";
+import { FestivalBanner } from "@/components/planner/festival-banner";
+import { useToast } from "@/components/toast/toast-provider";
 import { cn } from "@/lib/utils";
 import { CHIANGMAI_CENTER } from "@/lib/geo";
 import { useWeatherBundle } from "@/lib/weather/use-weather";
-import { resolveDayDate, findDailyForecast, isBadWeatherDay } from "@/lib/weather/day-forecast";
+import { resolveDayDate, findDailyForecast, isBadWeatherDay, isBurningSeasonDate } from "@/lib/weather/day-forecast";
+import { suggestDayFixes, type PlaceRelocation } from "@/lib/planner/feasibility";
+import { buildSchedule } from "@/lib/planner/schedule";
+import { suggestPaceRelief } from "@/lib/planner/pace";
 import type { AqiLevel } from "@/lib/weather/types";
 
 const BAD_AQI_LEVELS: AqiLevel[] = ["unhealthy", "very-unhealthy", "hazardous"];
@@ -56,18 +65,23 @@ export function PlannerBoard() {
   const moveItem = useTripStore((s) => s.moveItem);
   const travelers = useTripStore((s) => s.travelers);
   const travelDate = useTripStore((s) => s.travelDate);
+  const tripName = useTripStore((s) => s.tripName);
 
-  const [view, setView] = useState<"list" | "map" | "summary">("list");
+  const [view, setView] = useState<"list" | "map" | "summary" | "timeline">("list");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState(false);
   const [sharedMessage, setSharedMessage] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [reflowStatus, setReflowStatus] = useState<"idle" | "applied" | "noChange" | "needsDate">("idle");
   const [pickerDayId, setPickerDayId] = useState<string | null>(null);
   const pickerTriggerRef = useRef<HTMLElement | null>(null);
   const pickerPushedRef = useRef(false);
   const [highlightedDayId, setHighlightedDayId] = useState<string | null>(null);
+  const [dayFixSuggestion, setDayFixSuggestion] = useState<PlaceRelocation[] | null>(null);
 
   const weatherBundle = useWeatherBundle(CHIANGMAI_CENTER.lat, CHIANGMAI_CENTER.lng);
+  const { showToast } = useToast();
+  const dayFix = dict.planner.feasibility;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -119,10 +133,54 @@ export function PlannerBoard() {
         const date = resolveDayDate(travelDate, day.dayNumber);
         const entry = findDailyForecast(weatherBundle.weather?.daily, date);
         const isToday = Boolean(date) && date === todayDate;
-        return { dayId: day.id, date, entry, isToday };
+        // Burning season is a calendar fact, not something the live forecast can confirm for a far-future date —
+        // flagged independently so a haze-sensitive outdoor stop still gets caught even months out.
+        const isHazeSensitive =
+          Boolean(date) &&
+          isBurningSeasonDate(date) &&
+          day.places.some((p) => p.outdoor && p.dustSensitivity === "high");
+        return { dayId: day.id, date, entry, isToday, isHazeSensitive };
       }),
     [resolvedDays, travelDate, weatherBundle.weather, todayDate]
   );
+
+  const paceRelief = useMemo(
+    () =>
+      suggestPaceRelief(
+        resolvedDays.map((day) => ({ dayId: day.id, places: day.places, schedule: buildSchedule(day.places) }))
+      ),
+    [resolvedDays]
+  );
+
+  function handleEasePace() {
+    if (!paceRelief) return;
+    const place = places.find((p) => p.slug === paceRelief.placeSlug);
+    const toDayNumber = dayIds.indexOf(paceRelief.toDayId) + 1;
+    const fromContainer = containers[paceRelief.fromDayId] ?? [];
+    const previousIndex = fromContainer.indexOf(paceRelief.placeSlug);
+
+    moveItem({
+      slug: paceRelief.placeSlug,
+      toContainer: paceRelief.toDayId,
+      toIndex: containers[paceRelief.toDayId]?.length ?? 0,
+    });
+    showToast({
+      message: dict.planner.pace.easeApplied
+        .replace("{place}", place?.name[locale] ?? paceRelief.placeSlug)
+        .replace("{day}", String(toDayNumber)),
+      actions: [
+        {
+          label: dict.planner.toast.undo,
+          onClick: () =>
+            moveItem({
+              slug: paceRelief.placeSlug,
+              toContainer: paceRelief.fromDayId,
+              toIndex: previousIndex >= 0 ? previousIndex : 0,
+            }),
+        },
+      ],
+    });
+  }
 
   function handleReflowByWeather() {
     if (!travelDate) {
@@ -136,6 +194,7 @@ export function PlannerBoard() {
       .filter(
         (d) =>
           isBadWeatherDay(d.entry) ||
+          d.isHazeSensitive ||
           (d.isToday && weatherBundle.airQuality && BAD_AQI_LEVELS.includes(weatherBundle.airQuality.level))
       )
       .map((d) => d.dayId);
@@ -176,6 +235,50 @@ export function PlannerBoard() {
     setTimeout(() => setReflowStatus("idle"), 3000);
   }
 
+  function handleFixDaysClick() {
+    const feasibilityDays = resolvedDays.map((day) => ({
+      dayId: day.id,
+      isoDate: dayForecasts.find((d) => d.dayId === day.id)?.date ?? null,
+      places: day.places,
+    }));
+    const relocations = suggestDayFixes(feasibilityDays);
+    if (relocations.length === 0) {
+      showToast({ message: dayFix.fixDaysNone });
+      return;
+    }
+    setDayFixSuggestion(relocations);
+  }
+
+  function handleConfirmFixDays() {
+    if (!dayFixSuggestion) return;
+    const previousContainerOf = new Map(dayFixSuggestion.map((r) => [r.placeSlug, r.fromDayId]));
+    for (const relocation of dayFixSuggestion) {
+      moveItem({
+        slug: relocation.placeSlug,
+        toContainer: relocation.toDayId,
+        toIndex: containers[relocation.toDayId]?.length ?? 0,
+      });
+    }
+    showToast({
+      message: dayFix.fixDaysApplied.replace("{count}", String(dayFixSuggestion.length)),
+      actions: [
+        {
+          label: dict.planner.toast.undo,
+          onClick: () => {
+            for (const [slug, dayId] of previousContainerOf) {
+              moveItem({ slug, toContainer: dayId, toIndex: containers[dayId]?.length ?? 0 });
+            }
+          },
+        },
+      ],
+    });
+    setDayFixSuggestion(null);
+  }
+
+  function handleCancelFixDays() {
+    setDayFixSuggestion(null);
+  }
+
   function handleDragStart(event: DragStartEvent) {
     setActiveSlug(String(event.active.id));
   }
@@ -205,13 +308,26 @@ export function PlannerBoard() {
     moveItem({ slug: activeSlugId, toContainer, toIndex });
   }
 
-  function handleShare() {
+  function buildShareUrl(): string {
     const data = { dayIds, containers };
     const encoded = encodeURIComponent(btoa(JSON.stringify(data)));
-    const url = `${window.location.origin}${window.location.pathname}?plan=${encoded}`;
-    navigator.clipboard?.writeText(url);
+    return `${window.location.origin}${window.location.pathname}?plan=${encoded}`;
+  }
+
+  function handleShare() {
+    navigator.clipboard?.writeText(buildShareUrl());
     setSharedMessage(true);
     setTimeout(() => setSharedMessage(false), 2500);
+  }
+
+  function handleToggleQr() {
+    if (qrDataUrl) {
+      setQrDataUrl(null);
+      return;
+    }
+    QRCode.toDataURL(buildShareUrl(), { margin: 1, width: 200 })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(null));
   }
 
   function handleSave() {
@@ -300,6 +416,7 @@ export function PlannerBoard() {
       </div>
 
       <div className="mt-6">
+        {travelDate ? <FestivalBanner travelDate={travelDate} dayCount={dayIds.length} /> : null}
         <SeasonalSmogBanner referenceDate={travelDate} />
       </div>
 
@@ -356,6 +473,16 @@ export function PlannerBoard() {
               >
                 {dict.planner.summaryView}
               </button>
+              <button
+                type="button"
+                onClick={() => setView("timeline")}
+                className={cn(
+                  "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
+                  view === "timeline" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )}
+              >
+                {dict.planner.timelineView}
+              </button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -378,6 +505,52 @@ export function PlannerBoard() {
                   </div>
                 ) : null}
               </div>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={handleFixDaysClick}
+                  className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
+                >
+                  <Calendar className="h-4 w-4" />
+                  {dayFix.fixDays}
+                </button>
+                {dayFixSuggestion ? (
+                  <div className="absolute left-0 top-full z-10 mt-2 w-80 space-y-3 rounded-lg border border-accent bg-background p-4 text-xs shadow-lg">
+                    <p className="font-medium text-foreground">{dayFix.fixDaysTitle}</p>
+                    <ul className="space-y-1 text-foreground/75">
+                      {dayFixSuggestion.map((relocation) => {
+                        const place = places.find((p) => p.slug === relocation.placeSlug);
+                        const fromDay = dayIds.indexOf(relocation.fromDayId) + 1;
+                        const toDay = dayIds.indexOf(relocation.toDayId) + 1;
+                        return (
+                          <li key={relocation.placeSlug}>
+                            {dayFix.fixDaysMove
+                              .replace("{place}", place?.name[locale] ?? relocation.placeSlug)
+                              .replace("{fromDay}", String(fromDay))
+                              .replace("{toDay}", String(toDay))}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleConfirmFixDays}
+                        className="flex-1 rounded-full bg-accent px-3 py-1.5 font-medium text-accent-foreground"
+                      >
+                        {dict.planner.route.confirm}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelFixDays}
+                        className="flex-1 rounded-full border border-border-strong px-3 py-1.5 font-medium hover:border-accent hover:text-accent-text"
+                      >
+                        {dict.planner.route.cancel}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
               <button
                 type="button"
                 onClick={handleSave}
@@ -394,6 +567,23 @@ export function PlannerBoard() {
                 {sharedMessage ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                 {sharedMessage ? dict.planner.shared : dict.planner.share}
               </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={handleToggleQr}
+                  className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
+                >
+                  <QrCode className="h-4 w-4" />
+                  {dict.planner.qr.button}
+                </button>
+                {qrDataUrl ? (
+                  <div className="absolute left-0 top-full z-10 mt-2 w-56 rounded-lg border border-border bg-background p-4 text-center shadow-lg">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- a base64 data URI has no benefit from next/image optimization */}
+                    <img src={qrDataUrl} alt={dict.planner.qr.imageAlt} width={200} height={200} className="mx-auto" />
+                    <p className="mt-2 text-xs text-foreground/70">{dict.planner.qr.hint}</p>
+                  </div>
+                ) : null}
+              </div>
               <button
                 type="button"
                 onClick={() => window.print()}
@@ -405,6 +595,7 @@ export function PlannerBoard() {
             </div>
           </div>
 
+          <div className="print:hidden">
           {view === "summary" ? (
             <div className="mt-8">
               <SummaryView days={resolvedDays} />
@@ -412,6 +603,25 @@ export function PlannerBoard() {
           ) : view === "map" ? (
             <div className="mt-8">
               <PlannerMapLoader days={resolvedDays} />
+            </div>
+          ) : view === "timeline" ? (
+            <div className="mt-8">
+              <BaseLocationPicker className="max-w-xs" />
+              <div className="mt-6 flex gap-5 overflow-x-auto pb-4">
+                {resolvedDays.map((day) => {
+                  const forecast = dayForecasts.find((d) => d.dayId === day.id);
+                  return (
+                    <DayTimeline
+                      key={day.id}
+                      dayId={day.id}
+                      dayNumber={day.dayNumber}
+                      date={forecast?.date ?? null}
+                      places={day.places}
+                      forecastEntry={forecast?.entry}
+                    />
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <DndContext
@@ -427,6 +637,12 @@ export function PlannerBoard() {
               <div className="mt-8 flex gap-5 overflow-x-auto pb-4">
                 {resolvedDays.map((day) => {
                   const forecast = dayForecasts.find((d) => d.dayId === day.id);
+                  const showPaceEase = paceRelief?.fromDayId === day.id;
+                  const paceEaseLabel = showPaceEase
+                    ? dict.planner.pace.ease
+                        .replace("{place}", places.find((p) => p.slug === paceRelief.placeSlug)?.name[locale] ?? "")
+                        .replace("{day}", String(dayIds.indexOf(paceRelief.toDayId) + 1))
+                    : undefined;
                   return (
                     <DayColumn
                       key={day.id}
@@ -440,6 +656,8 @@ export function PlannerBoard() {
                       airQuality={weatherBundle.airQuality}
                       onAddPlace={(trigger) => openPicker(day.id, trigger)}
                       highlighted={highlightedDayId === day.id}
+                      paceEaseLabel={paceEaseLabel}
+                      onEasePace={showPaceEase ? handleEasePace : undefined}
                     />
                   );
                 })}
@@ -469,6 +687,16 @@ export function PlannerBoard() {
               </DragOverlay>
             </DndContext>
           )}
+          </div>
+
+          <NarrativeItinerary
+            days={resolvedDays.map((day) => ({
+              ...day,
+              date: dayForecasts.find((d) => d.dayId === day.id)?.date,
+            }))}
+            tripName={tripName}
+            className="hidden print:block"
+          />
         </>
       )}
     </div>

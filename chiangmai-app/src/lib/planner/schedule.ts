@@ -2,7 +2,7 @@ import type { Place } from "@/data/types";
 import { haversineKm, type TerrainType } from "@/lib/geo/distance";
 import { estimateTravelMinutes } from "@/lib/geo/travelTime";
 import { optimizeRoute } from "@/lib/geo/route";
-import { parseDailyOpeningHours } from "@/lib/json-ld";
+import { isOutsideHours } from "@/lib/opening-hours";
 
 const DEFAULT_DAY_START = "09:00";
 const TEN_HOURS_MINUTES = 600;
@@ -51,12 +51,7 @@ function minutesToClock(totalMinutes: number): string {
 }
 
 function isOutsideOpeningHours(place: Place, arrivalMinutes: number, departureMinutes: number): boolean {
-  const spec = parseDailyOpeningHours(place.openingHours.en);
-  if (!spec) return false;
-  const opens = clockToMinutes(spec.opens);
-  const closes = clockToMinutes(spec.closes);
-  if (closes <= opens) return false; // spans midnight or malformed — skip rather than guess
-  return arrivalMinutes < opens || departureMinutes > closes;
+  return isOutsideHours(place.openingHours, arrivalMinutes, departureMinutes);
 }
 
 /**
@@ -118,19 +113,23 @@ function bestTimeBucket(place: Place): BestTimeBucket {
 }
 
 /**
- * Orders a day's stops: nearest-neighbour + 2-opt for the shortest
- * geometric route (see lib/geo/route.ts), then a light second pass that
- * pulls morning-only places (sunrise viewpoints, misty ridges) to the
- * front and evening-only places (night markets) to the back — without
- * disturbing the relative order the geometric pass found within each
- * group. This is a heuristic, not a guarantee every constraint is
- * satisfiable; buildSchedule's outsideOpeningHours flag is what surfaces
- * any remaining conflict.
+ * Orders a day's stops: nearest-neighbour + 2-opt (see lib/geo/route.ts) for
+ * the shortest route, then a light second pass that pulls morning-only
+ * places (sunrise viewpoints, misty ridges) to the front and evening-only
+ * places (night markets) to the back — without disturbing the relative
+ * order the first pass found within each group. This is a heuristic, not a
+ * guarantee every constraint is satisfiable; buildSchedule's
+ * outsideOpeningHours flag is what surfaces any remaining conflict.
+ *
+ * `externalDurationMatrix` (e.g. a real travel-time matrix from
+ * lib/routing) drives which order counts as "shortest" — pass one to
+ * optimize against real travel time instead of straight-line distance
+ * (Phase 1's routing layer). Its indices must line up with `places`.
  */
-export function optimizeDayOrder(places: Place[]): Place[] {
+export function optimizeDayOrder(places: Place[], externalDurationMatrix?: number[][]): Place[] {
   if (places.length <= 2) return places;
 
-  const { items: geoOrder } = optimizeRoute(places, (p) => p.coordinates, 0);
+  const { items: geoOrder } = optimizeRoute(places, (p) => p.coordinates, 0, externalDurationMatrix);
 
   const morning = geoOrder.filter((p) => bestTimeBucket(p) === "morning");
   const evening = geoOrder.filter((p) => bestTimeBucket(p) === "evening");
@@ -139,10 +138,20 @@ export function optimizeDayOrder(places: Place[]): Place[] {
   return [...morning, ...flexible, ...evening];
 }
 
-/** Builds the before/after comparison a confirm UI needs, without applying anything. */
-export function compareOptimization(currentOrder: Place[], dayStartClock?: string): OptimizationComparison {
+/**
+ * Builds the before/after comparison a confirm UI needs, without applying
+ * anything. `before`/`after` schedules always compute their own
+ * displayed distance/duration independently (Haversine + terrain-aware
+ * estimate, same as ever) — `externalDurationMatrix` only influences which
+ * order optimizeDayOrder picks as "best", not what gets displayed for it.
+ */
+export function compareOptimization(
+  currentOrder: Place[],
+  dayStartClock?: string,
+  externalDurationMatrix?: number[][]
+): OptimizationComparison {
   const before = buildSchedule(currentOrder, dayStartClock);
-  const optimizedOrder = optimizeDayOrder(currentOrder);
+  const optimizedOrder = optimizeDayOrder(currentOrder, externalDurationMatrix);
   const after = buildSchedule(optimizedOrder, dayStartClock);
 
   return {

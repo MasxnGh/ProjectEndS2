@@ -79,7 +79,7 @@ export function SortablePlaceItem({
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{place.name[locale]}</p>
           <p className="truncate text-xs text-muted-foreground">
-            {dict.common.districts[place.district]} · {place.openingHours[locale]}
+            {dict.common.districts[place.district]} · {place.openingHoursText[locale]}
           </p>
           <p className="truncate text-xs text-muted-foreground">
             {formatMinutes(place.durationMinutes)} · {formatThb(SPEND_ESTIMATE_THB[place.priceLevel])}{" "}

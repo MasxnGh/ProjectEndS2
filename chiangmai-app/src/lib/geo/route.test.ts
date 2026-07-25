@@ -90,4 +90,24 @@ describe("optimizeRoute", () => {
     expect(result.items[0]).toBe(items[0]);
     expect(result.items).toHaveLength(3);
   });
+
+  it("optimizes against an external matrix instead of Haversine distance when one is supplied", () => {
+    const points: LatLng[] = [
+      { lat: 0, lng: 0 }, // A (start)
+      { lat: 0, lng: 2 }, // B
+      { lat: 1, lng: 0 }, // C
+    ];
+    // A real travel-time matrix could disagree wildly with straight-line
+    // distance (e.g. B is Haversine-closer to A, but a real road makes C
+    // faster to reach first) — the optimizer should follow the matrix, not
+    // recompute Haversine internally.
+    const timeMatrix = [
+      [0, 100, 5], // from A: B is "far" (100), C is "close" (5)
+      [100, 0, 50],
+      [5, 50, 0],
+    ];
+    const result = optimizeRoute(points, (p) => p, 0, timeMatrix);
+    expect(result.order).toEqual([0, 2, 1]);
+    expect(result.totalDistanceKm).toBe(5 + 50);
+  });
 });

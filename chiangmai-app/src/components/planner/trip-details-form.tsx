@@ -4,6 +4,7 @@ import { Users, Wallet } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { formatMinutes, formatThb } from "@/lib/trip-calculations";
+import { DateRangePicker } from "@/components/planner/date-range-picker";
 
 interface TripStats {
   days: number;
@@ -13,17 +14,32 @@ interface TripStats {
 }
 
 export function TripDetailsForm({ stats }: { stats?: TripStats }) {
-  const { locale, dict } = useLocale();
+  const { dict } = useLocale();
   const t = dict.planner.details;
 
   const tripName = useTripStore((s) => s.tripName);
   const travelDate = useTripStore((s) => s.travelDate);
   const travelers = useTripStore((s) => s.travelers);
   const budgetThb = useTripStore((s) => s.budgetThb);
+  const dayIds = useTripStore((s) => s.dayIds);
   const setTripName = useTripStore((s) => s.setTripName);
   const setTravelDate = useTripStore((s) => s.setTravelDate);
   const setTravelers = useTripStore((s) => s.setTravelers);
   const setBudgetThb = useTripStore((s) => s.setBudgetThb);
+  const addDay = useTripStore((s) => s.addDay);
+  const removeDay = useTripStore((s) => s.removeDay);
+
+  function handleRangeChange(startIso: string, dayCount: number) {
+    setTravelDate(startIso);
+    const delta = dayCount - dayIds.length;
+    if (delta > 0) {
+      for (let i = 0; i < delta; i++) addDay();
+    } else if (delta < 0) {
+      // Trim from the end so Day 1..dayCount keep their identity and places;
+      // removeDay already safely moves any places on a trimmed day back to Unscheduled.
+      for (let i = 0; i < -delta; i++) removeDay(dayIds[dayIds.length - 1 - i]);
+    }
+  }
 
   return (
     <div className="rounded-lg border border-border bg-surface p-6">
@@ -41,16 +57,14 @@ export function TripDetailsForm({ stats }: { stats?: TripStats }) {
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
-          <label htmlFor="travel-date" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t.travelDate}
           </label>
-          <input
-            id="travel-date"
-            type="date"
-            value={travelDate}
-            onChange={(e) => setTravelDate(e.target.value)}
-            lang={locale}
-            className="mt-1.5 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-accent"
+          <DateRangePicker
+            startDate={travelDate || null}
+            dayCount={dayIds.length}
+            onRangeChange={handleRangeChange}
+            className="mt-1.5"
           />
         </div>
 

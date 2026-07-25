@@ -20,7 +20,8 @@ import { WeatherErrorBoundary } from "@/components/weather/weather-error-boundar
 import { SeasonalSmogBanner } from "@/components/weather/seasonal-smog-banner";
 import { buildPageMetadata } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
-import { breadcrumbJsonLd, jsonLdScriptProps, parseDailyOpeningHours } from "@/lib/json-ld";
+import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
+import { toJsonLdOpeningHoursSpecification } from "@/lib/opening-hours";
 
 export function generateStaticParams() {
   return places.map((p) => ({ slug: p.slug }));
@@ -75,7 +76,7 @@ export default async function PlaceDetailPage({
     (p) => p.slug === place.slug
   ).slice(0, NEARBY_LIMIT);
   const photoPath = getPlacePhoto(place.slug);
-  const openingHoursSpecification = parseDailyOpeningHours(place.openingHours.en);
+  const openingHoursSpecification = toJsonLdOpeningHoursSpecification(place.openingHours, place.closedOnDays);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -173,7 +174,7 @@ export default async function PlaceDetailPage({
                   <Clock className="mt-0.5 h-4 w-4 shrink-0 text-accent-text" />
                   <div>
                     <dt className="text-muted-foreground">{dict.common.openingHours}</dt>
-                    <dd>{place.openingHours[locale]}</dd>
+                    <dd>{place.openingHoursText[locale]}</dd>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

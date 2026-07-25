@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import type { AirQualityResponse, WeatherResponse } from "@/lib/weather/types";
+import type { AirQualityResponse, SeasonalAverageResponse, WeatherResponse } from "@/lib/weather/types";
 
 const REFRESH_MS = 15 * 60 * 1000;
 
@@ -26,6 +26,15 @@ export function useAirQuality(lat: number, lng: number) {
   return useSWR<AirQualityResponse>(`/api/air-quality?lat=${lat}&lng=${lng}`, fetcher, {
     revalidateOnFocus: false,
     refreshInterval: REFRESH_MS,
+    dedupingInterval: 60_000,
+  });
+}
+
+/** null `isoDate` disables the fetch — use when the day has no date yet, or the date is still within the regular forecast window. */
+export function useSeasonalAverage(lat: number, lng: number, isoDate: string | null) {
+  const key = isoDate ? `/api/weather/seasonal-average?lat=${lat}&lng=${lng}&date=${isoDate}` : null;
+  return useSWR<SeasonalAverageResponse>(key, fetcher, {
+    revalidateOnFocus: false,
     dedupingInterval: 60_000,
   });
 }
