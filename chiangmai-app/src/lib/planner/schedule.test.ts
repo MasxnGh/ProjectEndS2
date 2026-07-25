@@ -14,11 +14,24 @@ function makePlace(overrides: Partial<Place> & Pick<Place, "slug" | "coordinates
     shortDescription: { en: "", th: "" },
     description: { en: "", th: "" },
     localTip: { en: "", th: "" },
-    openingHours: { en: "Daily, 9:00 AM – 5:00 PM", th: "" },
+    openingHoursText: { en: "Daily, 9:00 AM – 5:00 PM", th: "" },
     address: { en: "", th: "" },
+    elevation: null,
     tags: [],
     paletteSeed: 1,
     outdoor: false,
+    openingHours: { opens: "09:00", closes: "17:00" },
+    closedOnDays: [],
+    seasonalClosure: null,
+    bestTimeWindows: [],
+    goldenHourType: null,
+    exposure: "outdoor",
+    rainSensitivity: "none",
+    dustSensitivity: "none",
+    physicalIntensity: 1,
+    dressCode: null,
+    requiresBooking: false,
+    dataLastVerified: null,
     ...overrides,
   };
 }
@@ -46,20 +59,30 @@ describe("buildSchedule", () => {
     const late = makePlace({
       slug: "late",
       coordinates: { lat: 18.79, lng: 98.99 },
-      openingHours: { en: "Daily, 9:00 AM – 10:00 AM", th: "" },
+      openingHours: { opens: "09:00", closes: "10:00" },
       durationMinutes: 30,
     });
     const schedule = buildSchedule([late], "18:00");
     expect(schedule.stops[0].outsideOpeningHours).toBe(true);
   });
 
-  it("does not flag places with unparseable/irregular hours", () => {
+  it("does not flag a 24-hour place", () => {
     const alwaysOpen = makePlace({
       slug: "always",
       coordinates: { lat: 18.79, lng: 98.99 },
-      openingHours: { en: "Always open (village)", th: "" },
+      openingHours: { opens: "00:00", closes: "24:00" },
     });
     const schedule = buildSchedule([alwaysOpen], "23:00");
+    expect(schedule.stops[0].outsideOpeningHours).toBe(false);
+  });
+
+  it("does not flag places with unknown hours", () => {
+    const unknown = makePlace({
+      slug: "unknown-hours",
+      coordinates: { lat: 18.79, lng: 98.99 },
+      openingHours: null,
+    });
+    const schedule = buildSchedule([unknown], "23:00");
     expect(schedule.stops[0].outsideOpeningHours).toBe(false);
   });
 
@@ -125,6 +148,22 @@ describe("optimizeDayOrder", () => {
     const morningSlugs = result.filter((p) => p.bestTime[0] === "morning").map((p) => p.slug);
     expect(morningSlugs).toHaveLength(2);
     expect(result[result.length - 1].slug).toBe("evening-only");
+  });
+
+  it("follows an external duration matrix instead of straight-line distance when one is supplied", () => {
+    // Three same-bestTime places geometrically closest in order a→b→c, but a
+    // real travel-time matrix says the road actually makes a→c→b faster
+    // (e.g. b sits past a river crossing that only affects driving time).
+    const a = makePlace({ slug: "a", coordinates: { lat: 0, lng: 0 } });
+    const b = makePlace({ slug: "b", coordinates: { lat: 0, lng: 1 } });
+    const c = makePlace({ slug: "c", coordinates: { lat: 0, lng: 2 } });
+    const durationMatrix = [
+      [0, 100, 5],
+      [100, 0, 100],
+      [5, 100, 0],
+    ];
+    const result = optimizeDayOrder([a, b, c], durationMatrix);
+    expect(result.map((p) => p.slug)).toEqual(["a", "c", "b"]);
   });
 });
 

@@ -1,6 +1,6 @@
 import { estimateRoadDistanceKm, type LatLng, type TerrainType } from "./distance";
 
-const AVG_SPEED_KMH: Record<TerrainType, number> = {
+export const AVG_SPEED_KMH: Record<TerrainType, number> = {
   urban: 22,
   suburban: 32,
   mountain: 28,

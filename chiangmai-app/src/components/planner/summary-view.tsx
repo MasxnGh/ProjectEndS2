@@ -1,14 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Snowflake, Sun, CloudRain, X } from "lucide-react";
+import { Check, Plus, Snowflake, Sun, CloudRain, X } from "lucide-react";
 import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
-import { categorySpendBreakdown, formatThb } from "@/lib/trip-calculations";
+import { categorySpendBreakdown, formatMinutes, formatThb } from "@/lib/trip-calculations";
+import { suggestPackingItems } from "@/lib/planner/packing-suggestions";
+import { compareVehicleModes } from "@/lib/planner/vehicle-comparison";
 import { cn } from "@/lib/utils";
 
-type SummaryTab = "budget" | "weather" | "packing";
+type SummaryTab = "budget" | "weather" | "packing" | "transport";
 type Season = "cool" | "hot" | "rainy";
 
 function seasonForMonth(month: number): Season {
@@ -149,17 +151,23 @@ function WeatherPanel() {
   );
 }
 
-function PackingPanel() {
+function PackingPanel({ places }: { places: Place[] }) {
   const { dict } = useLocale();
   const t = dict.planner.summary.packing;
   const packingItems = useTripStore((s) => s.packingItems);
   const togglePackingItem = useTripStore((s) => s.togglePackingItem);
   const addPackingItem = useTripStore((s) => s.addPackingItem);
+  const addPackingItemByKey = useTripStore((s) => s.addPackingItemByKey);
   const removePackingItem = useTripStore((s) => s.removePackingItem);
   const [newItem, setNewItem] = useState("");
 
   const checkedCount = packingItems.filter((i) => i.checked).length;
   const percent = packingItems.length > 0 ? Math.round((checkedCount / packingItems.length) * 100) : 0;
+
+  const existingKeys = new Set(packingItems.map((item) => item.labelKey).filter(Boolean));
+  const suggestions = suggestPackingItems(places)
+    .map((id) => ({ id, label: t.items[id] }))
+    .filter((s) => !existingKeys.has(s.id));
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
@@ -210,6 +218,26 @@ function PackingPanel() {
         ))}
       </ul>
 
+      {suggestions.length > 0 ? (
+        <div className="mt-6">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t.suggestedTitle}</p>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {suggestions.map((s) => (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => addPackingItemByKey(s.id)}
+                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border-strong px-3 py-1.5 text-xs hover:border-accent hover:text-accent-text"
+                >
+                  <Plus className="h-3 w-3 shrink-0" />
+                  {s.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <form onSubmit={handleAdd} className="mt-4 flex gap-2">
         <input
           type="text"
@@ -230,10 +258,61 @@ function PackingPanel() {
   );
 }
 
+function TransportPanel({ days }: { days: { places: Place[] }[] }) {
+  const { dict } = useLocale();
+  const t = dict.planner.summary.transport;
+  const travelMode = useTripStore((s) => s.travelMode);
+  const setTravelMode = useTripStore((s) => s.setTravelMode);
+
+  const rows = useMemo(() => compareVehicleModes(days), [days]);
+
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{t.disclaimer}</p>
+      <ul className="mt-4 space-y-2">
+        {rows.map((row) => {
+          const isSelected = row.mode === travelMode;
+          return (
+            <li
+              key={row.mode}
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-md border px-3 py-2.5",
+                isSelected ? "border-accent bg-accent/10" : "border-border"
+              )}
+            >
+              <div>
+                <p className="text-sm font-medium">{t.modes[row.mode]}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t.totalTime}: {formatMinutes(row.totalTravelMinutes)} · {t.totalCost}: {formatThb(row.totalCostThb)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTravelMode(row.mode)}
+                disabled={isSelected}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium",
+                  isSelected
+                    ? "border-accent text-accent-text"
+                    : "border-border-strong hover:border-accent hover:text-accent-text"
+                )}
+              >
+                {isSelected ? <Check className="h-3.5 w-3.5" /> : null}
+                {isSelected ? t.selected : t.select}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 export function SummaryView({ days }: { days: { places: Place[] }[] }) {
   const { dict } = useLocale();
   const [tab, setTab] = useState<SummaryTab>("budget");
-  const tabs: SummaryTab[] = ["budget", "weather", "packing"];
+  const tabs: SummaryTab[] = ["budget", "weather", "packing", "transport"];
+  const allPlaces = useMemo(() => days.flatMap((d) => d.places), [days]);
 
   return (
     <div>
@@ -256,7 +335,8 @@ export function SummaryView({ days }: { days: { places: Place[] }[] }) {
       <div className="mt-6">
         {tab === "budget" ? <BudgetPanel days={days} /> : null}
         {tab === "weather" ? <WeatherPanel /> : null}
-        {tab === "packing" ? <PackingPanel /> : null}
+        {tab === "packing" ? <PackingPanel places={allPlaces} /> : null}
+        {tab === "transport" ? <TransportPanel days={days} /> : null}
       </div>
     </div>
   );

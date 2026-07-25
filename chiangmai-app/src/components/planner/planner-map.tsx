@@ -11,6 +11,7 @@ import { computeBoundingBox, boundingBoxToLngLatBounds } from "@/lib/geo/bbox";
 import { haversineKm } from "@/lib/geo/distance";
 import { applyBrandMapTheme } from "@/lib/map/theme";
 import { dayStats, formatMinutes } from "@/lib/trip-calculations";
+import { useDayRoute } from "@/lib/routing/use-day-route";
 import { cn } from "@/lib/utils";
 
 function totalDistanceKm(placesInOrder: Place[]) {
@@ -27,6 +28,47 @@ export interface TripDay {
   id: string;
   dayNumber: number;
   places: Place[];
+}
+
+/**
+ * Draws one day's route line, preferring the real routed polyline
+ * (lib/routing) and falling back to the existing straight line between
+ * stops when a real route isn't available for every leg. Isolated into its
+ * own component so its `useDayRoute` hook call is safe inside `days.map()`.
+ */
+function DayRouteLayer({ day, color }: { day: TripDay; color: string }) {
+  const waypoints = useMemo(
+    () =>
+      day.places.map((p) => ({ lat: p.coordinates.lat, lng: p.coordinates.lng, elevation: p.elevation })),
+    [day.places]
+  );
+  const { geometry } = useDayRoute(waypoints);
+
+  const routeGeoJson = useMemo(() => {
+    const coordinates =
+      geometry ?? day.places.map((p) => [p.coordinates.lng, p.coordinates.lat] as [number, number]);
+    return {
+      type: "Feature" as const,
+      properties: {},
+      geometry: { type: "LineString" as const, coordinates },
+    };
+  }, [geometry, day.places]);
+
+  return (
+    <Source id={`route-${day.id}`} type="geojson" data={routeGeoJson}>
+      <Layer
+        id={`route-line-${day.id}`}
+        type="line"
+        layout={{ "line-cap": "round", "line-join": "round" }}
+        paint={{
+          "line-color": color,
+          "line-width": 2.5,
+          "line-dasharray": [0.2, 1.4],
+          "line-opacity": 0.85,
+        }}
+      />
+    </Source>
+  );
 }
 
 function googleMapsDirectionsUrl(placesInOrder: Place[]) {
@@ -151,29 +193,7 @@ export function PlannerMap({ days, className }: { days: TripDay[]; className?: s
             {days.map((day, dayIndex) => {
               if (day.places.length < 2) return null;
               const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
-              const routeGeoJson = {
-                type: "Feature" as const,
-                properties: {},
-                geometry: {
-                  type: "LineString" as const,
-                  coordinates: day.places.map((p) => [p.coordinates.lng, p.coordinates.lat] as [number, number]),
-                },
-              };
-              return (
-                <Source key={`route-${day.id}`} id={`route-${day.id}`} type="geojson" data={routeGeoJson}>
-                  <Layer
-                    id={`route-line-${day.id}`}
-                    type="line"
-                    layout={{ "line-cap": "round", "line-join": "round" }}
-                    paint={{
-                      "line-color": color,
-                      "line-width": 2.5,
-                      "line-dasharray": [0.2, 1.4],
-                      "line-opacity": 0.85,
-                    }}
-                  />
-                </Source>
-              );
+              return <DayRouteLayer key={`route-${day.id}`} day={day} color={color} />;
             })}
 
             {days.flatMap((day, dayIndex) => {

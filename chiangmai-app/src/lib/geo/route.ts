@@ -76,20 +76,28 @@ export interface OptimizedRoute<T> {
   items: T[];
   /** Indices into the original `points` array, in visiting order. */
   order: number[];
+  /** Total of whatever matrix drove the optimization — km for the default Haversine matrix, minutes when an external (e.g. real travel-time) matrix is supplied. */
   totalDistanceKm: number;
 }
 
 /**
- * Orders a list of stops to (approximately) minimize total travel distance:
+ * Orders a list of stops to (approximately) minimize total travel cost:
  * nearest-neighbour for a fast initial tour, then 2-opt to remove any
  * crossing/inefficient legs. `startIndex` pins which stop opens the day
  * (e.g. the one already first in an itinerary) — everything else is free
  * to reorder.
+ *
+ * By default the "cost" minimized is straight-line (Haversine) distance
+ * between points. Pass `externalMatrix` (e.g. a real travel-time matrix from
+ * lib/routing) to optimize against actual travel time instead — same
+ * algorithm, just fed a more accurate cost matrix. `externalMatrix[i][j]`
+ * must line up with `points[i]`/`points[j]`.
  */
 export function optimizeRoute<T>(
   points: T[],
   getCoords: (point: T) => LatLng,
-  startIndex = 0
+  startIndex = 0,
+  externalMatrix?: number[][]
 ): OptimizedRoute<T> {
   if (points.length === 0) {
     return { items: [], order: [], totalDistanceKm: 0 };
@@ -98,8 +106,7 @@ export function optimizeRoute<T>(
     return { items: [...points], order: [0], totalDistanceKm: 0 };
   }
 
-  const coords = points.map(getCoords);
-  const matrix = buildDistanceMatrix(coords);
+  const matrix = externalMatrix ?? buildDistanceMatrix(points.map(getCoords));
   const initial = nearestNeighbourOrder(matrix, startIndex);
   const order = twoOptImprove(initial, matrix);
 

@@ -13,9 +13,25 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { dayStats, formatMinutes, formatThb } from "@/lib/trip-calculations";
 import { buildSchedule, compareOptimization, type OptimizationComparison } from "@/lib/planner/schedule";
+import { fetchDurationMatrix } from "@/lib/routing/fetch-matrix";
+import { checkDayFeasibility } from "@/lib/planner/feasibility";
+import { computeDayPace } from "@/lib/planner/pace";
+import { PaceMeter } from "@/components/planner/pace-meter";
 import { pickDaySuggestion } from "@/lib/weather/day-forecast";
+import { useSeasonalAverage } from "@/lib/weather/use-weather";
+import { CHIANGMAI_CENTER } from "@/lib/geo";
 import { useToast } from "@/components/toast/toast-provider";
 import { cn } from "@/lib/utils";
+
+function formatDayDate(iso: string, locale: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(y, m - 1, d)));
+}
 
 export function DayColumn({
   dayId,
@@ -28,6 +44,8 @@ export function DayColumn({
   airQuality,
   onAddPlace,
   highlighted,
+  paceEaseLabel,
+  onEasePace,
 }: {
   dayId: string;
   dayNumber: number;
@@ -39,8 +57,10 @@ export function DayColumn({
   airQuality?: AirQualityResponse;
   onAddPlace: (trigger: HTMLElement) => void;
   highlighted?: boolean;
+  paceEaseLabel?: string;
+  onEasePace?: () => void;
 }) {
-  const { dict } = useLocale();
+  const { locale, dict } = useLocale();
   const { showToast } = useToast();
   const removeDay = useTripStore((s) => s.removeDay);
   const removeFromPlan = useTripStore((s) => s.removeFromPlan);
@@ -53,9 +73,13 @@ export function DayColumn({
 
   const [comparison, setComparison] = useState<OptimizationComparison | null>(null);
   const [announcement, setAnnouncement] = useState("");
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [usedFallbackTimes, setUsedFallbackTimes] = useState(false);
 
   const stats = dayStats(places);
   const schedule = buildSchedule(places);
+  const pace = computeDayPace(places, schedule);
+  const feasibilityIssues = checkDayFeasibility(places, date ?? null);
   const suggestion = pickDaySuggestion({
     date,
     entry: forecastEntry,
@@ -63,8 +87,22 @@ export function DayColumn({
     airQuality,
   });
 
-  function handleOptimizeClick() {
-    const result = compareOptimization(places);
+  const needsSeasonalAverage = Boolean(date) && !forecastEntry;
+  const { data: seasonalAverage } = useSeasonalAverage(
+    CHIANGMAI_CENTER.lat,
+    CHIANGMAI_CENTER.lng,
+    needsSeasonalAverage ? (date as string) : null
+  );
+
+  async function handleOptimizeClick() {
+    setIsOptimizing(true);
+    const { durations, isEstimate } = await fetchDurationMatrix(
+      places.map((p) => ({ lat: p.coordinates.lat, lng: p.coordinates.lng, elevation: p.elevation }))
+    );
+    setIsOptimizing(false);
+    setUsedFallbackTimes(isEstimate);
+
+    const result = compareOptimization(places, undefined, durations);
     if (!result.changed) {
       showToast({ message: rt.noSavings });
       return;
@@ -105,9 +143,12 @@ export function DayColumn({
       </div>
 
       <div className="flex items-center justify-between border-b border-border p-4 pb-3">
-        <h3 className="font-serif-display text-lg">
-          {dict.planner.day} {dayNumber}
-        </h3>
+        <div>
+          <h3 className="font-serif-display text-lg">
+            {dict.planner.day} {dayNumber}
+          </h3>
+          {date ? <p className="text-xs text-muted-foreground">{formatDayDate(date, locale)}</p> : null}
+        </div>
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -129,7 +170,12 @@ export function DayColumn({
           ) : null}
         </div>
       </div>
-      <DayWeatherHeader entry={forecastEntry} isToday={Boolean(isToday)} airQuality={airQuality} />
+      <DayWeatherHeader
+        entry={forecastEntry}
+        isToday={Boolean(isToday)}
+        airQuality={airQuality}
+        seasonalAverage={forecastEntry ? undefined : seasonalAverage}
+      />
       <DayWeatherSuggestion suggestion={suggestion} />
 
       <div
@@ -190,20 +236,48 @@ export function DayColumn({
           </p>
         ) : null}
 
+        {feasibilityIssues.map((issue) => {
+          const place = places.find((p) => p.slug === issue.placeSlug);
+          if (!place) return null;
+          const message =
+            issue.type === "closedOnDay"
+              ? issue.suggestedIsoDate
+                ? dict.planner.feasibility.closedOnDayWithSuggestion
+                    .replace("{place}", place.name[locale])
+                    .replace("{date}", formatDayDate(issue.suggestedIsoDate, locale))
+                : dict.planner.feasibility.closedOnDay.replace("{place}", place.name[locale])
+              : issue.type === "seasonalClosure"
+                ? dict.planner.feasibility.seasonalClosure.replace("{place}", place.name[locale])
+                : dict.planner.feasibility.hazeSensitive.replace("{place}", place.name[locale]);
+          return (
+            <p
+              key={`${issue.type}-${issue.placeSlug}`}
+              className="flex items-start gap-1.5 rounded-md bg-destructive/10 p-2 text-xs text-destructive"
+            >
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {message}
+            </p>
+          );
+        })}
+
+        <PaceMeter pace={pace} easeLabel={paceEaseLabel} onEase={onEasePace} />
+
         {places.length >= 3 ? (
           <button
             type="button"
             onClick={handleOptimizeClick}
-            className="no-print mt-2 flex w-full items-center justify-center gap-1.5 rounded-full border border-border-strong px-3 py-2 text-xs font-medium hover:border-accent hover:text-accent-text"
+            disabled={isOptimizing}
+            className="no-print mt-2 flex w-full items-center justify-center gap-1.5 rounded-full border border-border-strong px-3 py-2 text-xs font-medium hover:border-accent hover:text-accent-text disabled:cursor-wait disabled:opacity-60"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {rt.optimize}
+            {isOptimizing ? rt.optimizing : rt.optimize}
           </button>
         ) : null}
 
         {comparison ? (
           <div className="no-print space-y-3 rounded-md border border-accent bg-surface-muted/60 p-3 text-xs">
             <p className="font-medium text-foreground">{rt.compareTitle}</p>
+            {usedFallbackTimes ? <p className="text-muted-foreground">{rt.fallbackNotice}</p> : null}
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{rt.before}</span>
               <span>

@@ -8,6 +8,7 @@ import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provi
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
+import { PwaRegister } from "@/components/pwa-register";
 import { locales, isLocale, getDictionary } from "@/i18n";
 import { SITE_URL } from "@/lib/site";
 
@@ -69,6 +70,12 @@ export async function generateMetadata({
       description: dict.home.intro.body,
     },
     robots: { index: true, follow: true },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: dict.meta.siteName,
+    },
   };
 }
 
@@ -119,6 +126,7 @@ export default async function LocaleLayout({
                 <NavBar />
                 <main id="main-content">{children}</main>
                 <Footer />
+                <PwaRegister />
               </SmoothScrollProvider>
             </ToastProvider>
           </LocaleProvider>

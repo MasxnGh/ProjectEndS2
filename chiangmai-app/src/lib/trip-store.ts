@@ -1,7 +1,21 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { Trip, TravelMode } from "@/data/types";
+import { addDaysIso } from "@/lib/date-utils";
 
 export const UNSCHEDULED = "unscheduled";
+
+/**
+ * Schema version for the persisted trip. Bump this and add a branch to
+ * `migrate` below whenever the persisted shape changes in a way old
+ * localStorage data can't just fall back to defaults for.
+ *
+ * v1: adds baseLocation/travelMode alongside the pre-existing
+ * dayIds/containers shape — no transformation needed, since Zustand's
+ * persist merge already fills in defaults for fields absent from older
+ * localStorage payloads.
+ */
+const SCHEMA_VERSION = 1;
 
 export interface PackingItem {
   id: string;
@@ -25,10 +39,15 @@ export interface TripState {
   containers: Record<string, string[]>;
   nextDayNumber: number;
   tripName: string;
+  /** ISO "YYYY-MM-DD", or "" when the user hasn't chosen a date yet (matches <input type="date">). */
   travelDate: string;
   travelers: number;
   budgetThb: number;
   accommodationThb: number;
+  baseLocation: { lat: number; lng: number; label: string } | null;
+  travelMode: TravelMode;
+  /** User-pinned arrival times set by dragging a stop on the Golden Hour timeline, keyed by `${dayId}::${slug}` as "HH:mm". Absent = the scheduler picks the time. */
+  lockedTimes: Record<string, string>;
   packingItems: PackingItem[];
   addPlace: (slug: string) => void;
   removeFromPlan: (slug: string, containerId?: string) => void;
@@ -51,13 +70,50 @@ export interface TripState {
   setTravelers: (count: number) => void;
   setBudgetThb: (amount: number) => void;
   setAccommodationThb: (amount: number) => void;
+  setBaseLocation: (location: { lat: number; lng: number; label: string } | null) => void;
+  setTravelMode: (mode: TravelMode) => void;
+  setLockedTime: (dayId: string, slug: string, clock: string | null) => void;
   togglePackingItem: (id: string) => void;
   addPackingItem: (label: string) => void;
+  /** Adds a packing item by dictionary key (e.g. from a smart suggestion) so it re-localizes on locale switch, unlike free-text items. No-op if that key is already in the list. */
+  addPackingItemByKey: (labelKey: string) => void;
   removePackingItem: (id: string) => void;
 }
 
 function findContainer(containers: Record<string, string[]>, slug: string) {
   return Object.keys(containers).find((key) => containers[key].includes(slug));
+}
+
+function lockedTimeKey(dayId: string, slug: string): string {
+  return `${dayId}::${slug}`;
+}
+
+/**
+ * Derives the canonical, date-aware Trip shape (Phase 0.2) from the store's
+ * dayIds/containers — the shape the drag-and-drop UI actually persists to
+ * and reorders. Every later phase (routing, calendar, golden hour, pace
+ * meter) should read trip data through this snapshot rather than reaching
+ * into dayIds/containers directly, so the UI's storage shape stays free to
+ * evolve independently.
+ *
+ * plannedArrival/userLocked are derived from `lockedTimes`, set by dragging
+ * a stop on the Golden Hour timeline (Phase 3.3).
+ */
+export function buildTripSnapshot(state: TripState): Trip {
+  return {
+    id: "local-trip",
+    title: state.tripName,
+    startDate: state.travelDate || null,
+    baseLocation: state.baseLocation,
+    travelMode: state.travelMode,
+    days: state.dayIds.map((dayId, i) => ({
+      date: state.travelDate ? addDaysIso(state.travelDate, i) : null,
+      stops: (state.containers[dayId] ?? []).map((slug) => {
+        const locked = state.lockedTimes[lockedTimeKey(dayId, slug)] ?? null;
+        return { placeSlug: slug, plannedArrival: locked, userLocked: locked !== null };
+      }),
+    })),
+  };
 }
 
 export const useTripStore = create<TripState>()(
@@ -71,6 +127,9 @@ export const useTripStore = create<TripState>()(
       travelers: 2,
       budgetThb: 0,
       accommodationThb: 0,
+      baseLocation: null,
+      travelMode: "walk",
+      lockedTimes: {},
       packingItems: DEFAULT_PACKING_ITEMS,
 
       addPlace: (slug) => {
@@ -212,6 +271,17 @@ export const useTripStore = create<TripState>()(
       setTravelers: (travelers) => set({ travelers: Math.max(1, travelers) }),
       setBudgetThb: (budgetThb) => set({ budgetThb: Math.max(0, budgetThb) }),
       setAccommodationThb: (accommodationThb) => set({ accommodationThb: Math.max(0, accommodationThb) }),
+      setBaseLocation: (baseLocation) => set({ baseLocation }),
+      setTravelMode: (travelMode) => set({ travelMode }),
+
+      setLockedTime: (dayId, slug, clock) => {
+        const state = get();
+        const key = lockedTimeKey(dayId, slug);
+        const next = { ...state.lockedTimes };
+        if (clock === null) delete next[key];
+        else next[key] = clock;
+        set({ lockedTimes: next });
+      },
 
       togglePackingItem: (id) => {
         const state = get();
@@ -234,11 +304,21 @@ export const useTripStore = create<TripState>()(
         });
       },
 
+      addPackingItemByKey: (labelKey) => {
+        const state = get();
+        if (state.packingItems.some((item) => item.labelKey === labelKey)) return;
+        set({ packingItems: [...state.packingItems, { id: labelKey, labelKey, checked: false }] });
+      },
+
       removePackingItem: (id) => {
         const state = get();
         set({ packingItems: state.packingItems.filter((item) => item.id !== id) });
       },
     }),
-    { name: "doi-delta-trip-v2" }
+    {
+      name: "doi-delta-trip-v2",
+      version: SCHEMA_VERSION,
+      migrate: (persistedState) => persistedState as TripState,
+    }
   )
 );
