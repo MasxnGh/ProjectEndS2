@@ -46,6 +46,9 @@ export function DayColumn({
   highlighted,
   paceEaseLabel,
   onEasePace,
+  hoveredPlaceSlug,
+  onHoverPlace,
+  focusedItemId,
 }: {
   dayId: string;
   dayNumber: number;
@@ -59,6 +62,9 @@ export function DayColumn({
   highlighted?: boolean;
   paceEaseLabel?: string;
   onEasePace?: () => void;
+  hoveredPlaceSlug?: string | null;
+  onHoverPlace?: (slug: string | null) => void;
+  focusedItemId?: string | null;
 }) {
   const { locale, dict } = useLocale();
   const { showToast } = useToast();
@@ -134,7 +140,7 @@ export function DayColumn({
     <div
       id={dayId}
       className={cn(
-        "flex w-[300px] shrink-0 scroll-mx-6 flex-col rounded-lg border bg-surface transition-shadow duration-500",
+        "flex w-[380px] shrink-0 snap-start scroll-mx-6 flex-col rounded-lg border bg-surface transition-shadow duration-500 lg:w-[400px]",
         highlighted ? "border-accent shadow-[0_0_0_3px_var(--color-accent)]" : "border-border"
       )}
     >
@@ -190,12 +196,16 @@ export function DayColumn({
             return (
               <SortablePlaceItem
                 key={place.slug}
+                itemId={`${dayId}-${place.slug}`}
                 place={place}
                 index={i}
                 arrival={stop?.arrival}
                 departure={stop?.departure}
                 travelMinutesFromPrevious={stop?.travelMinutesFromPrevious}
                 outsideOpeningHours={stop?.outsideOpeningHours}
+                hovered={hoveredPlaceSlug === place.slug}
+                focused={focusedItemId === `${dayId}-${place.slug}`}
+                onHover={onHoverPlace}
                 onRemove={() => {
                   removeFromPlan(place.slug, dayId);
                   showToast({

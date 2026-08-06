@@ -6,7 +6,7 @@ import type { Place } from "@/data/types";
 import { places } from "@/data/places";
 import { PlaceMapLoader } from "@/components/map/place-map-loader";
 import { useLocale } from "@/components/providers/locale-provider";
-import { haversineKm } from "@/lib/geo";
+import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
 import { findNearby } from "@/lib/geo/nearby";
 import { estimateTravelMinutes } from "@/lib/trip-calculations";
 
@@ -71,7 +71,8 @@ export function CompareMap({ place }: { place: Place }) {
         {compared ? (
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Route className="h-3.5 w-3.5 shrink-0" />
-            {haversineKm(place.coordinates, compared.coordinates).toFixed(1)} km · ~
+            ~{estimateRoadDistanceKm(place.coordinates, compared.coordinates, terrainBetween(place, compared)).toFixed(1)} km
+            {" · ~"}
             {estimateTravelMinutes(place, compared)} {dict.common.minutes}
           </p>
         ) : null}

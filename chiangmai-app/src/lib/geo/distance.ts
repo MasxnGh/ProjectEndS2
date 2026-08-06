@@ -35,3 +35,16 @@ export const DETOUR_FACTORS: Record<TerrainType, number> = {
 export function estimateRoadDistanceKm(a: LatLng, b: LatLng, terrain: TerrainType = "urban"): number {
   return haversineKm(a, b) * DETOUR_FACTORS[terrain];
 }
+
+/**
+ * Only "mountain" vs "urban" is actually distinguished anywhere in this
+ * codebase today (an elevated endpoint implies switchback mountain roads);
+ * "suburban" exists in TerrainType/DETOUR_FACTORS for when a real basis for
+ * that middle tier shows up, but nothing currently sets it.
+ */
+export function terrainBetween(
+  a: { elevation?: number | null },
+  b: { elevation?: number | null }
+): TerrainType {
+  return a.elevation || b.elevation ? "mountain" : "urban";
+}

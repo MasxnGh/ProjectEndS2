@@ -1,5 +1,5 @@
 import turfCircle from "@turf/circle";
-import { haversineKm, estimateRoadDistanceKm, type TerrainType } from "@/lib/geo/distance";
+import { haversineKm, estimateRoadDistanceKm, terrainBetween, type TerrainType } from "@/lib/geo/distance";
 import { estimateTravelMinutes, AVG_SPEED_KMH } from "@/lib/geo/travelTime";
 import type {
   DirectionsResult,
@@ -10,18 +10,8 @@ import type {
   RoutingProvider,
 } from "../types";
 
-/**
- * Only "mountain" vs "urban" is actually distinguished anywhere in this
- * codebase today (an elevated endpoint implies switchback mountain roads);
- * "suburban" exists in TerrainType/DETOUR_FACTORS for when a real basis for
- * that middle tier shows up, but nothing currently sets it.
- */
 function terrainOf(point: RoutePoint): TerrainType {
   return point.elevation ? "mountain" : "urban";
-}
-
-function terrainBetween(a: RoutePoint, b: RoutePoint): TerrainType {
-  return a.elevation || b.elevation ? "mountain" : "urban";
 }
 
 /**

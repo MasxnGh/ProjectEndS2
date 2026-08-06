@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -15,12 +15,26 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { Calendar, Check, CloudSun, Compass, Copy, Plus, Printer, QrCode, Save } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  CloudSun,
+  Compass,
+  Copy,
+  Loader2,
+  MoreHorizontal,
+  Plus,
+  Printer,
+  QrCode,
+  Save,
+} from "lucide-react";
 import QRCode from "qrcode";
 import { places } from "@/data/places";
 import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
 import { useLocale } from "@/components/providers/locale-provider";
-import { dayStats } from "@/lib/trip-calculations";
+import { useMediaQuery } from "@/lib/use-media-query";
+import { categorySpendBreakdown, dayStats, estimateTripCostThb } from "@/lib/trip-calculations";
 import { PlanImportListener } from "@/components/planner/plan-import-listener";
 import { PlacePickerUrlSync } from "@/components/planner/place-picker-url-sync";
 import { PlacePickerPanel } from "@/components/planner/place-picker-panel";
@@ -39,6 +53,9 @@ import { SectionHeading } from "@/components/section-heading";
 import { SeasonalSmogBanner } from "@/components/weather/seasonal-smog-banner";
 import { FestivalBanner } from "@/components/planner/festival-banner";
 import { useToast } from "@/components/toast/toast-provider";
+import { useTripCloudSync } from "@/lib/planner/use-trip-cloud-sync";
+import { SignInPromptModal } from "@/components/auth/sign-in-prompt-modal";
+import { MigrationChoiceModal } from "@/components/planner/migration-choice-modal";
 import { cn } from "@/lib/utils";
 import { CHIANGMAI_CENTER } from "@/lib/geo";
 import { useWeatherBundle } from "@/lib/weather/use-weather";
@@ -62,15 +79,18 @@ export function PlannerBoard() {
   const dayIds = useTripStore((s) => s.dayIds);
   const containers = useTripStore((s) => s.containers);
   const addDay = useTripStore((s) => s.addDay);
+  const addPlace = useTripStore((s) => s.addPlace);
   const moveItem = useTripStore((s) => s.moveItem);
   const travelers = useTripStore((s) => s.travelers);
   const travelDate = useTripStore((s) => s.travelDate);
   const tripName = useTripStore((s) => s.tripName);
+  const accommodationThb = useTripStore((s) => s.accommodationThb);
 
   const [view, setView] = useState<"list" | "map" | "summary" | "timeline">("list");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
-  const [savedMessage, setSavedMessage] = useState(false);
   const [sharedMessage, setSharedMessage] = useState(false);
+  const [signInPromptOpen, setSignInPromptOpen] = useState(false);
+  const cloudSync = useTripCloudSync();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [reflowStatus, setReflowStatus] = useState<"idle" | "applied" | "noChange" | "needsDate">("idle");
   const [pickerDayId, setPickerDayId] = useState<string | null>(null);
@@ -78,6 +98,13 @@ export function PlannerBoard() {
   const pickerPushedRef = useRef(false);
   const [highlightedDayId, setHighlightedDayId] = useState<string | null>(null);
   const [dayFixSuggestion, setDayFixSuggestion] = useState<PlaceRelocation[] | null>(null);
+  const [hoveredPlaceSlug, setHoveredPlaceSlug] = useState<string | null>(null);
+  const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const [pickingBaseLocation, setPickingBaseLocation] = useState(false);
+  const setBaseLocation = useTripStore((s) => s.setBaseLocation);
 
   const weatherBundle = useWeatherBundle(CHIANGMAI_CENTER.lat, CHIANGMAI_CENTER.lng);
   const { showToast } = useToast();
@@ -114,13 +141,20 @@ export function PlannerBoard() {
         const stats = dayStats(day.places);
         return {
           minutes: acc.minutes + stats.totalMinutes,
-          budget: acc.budget + stats.budgetThb,
           places: acc.places + day.places.length,
         };
       },
-      { minutes: 0, budget: 0, places: 0 }
+      { minutes: 0, places: 0 }
     );
   }, [resolvedDays]);
+
+  // Single source of truth for "estimated cost" — Summary → Budget computes
+  // the exact same figure from the exact same categorySpendBreakdown, so the
+  // two never drift apart.
+  const estimatedCostThb = useMemo(
+    () => estimateTripCostThb(categorySpendBreakdown(resolvedDays), travelers, accommodationThb),
+    [resolvedDays, travelers, accommodationThb]
+  );
 
   const isEmpty = tripTotals.places === 0 && unscheduledPlaces.length === 0;
   const activePlace = activeSlug ? places.find((p) => p.slug === activeSlug) : null;
@@ -331,8 +365,78 @@ export function PlannerBoard() {
   }
 
   function handleSave() {
-    setSavedMessage(true);
-    setTimeout(() => setSavedMessage(false), 2500);
+    if (!cloudSync.isSignedIn) {
+      setSignInPromptOpen(true);
+      return;
+    }
+    cloudSync.requestSave();
+  }
+
+  function renderSaveAction() {
+    if (!cloudSync.isSignedIn || cloudSync.migrationDeclined) {
+      return (
+        <button
+          type="button"
+          onClick={handleSave}
+          className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
+        >
+          <Save className="h-4 w-4" />
+          {dict.planner.save}
+        </button>
+      );
+    }
+    if (cloudSync.saveStatus === "saving") {
+      return (
+        <span className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          {dict.planner.cloudSave.saving}
+        </span>
+      );
+    }
+    if (cloudSync.saveStatus === "failed") {
+      return (
+        <button
+          type="button"
+          onClick={cloudSync.requestSave}
+          className="flex items-center gap-1.5 rounded-full border border-destructive px-4 py-2 text-sm text-destructive hover:brightness-95"
+        >
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+          {dict.planner.cloudSave.failed}
+          <span className="underline underline-offset-2">{dict.planner.cloudSave.retry}</span>
+        </button>
+      );
+    }
+    return (
+      <span className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground">
+        <Check className="h-4 w-4" aria-hidden="true" />
+        {dict.planner.cloudSave.saved}
+      </span>
+    );
+  }
+
+  const EXAMPLE_TRIP_SLUGS = ["wat-phra-that-doi-suthep", "wat-chedi-luang", "wat-phra-singh"];
+
+  function handleStartFromExample() {
+    const targetDay = dayIds[0];
+    EXAMPLE_TRIP_SLUGS.forEach((slug, index) => {
+      addPlace(slug);
+      moveItem({ slug, toContainer: targetDay, toIndex: index });
+    });
+  }
+
+  function handleStartMapPin() {
+    setPickingBaseLocation(true);
+    if (!isDesktop) setView("map");
+  }
+
+  function handlePickLocation(lngLat: { lat: number; lng: number }) {
+    setBaseLocation({ lat: lngLat.lat, lng: lngLat.lng, label: dict.planner.baseLocation.pinnedLabel });
+    setPickingBaseLocation(false);
+    if (!isDesktop) setView("timeline");
+  }
+
+  function handleCancelPickLocation() {
+    setPickingBaseLocation(false);
   }
 
   function openPicker(targetDayId: string, trigger: HTMLElement) {
@@ -376,6 +480,39 @@ export function PlannerBoard() {
     }, 2500);
   }
 
+  // On desktop the map lives permanently in the sticky sidebar, so the "map" tab
+  // (a mobile/tablet-only fallback) shouldn't stay selected if the viewport grows
+  // past a resize while it was active.
+  useEffect(() => {
+    if (isDesktop && view === "map") setView("list");
+  }, [isDesktop, view]);
+
+  useEffect(() => {
+    if (!moreMenuOpen) return;
+    function handlePointerDown(event: MouseEvent) {
+      if (!moreMenuRef.current?.contains(event.target as Node)) setMoreMenuOpen(false);
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMoreMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [moreMenuOpen]);
+
+  /** A map pin was clicked: bring the itinerary tab forward and flash-highlight the matching place card. */
+  function handleSelectPlace(dayId: string, slug: string) {
+    setView("list");
+    const itemId = `${dayId}-${slug}`;
+    setFocusedItemId(itemId);
+    setTimeout(() => {
+      setFocusedItemId((current) => (current === itemId ? null : current));
+    }, 2500);
+  }
+
   return (
     <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
       <Suspense fallback={null}>
@@ -398,6 +535,14 @@ export function PlannerBoard() {
         onClose={closePicker}
         triggerRef={pickerTriggerRef}
       />
+      <SignInPromptModal open={signInPromptOpen} onClose={() => setSignInPromptOpen(false)} />
+      <MigrationChoiceModal
+        open={cloudSync.migrationPrompt !== null}
+        existingTripTitle={cloudSync.migrationPrompt?.existingTripTitle ?? ""}
+        onClose={cloudSync.dismissMigrationPrompt}
+        onSaveAsNew={cloudSync.resolveMigrationSaveAsNew}
+        onReplaceExisting={cloudSync.resolveMigrationReplaceExisting}
+      />
       <SectionHeading kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
 
       <div className="mt-8">
@@ -409,9 +554,10 @@ export function PlannerBoard() {
                   days: dayIds.length,
                   places: tripTotals.places,
                   minutes: tripTotals.minutes,
-                  budgetThb: tripTotals.budget * travelers,
+                  estimatedCostThb,
                 }
           }
+          actions={isEmpty ? undefined : renderSaveAction()}
         />
       </div>
 
@@ -421,23 +567,48 @@ export function PlannerBoard() {
       </div>
 
       {isEmpty ? (
-        <div className="mt-8 flex flex-col items-center gap-4 rounded-lg border border-dashed border-border-strong py-24 text-center">
+        <div className="mt-8 flex flex-col items-center gap-4 rounded-lg border border-dashed border-border-strong py-16 text-center">
           <Compass className="h-8 w-8 text-accent-text" />
           <h2 className="font-serif-display text-2xl">{dict.planner.emptyTitle}</h2>
           <p className="max-w-sm text-muted-foreground">{dict.planner.emptyBody}</p>
-          <button
-            type="button"
-            onClick={(event) => openPicker(dayIds[0], event.currentTarget)}
-            className="mt-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
-          >
-            {dict.planner.emptyCta}
-          </button>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={(event) => openPicker(dayIds[0], event.currentTarget)}
+              className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
+            >
+              {dict.planner.emptyCta}
+            </button>
+            <button
+              type="button"
+              onClick={handleStartFromExample}
+              className="rounded-full border border-border-strong px-6 py-3 text-sm font-medium hover:border-accent hover:text-accent-text"
+            >
+              {dict.planner.exampleTripCta}
+            </button>
+          </div>
           <Link
             href={`/${locale}/explore`}
             className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-accent-text hover:underline"
           >
             {dict.planner.exploreButton}
           </Link>
+
+          {/* Decorative preview of a finished day — purely illustrative, never announced to assistive tech. */}
+          <div className="mt-6 w-full max-w-xs select-none opacity-40" aria-hidden="true">
+            <div className="rounded-lg border border-dashed border-border-strong bg-surface p-4 text-left">
+              <p className="mb-3 font-serif-display text-sm">{dict.planner.day} 1</p>
+              {[0, 1].map((i) => (
+                <div key={i} className="mb-2 flex items-center gap-3 rounded-md border border-border bg-background p-2.5">
+                  <div className="h-10 w-10 shrink-0 rounded bg-surface-muted" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 w-3/4 rounded bg-surface-muted" />
+                    <div className="h-2 w-1/2 rounded bg-surface-muted" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <>
@@ -453,16 +624,18 @@ export function PlannerBoard() {
               >
                 {dict.planner.listView}
               </button>
-              <button
-                type="button"
-                onClick={() => setView("map")}
-                className={cn(
-                  "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
-                  view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )}
-              >
-                {dict.planner.mapView}
-              </button>
+              {isDesktop ? null : (
+                <button
+                  type="button"
+                  onClick={() => setView("map")}
+                  className={cn(
+                    "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
+                    view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                  )}
+                >
+                  {dict.planner.mapView}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => setView("summary")}
@@ -490,7 +663,7 @@ export function PlannerBoard() {
                 <button
                   type="button"
                   onClick={handleReflowByWeather}
-                  className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
+                  className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:brightness-95"
                 >
                   <CloudSun className="h-4 w-4" />
                   {dict.weather.planner.reflow.button}
@@ -509,7 +682,7 @@ export function PlannerBoard() {
                 <button
                   type="button"
                   onClick={handleFixDaysClick}
-                  className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
+                  className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:brightness-95"
                 >
                   <Calendar className="h-4 w-4" />
                   {dayFix.fixDays}
@@ -551,63 +724,93 @@ export function PlannerBoard() {
                   </div>
                 ) : null}
               </div>
-              <button
-                type="button"
-                onClick={handleSave}
-                className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
-              >
-                {savedMessage ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-                {savedMessage ? dict.planner.saved : dict.planner.save}
-              </button>
-              <button
-                type="button"
-                onClick={handleShare}
-                className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
-              >
-                {sharedMessage ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {sharedMessage ? dict.planner.shared : dict.planner.share}
-              </button>
-              <div className="relative">
+              <div className="relative" ref={moreMenuRef}>
                 <button
                   type="button"
-                  onClick={handleToggleQr}
-                  className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
+                  onClick={() => setMoreMenuOpen((open) => !open)}
+                  aria-haspopup="menu"
+                  aria-expanded={moreMenuOpen}
+                  aria-label={dict.planner.moreActions}
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-full border border-border hover:border-accent hover:text-accent-text",
+                    moreMenuOpen && "border-accent text-accent-text"
+                  )}
                 >
-                  <QrCode className="h-4 w-4" />
-                  {dict.planner.qr.button}
+                  <MoreHorizontal className="h-4 w-4" />
                 </button>
-                {qrDataUrl ? (
-                  <div className="absolute left-0 top-full z-10 mt-2 w-56 rounded-lg border border-border bg-background p-4 text-center shadow-lg">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- a base64 data URI has no benefit from next/image optimization */}
-                    <img src={qrDataUrl} alt={dict.planner.qr.imageAlt} width={200} height={200} className="mx-auto" />
-                    <p className="mt-2 text-xs text-foreground/70">{dict.planner.qr.hint}</p>
+                {moreMenuOpen ? (
+                  <div
+                    role="menu"
+                    aria-label={dict.planner.moreActions}
+                    className="absolute right-0 top-full z-10 mt-2 w-64 space-y-1 rounded-lg border border-border bg-background p-2 shadow-lg"
+                  >
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleShare}
+                      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+                    >
+                      {sharedMessage ? <Check className="h-4 w-4 shrink-0" /> : <Copy className="h-4 w-4 shrink-0" />}
+                      {sharedMessage ? dict.planner.shared : dict.planner.share}
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={handleToggleQr}
+                      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+                    >
+                      <QrCode className="h-4 w-4 shrink-0" />
+                      {dict.planner.qr.button}
+                    </button>
+                    {qrDataUrl ? (
+                      <div className="rounded-md border border-border p-3 text-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- a base64 data URI has no benefit from next/image optimization */}
+                        <img src={qrDataUrl} alt={dict.planner.qr.imageAlt} width={200} height={200} className="mx-auto" />
+                        <p className="mt-2 text-xs text-foreground/70">{dict.planner.qr.hint}</p>
+                      </div>
+                    ) : null}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMoreMenuOpen(false);
+                        window.print();
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+                    >
+                      <Printer className="h-4 w-4 shrink-0" />
+                      {dict.planner.print}
+                    </button>
                   </div>
                 ) : null}
               </div>
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="flex items-center gap-1.5 rounded-full border border-border px-4 py-2 text-sm hover:border-accent hover:text-accent-text"
-              >
-                <Printer className="h-4 w-4" />
-                {dict.planner.print}
-              </button>
             </div>
           </div>
 
-          <div className="print:hidden">
+          <div className="print:hidden lg:grid lg:grid-cols-5 lg:items-start lg:gap-8">
+          <div className="lg:col-span-3">
           {view === "summary" ? (
             <div className="mt-8">
               <SummaryView days={resolvedDays} />
             </div>
           ) : view === "map" ? (
             <div className="mt-8">
-              <PlannerMapLoader days={resolvedDays} />
+              <PlannerMapLoader
+                days={resolvedDays}
+                pickingLocation={pickingBaseLocation}
+                onPickLocation={handlePickLocation}
+                onCancelPickLocation={handleCancelPickLocation}
+              />
             </div>
           ) : view === "timeline" ? (
             <div className="mt-8">
-              <BaseLocationPicker className="max-w-xs" />
-              <div className="mt-6 flex gap-5 overflow-x-auto pb-4">
+              <BaseLocationPicker className="max-w-xs" onRequestMapPin={handleStartMapPin} />
+              <div
+                className={cn(
+                  "mt-6",
+                  resolvedDays.length > 1 ? "flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4" : ""
+                )}
+              >
                 {resolvedDays.map((day) => {
                   const forecast = dayForecasts.find((d) => d.dayId === day.id);
                   return (
@@ -618,6 +821,7 @@ export function PlannerBoard() {
                       date={forecast?.date ?? null}
                       places={day.places}
                       forecastEntry={forecast?.entry}
+                      fullWidth={resolvedDays.length === 1}
                     />
                   );
                 })}
@@ -634,7 +838,7 @@ export function PlannerBoard() {
                 <UnscheduledPanel places={unscheduledPlaces} />
               </div>
 
-              <div className="mt-8 flex gap-5 overflow-x-auto pb-4">
+              <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4">
                 {resolvedDays.map((day) => {
                   const forecast = dayForecasts.find((d) => d.dayId === day.id);
                   const showPaceEase = paceRelief?.fromDayId === day.id;
@@ -658,6 +862,9 @@ export function PlannerBoard() {
                       highlighted={highlightedDayId === day.id}
                       paceEaseLabel={paceEaseLabel}
                       onEasePace={showPaceEase ? handleEasePace : undefined}
+                      hoveredPlaceSlug={hoveredPlaceSlug}
+                      onHoverPlace={setHoveredPlaceSlug}
+                      focusedItemId={focusedItemId}
                     />
                   );
                 })}
@@ -687,6 +894,22 @@ export function PlannerBoard() {
               </DragOverlay>
             </DndContext>
           )}
+          </div>
+
+          {isDesktop ? (
+            <div className="sticky top-24 h-[calc(100dvh-7rem)] lg:col-span-2">
+              <PlannerMapLoader
+                days={resolvedDays}
+                className="h-full"
+                canvasOnly
+                hoveredSlug={hoveredPlaceSlug}
+                onSelectPlace={handleSelectPlace}
+                pickingLocation={pickingBaseLocation}
+                onPickLocation={handlePickLocation}
+                onCancelPickLocation={handleCancelPickLocation}
+              />
+            </div>
+          ) : null}
           </div>
 
           <NarrativeItinerary

@@ -5,7 +5,7 @@ import { Check, Plus, Snowflake, Sun, CloudRain, X } from "lucide-react";
 import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
-import { categorySpendBreakdown, formatMinutes, formatThb } from "@/lib/trip-calculations";
+import { categorySpendBreakdown, estimateTripCostThb, formatMinutes, formatThb } from "@/lib/trip-calculations";
 import { suggestPackingItems } from "@/lib/planner/packing-suggestions";
 import { compareVehicleModes } from "@/lib/planner/vehicle-comparison";
 import { cn } from "@/lib/utils";
@@ -37,14 +37,16 @@ function BudgetPanel({ days }: { days: { places: Place[] }[] }) {
   const entry = breakdown.entry * travelers;
   const food = breakdown.food * travelers;
   const transport = breakdown.transport;
-  const groupTotal = entry + food + transport;
-  const totalWithStay = groupTotal + accommodationThb;
+  // Same formula the top stats bar uses (lib/trip-calculations.ts) — these two numbers must never drift apart.
+  const totalWithStay = estimateTripCostThb(breakdown, travelers, accommodationThb);
+  const hasBudget = budgetThb > 0;
   const remaining = budgetThb - totalWithStay;
 
   const categories = [
     { key: "entry", label: t.categories.entry, amount: entry },
     { key: "transport", label: t.categories.transport, amount: transport },
     { key: "food", label: t.categories.food, amount: food },
+    ...(accommodationThb > 0 ? [{ key: "accommodation", label: t.accommodation, amount: accommodationThb }] : []),
   ];
 
   return (
@@ -52,7 +54,7 @@ function BudgetPanel({ days }: { days: { places: Place[] }[] }) {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div className="rounded-lg border border-border p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">{t.estimated}</p>
-          <p className="mt-1 font-serif-display text-2xl">{formatThb(totalWithStay)}</p>
+          <p className="mt-1 font-serif-display text-2xl">~{formatThb(totalWithStay)}</p>
         </div>
         <div className="rounded-lg border border-border p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">{t.setBudget}</p>
@@ -76,27 +78,21 @@ function BudgetPanel({ days }: { days: { places: Place[] }[] }) {
         <div
           className={cn(
             "rounded-lg border p-4",
-            budgetThb === 0
-              ? "border-border"
-              : remaining >= 0
-                ? "border-secondary bg-secondary/10"
-                : "border-destructive bg-destructive/10"
+            !hasBudget ? "border-border" : remaining >= 0 ? "border-secondary bg-secondary/10" : "border-destructive bg-destructive/10"
           )}
         >
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {budgetThb === 0 ? t.remaining : remaining >= 0 ? t.remaining : t.overBudget}
+            {!hasBudget || remaining >= 0 ? t.remaining : t.overBudget}
           </p>
-          <p className="mt-1 font-serif-display text-2xl">
-            {budgetThb === 0 ? "—" : formatThb(Math.abs(remaining))}
-          </p>
+          <p className="mt-1 font-serif-display text-2xl">{formatThb(hasBudget ? Math.abs(remaining) : 0)}</p>
         </div>
       </div>
 
-      {budgetThb === 0 ? <p className="text-sm text-muted-foreground">{t.noBudget}</p> : null}
+      {!hasBudget ? <p className="text-sm text-muted-foreground">{t.noBudget}</p> : null}
 
       <div className="space-y-3">
         {categories.map((c) => {
-          const percent = groupTotal > 0 ? Math.round((c.amount / groupTotal) * 100) : 0;
+          const percent = totalWithStay > 0 ? Math.round((c.amount / totalWithStay) * 100) : 0;
           return (
             <div key={c.key}>
               <div className="flex items-center justify-between text-sm">

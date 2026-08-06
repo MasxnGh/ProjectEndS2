@@ -11,6 +11,7 @@ import { Footer } from "@/components/footer";
 import { PwaRegister } from "@/components/pwa-register";
 import { locales, isLocale, getDictionary } from "@/i18n";
 import { SITE_URL } from "@/lib/site";
+import { AuthSessionProvider } from "@/components/providers/auth-session-provider";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -113,24 +114,26 @@ export default async function LocaleLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme")||"system";var r=t==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;document.documentElement.classList.add(r);document.documentElement.style.colorScheme=r;}catch(e){}})();`,
           }}
         />
-        <ThemeProvider>
-          <LocaleProvider locale={locale} dict={dict}>
-            <ToastProvider>
-              <SmoothScrollProvider>
-                <a
-                  href="#main-content"
-                  className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
-                >
-                  Skip to content
-                </a>
-                <NavBar />
-                <main id="main-content">{children}</main>
-                <Footer />
-                <PwaRegister />
-              </SmoothScrollProvider>
-            </ToastProvider>
-          </LocaleProvider>
-        </ThemeProvider>
+        <AuthSessionProvider>
+          <ThemeProvider>
+            <LocaleProvider locale={locale} dict={dict}>
+              <ToastProvider>
+                <SmoothScrollProvider>
+                  <a
+                    href="#main-content"
+                    className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
+                  >
+                    Skip to content
+                  </a>
+                  <NavBar />
+                  <main id="main-content">{children}</main>
+                  <Footer />
+                  <PwaRegister />
+                </SmoothScrollProvider>
+              </ToastProvider>
+            </LocaleProvider>
+          </ThemeProvider>
+        </AuthSessionProvider>
       </body>
     </html>
   );

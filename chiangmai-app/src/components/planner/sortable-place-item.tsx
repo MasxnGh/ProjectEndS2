@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ArrowRight, GripVertical, X } from "lucide-react";
@@ -20,6 +21,10 @@ export function SortablePlaceItem({
   departure,
   travelMinutesFromPrevious,
   outsideOpeningHours,
+  itemId,
+  hovered,
+  focused,
+  onHover,
 }: {
   place: Place;
   onRemove: () => void;
@@ -31,24 +36,43 @@ export function SortablePlaceItem({
   departure?: string;
   travelMinutesFromPrevious?: number;
   outsideOpeningHours?: boolean;
+  /** Unique id used to scroll this card into view when its map pin is clicked (see PlannerBoard's highlight sync). */
+  itemId?: string;
+  /** True while the matching map pin is hovered — mirrors the highlight back onto this card. */
+  hovered?: boolean;
+  /** True right after the matching map pin is clicked — scrolls into view and flashes briefly. */
+  focused?: boolean;
+  onHover?: (slug: string | null) => void;
 }) {
   const { locale, dict } = useLocale();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: place.slug,
   });
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
+  useEffect(() => {
+    if (focused) rootRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focused]);
+
   return (
     <div
-      ref={setNodeRef}
+      ref={(node) => {
+        setNodeRef(node);
+        rootRef.current = node;
+      }}
+      id={itemId}
       style={style}
+      onMouseEnter={() => onHover?.(place.slug)}
+      onMouseLeave={() => onHover?.(null)}
       className={cn(
-        "rounded-md border border-border bg-background no-print",
-        isDragging && "z-10 opacity-60 shadow-elevated"
+        "rounded-md border border-border bg-background no-print transition-shadow duration-300",
+        isDragging && "z-10 opacity-60 shadow-elevated",
+        (hovered || focused) && !isDragging && "border-accent shadow-[0_0_0_2px_var(--color-accent)]"
       )}
     >
       <div className="flex items-center gap-3 p-2.5">
@@ -77,18 +101,18 @@ export function SortablePlaceItem({
         />
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{place.name[locale]}</p>
-          <p className="truncate text-xs text-muted-foreground">
+          <p className="line-clamp-2 text-sm font-medium">{place.name[locale]}</p>
+          <p className="text-xs text-muted-foreground">
             {dict.common.districts[place.district]} · {place.openingHoursText[locale]}
           </p>
-          <p className="truncate text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {formatMinutes(place.durationMinutes)} · {formatThb(SPEND_ESTIMATE_THB[place.priceLevel])}{" "}
             {dict.planner.perPerson}
           </p>
           {arrival && departure ? (
             <p
               className={cn(
-                "truncate text-xs font-medium",
+                "text-xs font-medium",
                 outsideOpeningHours ? "text-destructive" : "text-accent-text"
               )}
             >
