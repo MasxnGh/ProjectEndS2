@@ -8,6 +8,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { UNSCHEDULED } from "@/lib/trip-store";
 import { useToast } from "@/components/toast/toast-provider";
+import { cn } from "@/lib/utils";
 
 export function UnscheduledPanel({ places }: { places: Place[] }) {
   const { dict } = useLocale();
@@ -22,16 +23,25 @@ export function UnscheduledPanel({ places }: { places: Place[] }) {
   const quickAddLabel = `${dict.planner.addTo} ${dict.planner.day} 1`;
   const t = dict.planner.toast;
 
+  const isEmpty = places.length === 0;
+
   return (
     <div className="rounded-lg border border-dashed border-border-strong bg-surface-muted/40 p-4">
-      <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-        {dict.planner.unscheduled}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          {dict.planner.unscheduled}
+        </p>
+        {isEmpty ? <p className="text-xs text-muted-foreground">{dict.planner.unscheduledBody}</p> : null}
+      </div>
       <div
         ref={setNodeRef}
-        className={`mt-3 grid min-h-[72px] grid-cols-1 gap-2 rounded-md transition-colors sm:grid-cols-2 lg:grid-cols-3 ${
+        className={cn(
+          "rounded-md transition-colors",
+          isEmpty
+            ? "mt-2 min-h-[20px]"
+            : "mt-3 grid min-h-[72px] grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3",
           isOver ? "bg-accent/10" : ""
-        }`}
+        )}
       >
         <SortableContext items={places.map((p) => p.slug)} strategy={rectSortingStrategy}>
           {places.map((place) => (
@@ -69,11 +79,6 @@ export function UnscheduledPanel({ places }: { places: Place[] }) {
             />
           ))}
         </SortableContext>
-        {places.length === 0 ? (
-          <p className="col-span-full p-3 text-center text-xs text-muted-foreground">
-            {dict.planner.unscheduledBody}
-          </p>
-        ) : null}
       </div>
     </div>
   );

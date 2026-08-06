@@ -1,6 +1,7 @@
 "use client";
 
-import { Users, Wallet } from "lucide-react";
+import type { ReactNode } from "react";
+import { Pencil, Users, Wallet } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { formatMinutes, formatThb } from "@/lib/trip-calculations";
@@ -10,10 +11,11 @@ interface TripStats {
   days: number;
   places: number;
   minutes: number;
-  budgetThb: number;
+  /** System-calculated estimate (entry + transport + food + accommodation) — distinct from the "Budget" field above, which is what the traveller typed in. */
+  estimatedCostThb: number;
 }
 
-export function TripDetailsForm({ stats }: { stats?: TripStats }) {
+export function TripDetailsForm({ stats, actions }: { stats?: TripStats; actions?: ReactNode }) {
   const { dict } = useLocale();
   const t = dict.planner.details;
 
@@ -43,17 +45,25 @@ export function TripDetailsForm({ stats }: { stats?: TripStats }) {
 
   return (
     <div className="rounded-lg border border-border bg-surface p-6">
-      <label htmlFor="trip-name" className="sr-only">
-        {t.tripName}
-      </label>
-      <input
-        id="trip-name"
-        type="text"
-        value={tripName}
-        onChange={(e) => setTripName(e.target.value)}
-        placeholder={t.tripNamePlaceholder}
-        className="w-full bg-transparent font-serif-display text-2xl outline-none placeholder:text-muted-foreground/60 sm:text-3xl"
-      />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <label htmlFor="trip-name" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {t.tripName}
+          </label>
+          <div className="mt-1.5 flex items-center gap-2 border-b border-border pb-1.5 focus-within:border-accent">
+            <input
+              id="trip-name"
+              type="text"
+              value={tripName}
+              onChange={(e) => setTripName(e.target.value)}
+              placeholder={t.tripNamePlaceholder}
+              className="w-full min-w-0 bg-transparent font-serif-display text-2xl outline-none placeholder:text-muted-foreground/60 sm:text-3xl"
+            />
+            <Pencil className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </div>
+        </div>
+        {actions ? <div className="shrink-0">{actions}</div> : null}
+      </div>
 
       <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div>
@@ -121,8 +131,8 @@ export function TripDetailsForm({ stats }: { stats?: TripStats }) {
             <p className="mt-1 font-serif-display text-xl">{formatMinutes(stats.minutes)}</p>
           </div>
           <div className="py-2 sm:py-0 sm:pl-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">{dict.planner.totalBudget}</p>
-            <p className="mt-1 font-serif-display text-xl text-accent-text">{formatThb(stats.budgetThb)}</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">{dict.planner.estimatedCost}</p>
+            <p className="mt-1 font-serif-display text-xl text-accent-text">~{formatThb(stats.estimatedCostThb)}</p>
           </div>
         </div>
       ) : null}

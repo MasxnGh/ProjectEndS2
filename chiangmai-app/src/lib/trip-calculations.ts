@@ -1,5 +1,6 @@
 import type { Place, PlaceCategory } from "@/data/types";
-import { haversineKm } from "@/lib/geo";
+import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
+import { estimateTravelMinutes as estimateRoadTravelMinutes } from "@/lib/geo/travelTime";
 
 export const SPEND_ESTIMATE_THB: Record<Place["priceLevel"], number> = {
   1: 250,
@@ -7,13 +8,11 @@ export const SPEND_ESTIMATE_THB: Record<Place["priceLevel"], number> = {
   3: 1800,
 };
 
-const AVG_SPEED_KMH = 22;
-const MIN_TRAVEL_MINUTES = 5;
 const TRANSPORT_THB_PER_KM = 8;
 
+/** Terrain-adjusted road-time estimate — same basis as schedule.ts/golden-hour.ts, so the day cards, budget, and Timeline never disagree. */
 export function estimateTravelMinutes(a: Place, b: Place) {
-  const km = haversineKm(a.coordinates, b.coordinates);
-  return Math.max(MIN_TRAVEL_MINUTES, Math.round((km / AVG_SPEED_KMH) * 60));
+  return estimateRoadTravelMinutes(a.coordinates, b.coordinates, terrainBetween(a, b));
 }
 
 export function dayStats(dayPlaces: Place[]) {
@@ -47,12 +46,29 @@ export function categorySpendBreakdown(days: { places: Place[] }[]) {
       else entry += spend;
     }
     for (let i = 0; i < day.places.length - 1; i++) {
-      const km = haversineKm(day.places[i].coordinates, day.places[i + 1].coordinates);
+      const a = day.places[i];
+      const b = day.places[i + 1];
+      const km = estimateRoadDistanceKm(a.coordinates, b.coordinates, terrainBetween(a, b));
       transport += Math.round(km * TRANSPORT_THB_PER_KM);
     }
   }
 
   return { entry, food, transport, total: entry + food + transport };
+}
+
+/**
+ * The one "estimated cost" figure shown across the planner — the top stats
+ * bar and Summary → Budget must both call this rather than adding up their
+ * own totals, or the two numbers drift apart. Entry/food scale per
+ * traveller; transport is a shared ride/vehicle cost, not per-person;
+ * accommodation is the flat amount the user typed in.
+ */
+export function estimateTripCostThb(
+  breakdown: { entry: number; food: number; transport: number },
+  travelers: number,
+  accommodationThb: number
+): number {
+  return (breakdown.entry + breakdown.food) * travelers + breakdown.transport + accommodationThb;
 }
 
 export function formatMinutes(minutes: number) {

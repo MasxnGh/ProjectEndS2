@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Trip, TravelMode } from "@/data/types";
+import type { TripWritablePayload } from "@/lib/db/types";
 import { addDaysIso } from "@/lib/date-utils";
 
 export const UNSCHEDULED = "unscheduled";
@@ -49,6 +50,12 @@ export interface TripState {
   /** User-pinned arrival times set by dragging a stop on the Golden Hour timeline, keyed by `${dayId}::${slug}` as "HH:mm". Absent = the scheduler picks the time. */
   lockedTimes: Record<string, string>;
   packingItems: PackingItem[];
+  /** The cloud trip this device is syncing to, once signed in — null while the plan only exists locally (guest, or signed-out-and-detached). Persisted so returning to the page keeps syncing the same trip instead of creating a duplicate. */
+  remoteTripId: string | null;
+  /** The server's `updatedAt` as of the last successful sync — sent back as `expectedUpdatedAt` on the next write so the API can detect a conflicting edit from another tab/device. */
+  remoteUpdatedAt: string | null;
+  /** Autosave status for the cloud-sync indicator. Deliberately NOT persisted (see partialize below) — a stale "saving"/"failed" surviving a refresh would be misleading; the next debounce cycle re-derives it within ~1.5s anyway. */
+  saveStatus: "idle" | "saving" | "saved" | "failed";
   addPlace: (slug: string) => void;
   removeFromPlan: (slug: string, containerId?: string) => void;
   isPlanned: (slug: string) => boolean;
@@ -78,6 +85,10 @@ export interface TripState {
   /** Adds a packing item by dictionary key (e.g. from a smart suggestion) so it re-localizes on locale switch, unlike free-text items. No-op if that key is already in the list. */
   addPackingItemByKey: (labelKey: string) => void;
   removePackingItem: (id: string) => void;
+  setRemoteTripMeta: (id: string | null, updatedAt: string | null) => void;
+  setSaveStatus: (status: TripState["saveStatus"]) => void;
+  /** Detaches this device's plan from whatever cloud trip it was syncing to, without touching the local plan content — used on sign-out (so a different account signing in later doesn't sync over someone else's trip) and defensively if the server reports the remote trip no longer belongs to the current session. */
+  detachRemoteTrip: () => void;
 }
 
 function findContainer(containers: Record<string, string[]>, slug: string) {
@@ -99,7 +110,12 @@ function lockedTimeKey(dayId: string, slug: string): string {
  * plannedArrival/userLocked are derived from `lockedTimes`, set by dragging
  * a stop on the Golden Hour timeline (Phase 3.3).
  */
-export function buildTripSnapshot(state: TripState): Trip {
+type SnapshotSource = Pick<
+  TripState,
+  "tripName" | "travelDate" | "baseLocation" | "travelMode" | "dayIds" | "containers" | "lockedTimes"
+>;
+
+export function buildTripSnapshot(state: SnapshotSource): Trip {
   return {
     id: "local-trip",
     title: state.tripName,
@@ -113,6 +129,36 @@ export function buildTripSnapshot(state: TripState): Trip {
         return { placeSlug: slug, plannedArrival: locked, userLocked: locked !== null };
       }),
     })),
+  };
+}
+
+/**
+ * The subset of the snapshot the cloud API accepts, built from the same
+ * source of truth as buildTripSnapshot so autosave can never drift from
+ * what the UI actually shows.
+ *
+ * Both this and buildTripSnapshot take a narrow Pick<TripState, ...> —
+ * deliberately not the full TripState — so callers can build the argument
+ * from individually-selected Zustand fields instead of `useTripStore(state
+ * => buildWritableTripPayload(state))`. That selector form returns a brand
+ * new object every call, and Zustand's useSyncExternalStore-backed hook
+ * treats that as "the snapshot always changed," which is an infinite
+ * render loop, not a lint nitpick — see use-trip-cloud-sync.ts.
+ */
+export function buildWritableTripPayload(
+  state: SnapshotSource & Pick<TripState, "travelers" | "budgetThb" | "accommodationThb" | "packingItems">
+): TripWritablePayload {
+  const snapshot = buildTripSnapshot(state);
+  return {
+    title: snapshot.title,
+    startDate: snapshot.startDate,
+    baseLocation: snapshot.baseLocation,
+    days: snapshot.days,
+    travelMode: snapshot.travelMode,
+    travelers: state.travelers,
+    budgetThb: state.budgetThb,
+    accommodationThb: state.accommodationThb,
+    packingItems: state.packingItems,
   };
 }
 
@@ -131,6 +177,9 @@ export const useTripStore = create<TripState>()(
       travelMode: "walk",
       lockedTimes: {},
       packingItems: DEFAULT_PACKING_ITEMS,
+      remoteTripId: null,
+      remoteUpdatedAt: null,
+      saveStatus: "idle",
 
       addPlace: (slug) => {
         const state = get();
@@ -314,11 +363,23 @@ export const useTripStore = create<TripState>()(
         const state = get();
         set({ packingItems: state.packingItems.filter((item) => item.id !== id) });
       },
+
+      setRemoteTripMeta: (id, updatedAt) => set({ remoteTripId: id, remoteUpdatedAt: updatedAt }),
+      setSaveStatus: (saveStatus) => set({ saveStatus }),
+      detachRemoteTrip: () => set({ remoteTripId: null, remoteUpdatedAt: null }),
     }),
     {
       name: "doi-delta-trip-v2",
       version: SCHEMA_VERSION,
       migrate: (persistedState) => persistedState as TripState,
+      // saveStatus is UI-only and would be misleading if it survived a reload
+      // mid-save; everything else — including remoteTripId/remoteUpdatedAt —
+      // persists as normal.
+      partialize: (state) => {
+        const { saveStatus: _saveStatus, ...persisted } = state;
+        void _saveStatus;
+        return persisted;
+      },
     }
   )
 );

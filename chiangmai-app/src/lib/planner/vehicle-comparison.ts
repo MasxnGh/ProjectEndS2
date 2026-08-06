@@ -1,5 +1,5 @@
 import type { Place, TravelMode } from "@/data/types";
-import { estimateRoadDistanceKm, type TerrainType } from "@/lib/geo/distance";
+import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
 
 /**
  * Typical Chiang Mai transport speeds/fares as of the mid-2020s —
@@ -23,10 +23,6 @@ const BIKE_RENTAL_PER_DAY_THB = 200;
 const BIKE_FUEL_PER_KM_THB = 1.5;
 const CAR_RENTAL_PER_DAY_THB = 900;
 const CAR_FUEL_PER_KM_THB = 3;
-
-function terrainBetween(a: Place, b: Place): TerrainType {
-  return a.elevation || b.elevation ? "mountain" : "urban";
-}
 
 export interface VehicleComparisonRow {
   mode: TravelMode;

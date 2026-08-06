@@ -1,5 +1,5 @@
 import type { Place } from "@/data/types";
-import { haversineKm, type TerrainType } from "@/lib/geo/distance";
+import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
 import { estimateTravelMinutes } from "@/lib/geo/travelTime";
 import { optimizeRoute } from "@/lib/geo/route";
 import { isOutsideHours } from "@/lib/opening-hours";
@@ -19,7 +19,7 @@ export interface ScheduleStop {
 export interface DaySchedule {
   order: Place[];
   stops: ScheduleStop[];
-  /** Straight-line total — the same metric optimizeRoute minimizes, kept comparable between before/after. */
+  /** Terrain-adjusted road-distance estimate (Haversine × detour factor) — same basis as travelMinutesFromPrevious, so before/after comparisons and every other distance shown in the planner stay on one scale. */
   totalDistanceKm: number;
   totalTravelMinutes: number;
   totalVisitMinutes: number;
@@ -33,10 +33,6 @@ export interface OptimizationComparison {
   distanceSavedKm: number;
   minutesSaved: number;
   changed: boolean;
-}
-
-function terrainBetween(a: Place, b: Place): TerrainType {
-  return a.elevation || b.elevation ? "mountain" : "urban";
 }
 
 function clockToMinutes(clock: string): number {
@@ -72,8 +68,9 @@ export function buildSchedule(order: Place[], dayStartClock: string = DEFAULT_DA
     let travelMinutes = 0;
     if (i > 0) {
       const prev = order[i - 1];
-      travelMinutes = estimateTravelMinutes(prev.coordinates, place.coordinates, terrainBetween(prev, place));
-      totalDistanceKm += haversineKm(prev.coordinates, place.coordinates);
+      const terrain = terrainBetween(prev, place);
+      travelMinutes = estimateTravelMinutes(prev.coordinates, place.coordinates, terrain);
+      totalDistanceKm += estimateRoadDistanceKm(prev.coordinates, place.coordinates, terrain);
       cursor += travelMinutes;
     }
     const arrivalMinutes = cursor;

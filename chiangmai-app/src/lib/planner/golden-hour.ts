@@ -1,6 +1,7 @@
 import type { GoldenHourType, Place, TimeWindow } from "@/data/types";
 import type { DailyForecastEntry } from "@/lib/weather/types";
-import type { LatLng, TerrainType } from "@/lib/geo/distance";
+import type { LatLng } from "@/lib/geo/distance";
+import { terrainBetween } from "@/lib/geo/distance";
 import { estimateTravelMinutes } from "@/lib/geo/travelTime";
 import { clockToMinutes, isOutsideHours } from "@/lib/opening-hours";
 import { calculateSunTimes } from "@/lib/planner/sun";
@@ -64,10 +65,6 @@ export function pickAnchorWindow(place: Place, sun: SunTimes): AnchorWindow | nu
   if (place.bestTimeWindows.length === 0) return null;
   const best = [...place.bestTimeWindows].sort((a, b) => QUALITY_RANK[b.quality] - QUALITY_RANK[a.quality])[0];
   return { ...resolveWindowMinutes(best, sun), quality: best.quality };
-}
-
-function terrainBetween(a: { elevation: number | null }, b: { elevation: number | null }): TerrainType {
-  return a.elevation || b.elevation ? "mountain" : "urban";
 }
 
 function overlaps(aStart: number, aEnd: number, bStart: number, bEnd: number): boolean {
