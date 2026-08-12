@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Trip, TravelMode } from "@/data/types";
@@ -369,6 +370,9 @@ export const useTripStore = create<TripState>()(
       detachRemoteTrip: () => set({ remoteTripId: null, remoteUpdatedAt: null }),
     }),
     {
+      // Keeps the pre-rename key on purpose: this is a localStorage address,
+      // not a display name, and changing it would orphan the saved trip of
+      // every visitor who already has one. Leave it as-is.
       name: "doi-delta-trip-v2",
       version: SCHEMA_VERSION,
       migrate: (persistedState) => persistedState as TripState,
@@ -383,3 +387,28 @@ export const useTripStore = create<TripState>()(
     }
   )
 );
+
+/**
+ * True once zustand's persist middleware has read localStorage.
+ *
+ * A server render never has the saved trip, so it always draws the "not in your
+ * plan" state. The persist middleware, meanwhile, rehydrates synchronously as
+ * soon as the store module loads in the browser — so without this gate the very
+ * first client render of any component reading planned state disagrees with the
+ * HTML that was sent, React discards the whole SSR tree, and the page re-renders
+ * from scratch with a hydration error.
+ *
+ * `useSyncExternalStore` is the right shape for it: `getServerSnapshot` pins the
+ * initial client render to the server's answer (false), and React re-reads the
+ * live snapshot straight after hydrating.
+ */
+// Hoisted so their identity is stable — useSyncExternalStore resubscribes
+// whenever `subscribe` changes, which an inline arrow would do every render.
+const subscribeToHydration = (onStoreChange: () => void) =>
+  useTripStore.persist.onFinishHydration(onStoreChange);
+const getHydrationSnapshot = () => useTripStore.persist.hasHydrated();
+const getHydrationServerSnapshot = () => false;
+
+export function useTripStoreHydrated() {
+  return useSyncExternalStore(subscribeToHydration, getHydrationSnapshot, getHydrationServerSnapshot);
+}

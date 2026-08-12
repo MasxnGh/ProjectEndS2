@@ -6,7 +6,16 @@ import { buildPageMetadata } from "@/lib/seo";
 import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
 import { ExploreClient } from "./explore-client";
 
-const CATEGORIES: PlaceCategory[] = ["temple", "nature", "village", "cafe", "market", "activity"];
+const CATEGORIES: PlaceCategory[] = [
+  "temple",
+  "nature",
+  "village",
+  "cafe",
+  "restaurant",
+  "market",
+  "museum",
+  "activity",
+];
 
 function isPlaceCategory(value: string | undefined): value is PlaceCategory {
   return Boolean(value) && (CATEGORIES as string[]).includes(value as string);

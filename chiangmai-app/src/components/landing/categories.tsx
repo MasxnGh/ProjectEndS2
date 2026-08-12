@@ -14,7 +14,9 @@ const categoryList: { category: PlaceCategory; seed: number }[] = [
   { category: "nature", seed: 3 },
   { category: "village", seed: 2 },
   { category: "cafe", seed: 4 },
+  { category: "restaurant", seed: 6 },
   { category: "market", seed: 5 },
+  { category: "museum", seed: 2 },
   { category: "activity", seed: 6 },
 ];
 
@@ -38,7 +40,7 @@ export function Categories() {
         </Reveal>
       </div>
 
-      <RevealGroup className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5">
+      <RevealGroup className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
         {categoryList.map(({ category, seed }) => (
           <motion.div key={category} variants={revealItemVariants}>
             <Link
@@ -48,7 +50,7 @@ export function Categories() {
               <PlaceImage
                 category={category}
                 paletteSeed={seed}
-                sizes="(max-width: 768px) 50vw, 33vw"
+                sizes="(max-width: 768px) 50vw, 25vw"
                 quality={70}
                 className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-110"
               />

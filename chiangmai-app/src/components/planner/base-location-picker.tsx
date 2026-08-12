@@ -48,16 +48,24 @@ export function BaseLocationPicker({
   const baseLocation = useTripStore((s) => s.baseLocation);
   const setBaseLocation = useTripStore((s) => s.setBaseLocation);
 
-  const [query, setQuery] = useState(baseLocation?.label ?? "");
+  const savedLabel = baseLocation?.label ?? "";
+  const [query, setQuery] = useState(savedLabel);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const inputId = useId();
   const listboxId = useId();
 
-  useEffect(() => {
-    if (!isOpen) setQuery(baseLocation?.label ?? "");
-  }, [baseLocation, isOpen]);
+  // A closed input always shows the saved base location, so it has to catch up
+  // both when the dropdown closes over half-typed text and when the location
+  // changes from outside this component (a map pin drop, a cleared trip).
+  // Adjusted during render rather than in an effect, per
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [lastSync, setLastSync] = useState({ savedLabel, isOpen });
+  if (lastSync.savedLabel !== savedLabel || lastSync.isOpen !== isOpen) {
+    setLastSync({ savedLabel, isOpen });
+    if (!isOpen) setQuery(savedLabel);
+  }
 
   useEffect(() => {
     if (!isOpen) return;
@@ -127,7 +135,7 @@ export function BaseLocationPicker({
       if (isOpen) {
         event.preventDefault();
         setIsOpen(false);
-        setQuery(baseLocation?.label ?? "");
+        setQuery(savedLabel);
       }
     }
   }

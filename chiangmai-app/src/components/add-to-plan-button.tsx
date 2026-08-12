@@ -2,12 +2,15 @@
 
 import { Check, Plus } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
-import { useTripStore } from "@/lib/trip-store";
+import { useTripStore, useTripStoreHydrated } from "@/lib/trip-store";
 import { cn } from "@/lib/utils";
 
 export function AddToPlanButton({ slug, className }: { slug: string; className?: string }) {
   const { dict } = useLocale();
-  const isPlanned = useTripStore((s) => s.isPlanned(slug));
+  // Held at the server's answer until the persisted trip has rehydrated — see
+  // useTripStoreHydrated.
+  const hydrated = useTripStoreHydrated();
+  const isPlanned = useTripStore((s) => s.isPlanned(slug)) && hydrated;
   const addPlace = useTripStore((s) => s.addPlace);
   const removeFromPlan = useTripStore((s) => s.removeFromPlan);
 

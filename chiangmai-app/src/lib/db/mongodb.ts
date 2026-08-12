@@ -12,7 +12,6 @@ import { MongoClient } from "mongodb";
  * recommends for exactly this reason.
  */
 declare global {
-  // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 

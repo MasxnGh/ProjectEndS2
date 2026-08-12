@@ -3,6 +3,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import MapGL, { Marker, Popup, NavigationControl, Source, Layer, type MapRef } from "react-map-gl/maplibre";
+import { useReducedMotion } from "motion/react";
 import { ExternalLink, MapPin } from "lucide-react";
 import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -56,14 +57,20 @@ function DayRouteLayer({ day, color }: { day: TripDay; color: string }) {
   // Draws the line in progressively rather than popping in fully-formed —
   // restarts whenever the underlying route changes (e.g. the Haversine
   // placeholder upgrading to a real routed polyline once it resolves).
-  const [drawProgress, setDrawProgress] = useState(0);
+  const shouldReduceMotion = useReducedMotion();
+  const [drawProgress, setDrawProgress] = useState(shouldReduceMotion ? 1 : 0);
+
+  // Rewinding on a new route is a reset of existing state, not a side effect —
+  // done during render so the old line never paints against the new geometry.
+  // See https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [drawnCoordinates, setDrawnCoordinates] = useState(fullCoordinates);
+  if (drawnCoordinates !== fullCoordinates) {
+    setDrawnCoordinates(fullCoordinates);
+    setDrawProgress(shouldReduceMotion ? 1 : 0);
+  }
+
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setDrawProgress(1);
-      return;
-    }
-    setDrawProgress(0);
+    if (shouldReduceMotion) return;
     const DURATION_MS = 900;
     const start = performance.now();
     let frame: number;
@@ -74,7 +81,7 @@ function DayRouteLayer({ day, color }: { day: TripDay; color: string }) {
     }
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [fullCoordinates]);
+  }, [fullCoordinates, shouldReduceMotion]);
 
   const routeGeoJson = useMemo(() => {
     return {

@@ -28,6 +28,7 @@ import {
   Printer,
   QrCode,
   Save,
+  Sparkles,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { places } from "@/data/places";
@@ -44,6 +45,7 @@ import { DayColumn } from "@/components/planner/day-column";
 import { DayTimeline } from "@/components/planner/day-timeline";
 import { NarrativeItinerary } from "@/components/planner/narrative-itinerary";
 import { BaseLocationPicker } from "@/components/planner/base-location-picker";
+import { AiPlannerPanel } from "@/components/planner/ai-planner-panel";
 import { PlannerMapLoader } from "@/components/planner/planner-map-loader";
 import { TripDetailsForm } from "@/components/planner/trip-details-form";
 import { SummaryView } from "@/components/planner/summary-view";
@@ -71,7 +73,7 @@ function findContainerOf(containers: Record<string, string[]>, slug: string) {
   return Object.keys(containers).find((key) => containers[key].includes(slug));
 }
 
-export function PlannerBoard() {
+export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
   const { locale, dict } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -86,7 +88,7 @@ export function PlannerBoard() {
   const tripName = useTripStore((s) => s.tripName);
   const accommodationThb = useTripStore((s) => s.accommodationThb);
 
-  const [view, setView] = useState<"list" | "map" | "summary" | "timeline">("list");
+  const [selectedView, setView] = useState<"list" | "map" | "summary" | "timeline">("list");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [sharedMessage, setSharedMessage] = useState(false);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
@@ -101,8 +103,14 @@ export function PlannerBoard() {
   const [hoveredPlaceSlug, setHoveredPlaceSlug] = useState<string | null>(null);
   const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement | null>(null);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  // On desktop the map lives permanently in the sticky sidebar, so the "map"
+  // tab — a mobile/tablet-only fallback — must not stay selected if the
+  // viewport grows past the breakpoint while it was active. Derived rather than
+  // corrected after the fact, so the invalid combination never renders at all.
+  const view = isDesktop && selectedView === "map" ? "list" : selectedView;
   const [pickingBaseLocation, setPickingBaseLocation] = useState(false);
   const setBaseLocation = useTripStore((s) => s.setBaseLocation);
 
@@ -480,13 +488,6 @@ export function PlannerBoard() {
     }, 2500);
   }
 
-  // On desktop the map lives permanently in the sticky sidebar, so the "map" tab
-  // (a mobile/tablet-only fallback) shouldn't stay selected if the viewport grows
-  // past a resize while it was active.
-  useEffect(() => {
-    if (isDesktop && view === "map") setView("list");
-  }, [isDesktop, view]);
-
   useEffect(() => {
     if (!moreMenuOpen) return;
     function handlePointerDown(event: MouseEvent) {
@@ -566,16 +567,44 @@ export function PlannerBoard() {
         <SeasonalSmogBanner referenceDate={travelDate} />
       </div>
 
+      {/* Outside the empty/non-empty split on purpose: the panel is reachable
+          from both the empty state and the toolbar, and rendering it inline
+          rather than as a floating dropdown gives the multi-day preview the
+          full width it needs. */}
+      {aiEnabled && aiPanelOpen ? (
+        <div className="print:hidden">
+          <AiPlannerPanel onClose={() => setAiPanelOpen(false)} />
+        </div>
+      ) : null}
+
       {isEmpty ? (
         <div className="mt-8 flex flex-col items-center gap-4 rounded-lg border border-dashed border-border-strong py-16 text-center">
           <Compass className="h-8 w-8 text-accent-text" />
           <h2 className="font-serif-display text-2xl">{dict.planner.emptyTitle}</h2>
           <p className="max-w-sm text-muted-foreground">{dict.planner.emptyBody}</p>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+            {/* The AI planner is at its most useful from a blank plan, so it
+                gets an entry point here too — the toolbar copy only appears
+                once a plan exists, which is exactly when it's needed least. */}
+            {aiEnabled ? (
+              <button
+                type="button"
+                onClick={() => setAiPanelOpen(true)}
+                className="flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
+              >
+                <Sparkles className="h-4 w-4" />
+                {dict.planner.ai.button}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={(event) => openPicker(dayIds[0], event.currentTarget)}
-              className="rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground"
+              className={cn(
+                "rounded-full px-6 py-3 text-sm font-medium",
+                aiEnabled
+                  ? "border border-border-strong hover:border-accent hover:text-accent-text"
+                  : "bg-accent text-accent-foreground"
+              )}
             >
               {dict.planner.emptyCta}
             </button>
@@ -659,6 +688,22 @@ export function PlannerBoard() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {aiEnabled ? (
+                <button
+                  type="button"
+                  onClick={() => setAiPanelOpen((open) => !open)}
+                  aria-expanded={aiPanelOpen}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                    aiPanelOpen
+                      ? "border-accent bg-accent text-accent-foreground"
+                      : "border-accent text-accent-text hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {dict.planner.ai.button}
+                </button>
+              ) : null}
               <div className="relative">
                 <button
                   type="button"

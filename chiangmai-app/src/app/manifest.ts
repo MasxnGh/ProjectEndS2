@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Doi & Delta — Chiang Mai Trip Planner",
-    short_name: "Doi & Delta",
+    name: "Chiangmai Journey — Chiang Mai Trip Planner",
+    short_name: "Chiangmai Journey",
     description: "An editorial guide and trip planner for Chiang Mai, Thailand.",
     start_url: "/",
     scope: "/",

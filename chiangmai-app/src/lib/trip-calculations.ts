@@ -31,7 +31,9 @@ export function dayStats(dayPlaces: Place[]) {
 }
 
 function categoryBucket(category: PlaceCategory): "entry" | "food" {
-  return category === "market" || category === "cafe" ? "food" : "entry";
+  return category === "market" || category === "cafe" || category === "restaurant"
+    ? "food"
+    : "entry";
 }
 
 export function categorySpendBreakdown(days: { places: Place[] }[]) {

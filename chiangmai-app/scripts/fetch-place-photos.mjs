@@ -22,37 +22,38 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const places = [
-  { slug: "wat-phra-that-doi-suthep", query: "Wat Phra That Doi Suthep Chiang Mai golden temple" },
-  { slug: "wat-chedi-luang", query: "Wat Chedi Luang Chiang Mai ruined temple" },
-  { slug: "wat-phra-singh", query: "Wat Phra Singh Chiang Mai temple" },
-  { slug: "wat-umong", query: "Wat Umong Chiang Mai forest temple tunnel" },
-  { slug: "wat-sri-suphan", query: "silver temple Chiang Mai Wua Lai" },
-  { slug: "wat-suan-dok", query: "Wat Suan Dok Chiang Mai white chedi sunset" },
-  { slug: "doi-inthanon", query: "Doi Inthanon Thailand mountain chedi" },
-  { slug: "bua-tong-sticky-waterfall", query: "sticky waterfall Chiang Mai Bua Tong" },
-  { slug: "chiang-mai-grand-canyon", query: "Chiang Mai grand canyon water park" },
-  { slug: "doi-pui", query: "Doi Pui Hmong village Chiang Mai" },
-  { slug: "mon-cham", query: "Mon Cham Chiang Mai mountain fog" },
-  { slug: "huay-tung-tao", query: "Huay Tung Tao lake Chiang Mai" },
-  { slug: "mae-kampong", query: "Mae Kampong village Chiang Mai mountain" },
-  { slug: "baan-tawai", query: "wood carving village Thailand craft" },
-  { slug: "wua-lai-silver-village", query: "Wua Lai silversmith Chiang Mai" },
-  { slug: "nimmanhaemin", query: "Nimman Chiang Mai cafe street" },
-  { slug: "riverside-ping", query: "Ping river Chiang Mai restaurant evening" },
-  { slug: "old-city-coffee-trail", query: "specialty coffee shop Thailand" },
-  { slug: "ban-kang-wat", query: "artisan village Chiang Mai ceramics" },
-  { slug: "sunday-walking-street-thapae", query: "Chiang Mai walking street night market" },
-  { slug: "saturday-walking-street-wualai", query: "Chiang Mai night market street food" },
-  { slug: "warorot-market", query: "Warorot market Chiang Mai" },
-  { slug: "night-bazaar", query: "Chiang Mai night bazaar" },
-  { slug: "thai-cooking-class", query: "Thai cooking class market herbs" },
-  { slug: "thai-massage-spa", query: "Thai massage spa herbal" },
-  { slug: "ethical-elephant-sanctuary", query: "elephant sanctuary Thailand river" },
+// Place photo targets come from the data itself: any Place with a `photoQuery`
+// is fetched, anything without one keeps <PlaceImage>'s illustrated fallback.
+// That field is deliberately absent for named businesses (cafés, restaurants) —
+// a stock photo of "Thai coffee shop" captioned as a specific café misleads the
+// visitor. Node has no TS loader here, so the fields are read with a regex, the
+// same approach generate-blur-placeholders.mjs takes with photo-manifest.ts.
+async function readPlacePhotoTargets() {
+  const dir = path.join(ROOT, "src", "data", "places");
+  const targets = [];
+  for (const file of (await fs.readdir(dir)).filter((f) => f.endsWith(".ts"))) {
+    const source = await fs.readFile(path.join(dir, file), "utf8");
+    let slug = null;
+    for (const line of source.split("\n")) {
+      const slugMatch = line.match(/^ {4}slug: "([^"]+)",$/);
+      if (slugMatch) slug = slugMatch[1];
+      const queryMatch = line.match(/^ {4}photoQuery: "(.+)",$/);
+      if (queryMatch && slug) {
+        targets.push({ slug, query: queryMatch[1] });
+        slug = null;
+      }
+    }
+  }
+  return targets;
+}
+
+const guides = [
   { slug: "48-hours-in-nimman", query: "Nimman Chiang Mai coffee shop", kind: "guides" },
   { slug: "cafe-hopping-route", query: "Thailand coffee roastery pour over", kind: "guides" },
   { slug: "temples-of-the-old-city", query: "Chiang Mai old city temple walk", kind: "guides" },
 ];
+
+const places = [...(await readPlacePhotoTargets()), ...guides];
 
 async function searchPexels(query) {
   const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`;

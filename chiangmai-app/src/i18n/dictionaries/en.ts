@@ -1,8 +1,8 @@
 const en = {
   meta: {
-    siteName: "Doi & Delta",
+    siteName: "Chiangmai Journey",
     tagline: "Chiang Mai, curated.",
-    titleSuffix: "Doi & Delta — Chiang Mai",
+    titleSuffix: "Chiangmai Journey — Chiang Mai",
   },
   nav: {
     home: "Home",
@@ -17,7 +17,7 @@ const en = {
     signIn: "Sign in",
     login: {
       kicker: "Your account",
-      title: "Sign in to Doi & Delta",
+      title: "Sign in to Chiangmai Journey",
       intro:
         "Save your trip plans and favourite places across devices. The Trip Planner works fully without an account — signing in is only needed when you choose to save.",
       googleCta: "Continue with Google",
@@ -58,17 +58,27 @@ const en = {
       nature: "Nature",
       village: "Villages & Culture",
       cafe: "Cafés & Districts",
+      restaurant: "Restaurants",
       market: "Markets & Food",
+      museum: "Museums & Art",
       activity: "Activities",
     },
     districts: {
       "old-city": "Old City",
       nimman: "Nimmanhaemin",
+      santitham: "Santitham",
+      riverside: "Riverside (Wat Ket)",
+      "chang-klan": "Chang Klan",
       "doi-suthep": "Doi Suthep",
       "doi-inthanon": "Doi Inthanon",
       "mae-rim": "Mae Rim",
       "mae-kampong": "Mae Kampong",
       "san-kamphaeng": "San Kamphaeng",
+      "san-sai": "San Sai",
+      "chiang-dao": "Chiang Dao",
+      "chom-thong": "Chom Thong",
+      saraphi: "Saraphi",
+      "mae-wang": "Mae Wang",
       "hang-dong": "Hang Dong",
       samoeng: "Samoeng",
       "chiang-mai-city": "Chiang Mai City",
@@ -116,7 +126,7 @@ const en = {
     intro: {
       kicker: "Our Philosophy",
       title: "Not a checklist. A chapter.",
-      body: "Chiang Mai rewards those who linger — one more coffee on Nimman soi, one more hour beneath a nine-hundred-year-old chedi, one more bend in the road toward Doi Inthanon. Doi & Delta is built for travellers who want fewer stops and finer ones, gathered from the old city's lanes to the misted ridgelines of Mae Rim.",
+      body: "Chiang Mai rewards those who linger — one more coffee on Nimman soi, one more hour beneath a nine-hundred-year-old chedi, one more bend in the road toward Doi Inthanon. Chiangmai Journey is built for travellers who want fewer stops and finer ones, gathered from the old city's lanes to the misted ridgelines of Mae Rim.",
     },
     categories: {
       kicker: "Wander By Mood",
@@ -162,6 +172,8 @@ const en = {
       clear: "Clear filters",
       results: "places",
       noResults: "No places match your filters yet — try clearing one.",
+      loadMore: "Show more places",
+      showing: "Showing {shown} of {total}",
     },
     view: {
       grid: "Grid",
@@ -222,6 +234,42 @@ const en = {
     elevationMeters: "{elevation} m above sea level",
   },
   planner: {
+    ai: {
+      button: "Plan with AI",
+      title: "Describe the trip you want",
+      intro:
+        "Write what you're after — the kind of places, your budget, how long you have — and we'll build a day plan from the places on this site.",
+      placeholder: "e.g. temples in the morning, a Michelin restaurant for lunch, budget ฿1,000 for one day",
+      examplesLabel: "Try one",
+      examples: [
+        "Temples and Michelin restaurants, ฿1,000, make one day count",
+        "A quiet day of cafés and nature away from the crowds",
+        "Three days: old city, then the mountains, then markets",
+      ],
+      daysLabel: "Days",
+      generate: "Build my plan",
+      generating: "Planning your trip…",
+      generatingHint: "This takes a few seconds — it's reading all {count} places.",
+      resultTitle: "Suggested plan",
+      dayLabel: "Day {day}",
+      applyCta: "Use this plan",
+      applied: "Plan applied",
+      undo: "Undo",
+      discard: "Start over",
+      overwriteWarning: "This replaces the plan you already have.",
+      overBudget: "About ฿{amount} over the budget you gave.",
+      withinBudget: "Estimated ฿{amount} — within your budget.",
+      estimated: "Estimated ฿{amount}",
+      notEverything: "Couldn't do everything you asked",
+      emptyResult: "No places matched that request closely enough to build a day. Try describing it differently.",
+      generatedBy: "Places chosen by {model}. Times and costs are calculated by the planner.",
+      errors: {
+        generic: "Couldn't build a plan just now. Please try again.",
+        rateLimited: "That's a few too many requests — give it a minute.",
+        refused: "This request can't be planned. Try describing the trip differently.",
+        empty: "Write what kind of trip you want first.",
+      },
+    },
     title: "Trip Planner",
     subtitle: "Arrange your Chiang Mai days, one stop at a time.",
     emptyTitle: "Your plan is empty",
@@ -553,7 +601,7 @@ const en = {
   },
   footer: {
     about:
-      "Doi & Delta is an independent, editorial guide to Chiang Mai — built for travellers who prefer fewer, finer places.",
+      "Chiangmai Journey is an independent, editorial guide to Chiang Mai — built for travellers who prefer fewer, finer places.",
     explore: "Explore",
     company: "About",
     privacy: "Privacy Policy",
@@ -574,7 +622,7 @@ const en = {
     privacy: {
       title: "Privacy Policy",
       intro:
-        "Doi & Delta (\"we\", \"us\") respects your privacy. This page explains what information we collect through this site and how we use it.",
+        "Chiangmai Journey (\"we\", \"us\") respects your privacy. This page explains what information we collect through this site and how we use it.",
       sections: [
         {
           heading: "What we collect",
