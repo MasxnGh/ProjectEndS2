@@ -3,6 +3,7 @@ import { isLocale, getDictionary } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
 import { PlannerBoard } from "@/components/planner/planner-board";
+import { isAiPlannerConfigured } from "@/lib/ai/plan-trip";
 
 export async function generateMetadata({
   params,
@@ -35,7 +36,9 @@ export default async function PlannerPage({ params }: { params: Promise<{ locale
           ])
         )}
       />
-      <PlannerBoard />
+      {/* Read on the server so the API key never has to be probed from the
+          client — without a key the panel simply never renders. */}
+      <PlannerBoard aiEnabled={isAiPlannerConfigured()} />
     </>
   );
 }

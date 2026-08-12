@@ -11,7 +11,16 @@ import { useMediaQuery } from "@/lib/use-media-query";
 import { PlacePickerCard } from "@/components/planner/place-picker-card";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES: PlaceCategory[] = ["temple", "nature", "village", "cafe", "market", "activity"];
+const CATEGORIES: PlaceCategory[] = [
+  "temple",
+  "nature",
+  "village",
+  "cafe",
+  "restaurant",
+  "market",
+  "museum",
+  "activity",
+];
 const TITLE_ID = "place-picker-title";
 
 export function PlacePickerPanel({

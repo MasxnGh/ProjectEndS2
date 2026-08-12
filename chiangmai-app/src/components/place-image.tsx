@@ -10,8 +10,12 @@ const categoryGradients: Record<PlaceCategory, string> = {
   village:
     "linear-gradient(var(--angle, 135deg), color-mix(in srgb, var(--color-tertiary) 50%, transparent), color-mix(in srgb, var(--color-secondary) 30%, transparent) 55%, var(--color-surface-muted) 100%)",
   cafe: "linear-gradient(var(--angle, 135deg), color-mix(in srgb, var(--color-foreground) 22%, transparent), color-mix(in srgb, var(--color-accent) 30%, transparent) 60%, var(--color-surface-muted) 100%)",
+  restaurant:
+    "linear-gradient(var(--angle, 135deg), color-mix(in srgb, var(--color-accent) 50%, transparent), color-mix(in srgb, var(--color-foreground) 20%, transparent) 55%, var(--color-surface-muted) 100%)",
   market:
     "linear-gradient(var(--angle, 135deg), color-mix(in srgb, var(--color-accent) 45%, transparent), color-mix(in srgb, var(--color-tertiary) 40%, transparent) 60%, var(--color-surface-muted) 100%)",
+  museum:
+    "linear-gradient(var(--angle, 135deg), color-mix(in srgb, var(--color-tertiary) 45%, transparent), color-mix(in srgb, var(--color-foreground) 18%, transparent) 55%, var(--color-surface-muted) 100%)",
   activity:
     "linear-gradient(var(--angle, 135deg), color-mix(in srgb, var(--color-secondary) 45%, transparent), color-mix(in srgb, var(--color-accent) 35%, transparent) 60%, var(--color-surface-muted) 100%)",
 };
@@ -23,8 +27,12 @@ const motifs: Record<PlaceCategory, string> = {
   village:
     "M6 86 L6 58 L22 40 L38 58 L38 86 M46 86 L46 62 L60 48 L74 62 L74 86 M82 86 L82 66 L92 56 L100 66 L100 86",
   cafe: "M20 40 a30 30 0 1 0 60 0 a30 30 0 1 0 -60 0 M35 40 a15 15 0 1 0 30 0 a15 15 0 1 0 -30 0",
+  restaurant:
+    "M14 56 L86 56 M22 56 A28 28 0 0 0 78 56 M34 86 L66 86 M38 42 C34 34 42 30 38 22 M50 42 C46 32 54 28 50 18 M62 42 C58 34 66 30 62 22",
   market:
     "M10 30 L90 30 M18 30 L14 90 M34 30 L32 90 M50 30 L50 90 M66 30 L68 90 M82 30 L86 90 M10 30 L50 8 L90 30",
+  museum:
+    "M8 44 L50 18 L92 44 M4 88 L96 88 M8 78 L92 78 M18 44 L18 78 M34 44 L34 78 M50 44 L50 78 M66 44 L66 78 M82 44 L82 78",
   activity:
     "M50 90 C50 60 30 55 30 30 C30 15 42 6 50 6 C58 6 70 15 70 30 C70 55 50 60 50 90 Z M50 50 C50 50 40 40 40 28 M50 50 C50 50 60 40 60 28",
 };

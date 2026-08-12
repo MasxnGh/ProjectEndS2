@@ -46,13 +46,13 @@ export async function renderOgImage({
 }) {
   const needsThai = THAI_PATTERN.test(title) || THAI_PATTERN.test(kicker);
 
-  // "Doi & Delta" is always plain ASCII, so this fetch reliably succeeds and
-  // guarantees satori always has at least one usable font (it throws if the
+  // "Chiangmai Journey" is always plain ASCII, so this fetch reliably succeeds
+  // and guarantees satori always has at least one usable font (it throws if the
   // fonts array ends up empty, which happened before when the title/kicker
   // was Thai text with zero coverage in the Latin-only Fraunces font).
   const [bgSrc, brandFont, displayFont] = await Promise.all([
     loadLocalPhoto(photoPath),
-    loadGoogleFont("Fraunces:wght@600", "Doi & Delta"),
+    loadGoogleFont("Fraunces:wght@600", "Chiangmai Journey"),
     needsThai
       ? loadGoogleFont("Noto+Serif+Thai:wght@600", `${title}${kicker}`)
       : loadGoogleFont("Fraunces:wght@600", `${title}${kicker}`),
@@ -117,7 +117,7 @@ export async function renderOgImage({
               borderRadius: 4,
             }}
           />
-          <span style={{ fontFamily: "Brand", fontSize: 26, color: CREAM, letterSpacing: 1 }}>Doi &amp; Delta</span>
+          <span style={{ fontFamily: "Brand", fontSize: 26, color: CREAM, letterSpacing: 1 }}>Chiangmai Journey</span>
         </div>
         <div
           style={{

@@ -16,6 +16,8 @@ export const useUnitStore = create<UnitState>()(
       unit: "C",
       toggleUnit: () => set({ unit: get().unit === "C" ? "F" : "C" }),
     }),
+    // Pre-rename localStorage key, kept deliberately — renaming it would reset
+    // every existing visitor's °C/°F choice. See the same note in trip-store.ts.
     { name: "doi-delta-temp-unit" }
   )
 );

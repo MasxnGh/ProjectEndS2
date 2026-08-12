@@ -1,5 +1,10 @@
 # Phase 0 data TODO — for the project owner
 
+> **Update:** the catalogue has since grown from 26 to 101 places. The sourcing
+> and confidence level for the 75 newer entries is documented separately in
+> [docs/places-sources.md](docs/places-sources.md). Everything below still
+> describes the original 26.
+
 Everything below is either `null`, an editorial estimate, or a judgment call I made from the site's *existing* description/localTip copy rather than a live source I checked today. None of it was invented from nothing, but none of it has been checked against an official source either — please verify before treating any of it as authoritative (e.g. before showing a hard "closed today" message to a user).
 
 ## 1. `dataLastVerified` — null for all 26 places

@@ -12,8 +12,11 @@ export async function GET(
   const { fontstack, range } = await params;
 
   try {
+    // MapTiler serves glyph ranges only at the `.pbf` extension — its own style
+    // documents point at `/fonts/{fontstack}/{range}.pbf`. Without it every
+    // request 404s and the map renders with no place labels at all.
     const upstream = await fetch(
-      `${MAPTILER_FONTS_URL}/${encodeURIComponent(fontstack)}/${range}?key=${key}`
+      `${MAPTILER_FONTS_URL}/${encodeURIComponent(fontstack)}/${range}.pbf?key=${key}`
     );
     if (!upstream.ok) {
       return new Response(null, { status: upstream.status });

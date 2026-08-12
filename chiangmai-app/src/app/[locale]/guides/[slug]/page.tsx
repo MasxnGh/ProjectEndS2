@@ -62,7 +62,7 @@ export default async function GuideDetailPage({
     description: guide.dek[locale],
     datePublished: guide.publishedAt,
     ...(photoPath ? { image: `${SITE_URL}${photoPath}` } : {}),
-    author: { "@type": "Organization", name: "Doi & Delta" },
+    author: { "@type": "Organization", name: "Chiangmai Journey" },
   };
 
   return (

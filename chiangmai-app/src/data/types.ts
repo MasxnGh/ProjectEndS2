@@ -3,17 +3,27 @@ export type PlaceCategory =
   | "nature"
   | "village"
   | "cafe"
+  | "restaurant"
   | "market"
+  | "museum"
   | "activity";
 
 export type District =
   | "old-city"
   | "nimman"
+  | "santitham"
+  | "riverside"
+  | "chang-klan"
   | "doi-suthep"
   | "doi-inthanon"
   | "mae-rim"
   | "mae-kampong"
   | "san-kamphaeng"
+  | "san-sai"
+  | "chiang-dao"
+  | "chom-thong"
+  | "saraphi"
+  | "mae-wang"
   | "hang-dong"
   | "samoeng"
   | "chiang-mai-city";
@@ -118,6 +128,15 @@ export interface Place {
   requiresBooking: boolean;
   /** ISO date this place's practical details (hours, dress code, etc.) were last checked against a live source. null = not yet verified — see PHASE0-TODO.md. */
   dataLastVerified: string | null;
+
+  /**
+   * Stock-photo search term for `npm run fetch:photos`. Set ONLY for public
+   * landmarks a generic photo can honestly represent (a temple, a waterfall, a
+   * market). Deliberately absent for named businesses — a stock photo of "Thai
+   * coffee shop" captioned as a specific café misleads the visitor, so those
+   * fall back to <PlaceImage>'s illustrated gradient instead.
+   */
+  photoQuery?: string;
 }
 
 export interface GuideSection {

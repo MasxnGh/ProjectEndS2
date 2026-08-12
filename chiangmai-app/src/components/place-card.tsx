@@ -6,7 +6,7 @@ import type { Place } from "@/data/types";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { useLocale } from "@/components/providers/locale-provider";
-import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
+import { useTripStore, useTripStoreHydrated, UNSCHEDULED } from "@/lib/trip-store";
 import { useToast } from "@/components/toast/toast-provider";
 import { cn } from "@/lib/utils";
 
@@ -35,10 +35,14 @@ export function PlaceCard({
 }) {
   const { locale, dict } = useLocale();
   const { showToast } = useToast();
-  const isPlanned = useTripStore((s) => s.isPlanned(place.slug));
+  // Both of these come from the persisted trip, so they must stay at the
+  // server's answer until the store has rehydrated — see useTripStoreHydrated.
+  const hydrated = useTripStoreHydrated();
+  const isPlanned = useTripStore((s) => s.isPlanned(place.slug)) && hydrated;
   const addPlace = useTripStore((s) => s.addPlace);
   const removeFromPlan = useTripStore((s) => s.removeFromPlan);
-  const location = useTripStore((s) => s.locationOf(place.slug));
+  const storedLocation = useTripStore((s) => s.locationOf(place.slug));
+  const location = hydrated ? storedLocation : null;
   const dayIds = useTripStore((s) => s.dayIds);
   const moveToDay = useTripStore((s) => s.moveToDay);
   const duplicateToDay = useTripStore((s) => s.duplicateToDay);

@@ -35,24 +35,43 @@ import { AQI_LABELS } from "@/lib/weather/aqi";
 import { cn } from "@/lib/utils";
 
 const RADIUS_STEPS_KM = [1, 3, 5, 10, 25] as const;
+/** How many cards the grid renders before the visitor asks for more. */
+const GRID_PAGE_SIZE = 24;
 
 interface ProximityReference {
   source: "geolocation" | "map-click" | "district";
   coords: LatLng;
 }
 
-const categories: PlaceCategory[] = ["temple", "nature", "village", "cafe", "market", "activity"];
+const categories: PlaceCategory[] = [
+  "temple",
+  "nature",
+  "village",
+  "cafe",
+  "restaurant",
+  "market",
+  "museum",
+  "activity",
+];
 const districts: District[] = [
   "old-city",
   "nimman",
+  "santitham",
+  "riverside",
+  "chang-klan",
+  "chiang-mai-city",
   "doi-suthep",
   "doi-inthanon",
   "mae-rim",
   "mae-kampong",
   "san-kamphaeng",
+  "san-sai",
+  "chiang-dao",
+  "chom-thong",
+  "saraphi",
+  "mae-wang",
   "hang-dong",
   "samoeng",
-  "chiang-mai-city",
 ];
 const prices: PriceLevel[] = [1, 2, 3];
 const times: BestTime[] = ["morning", "afternoon", "evening", "anytime"];
@@ -112,6 +131,7 @@ export function ExploreClient({
   const [compareSlugs, setCompareSlugs] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(GRID_PAGE_SIZE);
 
   const [proximityOpen, setProximityOpen] = useState(false);
   const [reference, setReference] = useState<ProximityReference | null>(null);
@@ -183,7 +203,11 @@ export function ExploreClient({
     const q = query.trim().toLowerCase();
     return places.filter((place) => {
       if (q) {
-        const haystack = `${place.name.en} ${place.name.th} ${place.shortDescription.en} ${place.shortDescription.th}`.toLowerCase();
+        // Tags carry the dish/theme words a visitor actually types ("khao soi",
+        // "ข้าวซอย", "vegetarian", "waterfall") that rarely appear verbatim in
+        // the editorial copy — without them, most searches miss.
+        const haystack =
+          `${place.name.en} ${place.name.th} ${place.shortDescription.en} ${place.shortDescription.th} ${place.tags.join(" ")}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       if (category && place.category !== category) return false;
@@ -211,6 +235,29 @@ export function ExploreClient({
       ])
     );
   }, [proximityResults, reference]);
+
+  // With ~100 places an unfiltered grid would mount ~100 PlaceCards (each with
+  // its own image and reveal animation) on first paint. Render a page at a time
+  // and let the visitor ask for more.
+  const filterKey = [
+    query,
+    category,
+    district,
+    price,
+    time,
+    distance,
+    reference ? `${reference.coords.lat},${reference.coords.lng}` : "",
+    reference ? radiusKm : "",
+  ].join("|");
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    // Adjusted during render rather than in an effect, per
+    // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+    setPrevFilterKey(filterKey);
+    setVisibleCount(GRID_PAGE_SIZE);
+  }
+  const visiblePlaces = filtered.slice(0, visibleCount);
+  const hasMore = filtered.length > visiblePlaces.length;
 
   const hasFilters = Boolean(query || category || district || price || time || distance);
   const secondaryActiveCount = [district, price, time, distance].filter(Boolean).length;
@@ -578,13 +625,20 @@ export function ExploreClient({
       {filtered.length === 0 ? (
         <p className="py-24 text-center text-muted-foreground">{dict.explore.filters.noResults}</p>
       ) : view === "grid" ? (
+        <>
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((place) => {
+          {visiblePlaces.map((place) => {
             const selected = compareSlugs.includes(place.slug);
             const proximity = proximityDetailsBySlug.get(place.slug);
             return (
               <div key={place.slug} className="relative">
                 <PlaceCard
+                  // The Compare pill below is positioned against this grid
+                  // cell, not the card. `h-full` makes the card fill the cell
+                  // so the pill can't detach and float below a short card, and
+                  // `pb-14` reserves the band it sits in so it can't cover the
+                  // district/duration/price row.
+                  className="h-full pb-14"
                   place={place}
                   plannerDayId={plannerDayId ?? undefined}
                   plannerDayNumber={plannerDayNumber ?? undefined}
@@ -610,6 +664,23 @@ export function ExploreClient({
             );
           })}
         </div>
+        {hasMore ? (
+          <div className="mt-12 flex flex-col items-center gap-3">
+            <p className="text-sm text-muted-foreground">
+              {dict.explore.filters.showing
+                .replace("{shown}", String(visiblePlaces.length))
+                .replace("{total}", String(filtered.length))}
+            </p>
+            <button
+              type="button"
+              onClick={() => setVisibleCount((n) => n + GRID_PAGE_SIZE)}
+              className="rounded-full border border-border-strong px-6 py-3 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
+            >
+              {dict.explore.filters.loadMore}
+            </button>
+          </div>
+        ) : null}
+        </>
       ) : (
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.3fr]">
           <div className="max-h-[600px] space-y-2 overflow-y-auto pr-1 lg:max-h-[720px]">

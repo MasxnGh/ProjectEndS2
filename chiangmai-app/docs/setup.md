@@ -12,6 +12,10 @@ times) when its key is missing. Set them to unlock the real versions.
 | `PEXELS_API_KEY` | No | Only used by `npm run fetch:photos` to download place photography. | https://www.pexels.com/api/ |
 | `MAPTILER_API_KEY` | No | Vector map tiles for Place Detail / Explore / Trip Planner. Server-only, proxied through `/api/map/*`. | https://cloud.maptiler.com/ |
 | `OPENROUTESERVICE_API_KEY` | No | Real driving/cycling/walking directions, travel-time matrices, and isochrones for the Trip Planner. Server-only, proxied through `/api/routing/*`. Without it, routing uses a Haversine + terrain-detour-factor estimate instead (labeled as an estimate in the UI). | https://openrouteservice.org/dev/#/signup (free tier) |
+| `GEMINI_API_KEY` | No² | Powers **Plan with AI** in the Trip Planner — turns a plain-language request ("temples and a Michelin restaurant, ฿1,000, one day") into a day plan built from this site's places. The default provider, and free. Server-only, proxied through `/api/ai/plan-trip`. | https://aistudio.google.com/apikey (free, no card) |
+| `ANTHROPIC_API_KEY` | No² | The alternative provider for the same feature — stronger on hard multi-constraint requests, but **metered and paid**. | https://console.anthropic.com/ |
+| `AI_PROVIDER` | No | Pins the provider: `gemini` or `anthropic`. Unset, whichever key is present wins — Gemini first when both are. | — |
+| `GEMINI_MODEL` / `ANTHROPIC_MODEL` | No | Override the model. Defaults: `gemini-3.6-flash`, `claude-opus-5`. | — |
 | `MONGODB_URI` | No¹ | Connection string for saved trips & favourites. | https://cloud.mongodb.com/ (free M0 tier) |
 | `AUTH_SECRET` | No¹ | Signs Auth.js session/CSRF tokens. | `openssl rand -base64 33` |
 | `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | No¹ | Google OAuth client for "Sign in with Google". | https://console.cloud.google.com/apis/credentials |
@@ -20,10 +24,25 @@ times) when its key is missing. Set them to unlock the real versions.
 favourite/heart buttons. Everything else — the Trip Planner itself, Explore,
 Guides, Place details — works fully as a guest with none of them set.
 
+² Set **one** of these two — they power the same feature through the same
+prompt, so switching providers changes only which model chooses the places.
+
+- **Gemini (default, free).** On the free tier `gemini-3.6-flash` charges
+  nothing for input, output, or thinking tokens. The limit is requests per
+  minute and per day, not money, so a public deployment can't run up a bill.
+- **Anthropic (paid).** Metered: about ฿1–2 per plan request (roughly
+  $0.02–0.05). The place catalogue is prompt-cached, so repeat requests cost
+  about four times less than the first.
+
+Either way `/api/ai/plan-trip` is rate-limited to 5 requests per 5 minutes per
+IP. With neither key set, the **Plan with AI** button never renders and the rest
+of the planner is unaffected.
+
 None of these start with `NEXT_PUBLIC_` — they're read server-side only and
 never sent to the browser. Every third-party call goes through this app's own
-Route Handlers (`/api/map/*`, `/api/routing/*`, `/api/auth/*`), which attach
-the key server-side, so the key itself is never present in client JS.
+Route Handlers (`/api/map/*`, `/api/routing/*`, `/api/ai/*`, `/api/auth/*`),
+which attach the key server-side, so the key itself is never present in client
+JS.
 
 ## Local setup
 
