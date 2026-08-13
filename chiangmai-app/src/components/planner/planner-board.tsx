@@ -913,10 +913,14 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                     />
                   );
                 })}
+                {/* Grows into whatever the day columns leave over, so the row
+                    ends flush with the Unscheduled panel above it instead of
+                    stopping short. Once enough days exist to overflow the row,
+                    there is no slack to take and it keeps its 220px width. */}
                 <button
                   type="button"
                   onClick={addDay}
-                  className="no-print flex w-[220px] shrink-0 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong text-sm text-muted-foreground hover:border-accent hover:text-accent-text"
+                  className="no-print flex w-[220px] shrink-0 grow flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong text-sm text-muted-foreground hover:border-accent hover:text-accent-text"
                 >
                   <Plus className="h-5 w-5" />
                   {dict.planner.addDay}
@@ -942,7 +946,10 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
           </div>
 
           {isDesktop ? (
-            <div className="sticky top-24 h-[calc(100dvh-7rem)] lg:col-span-2">
+            /* mt-8 matches the spacing every branch of the left column opens
+               with, so the map's top edge lines up with the itinerary's rather
+               than starting 32px higher. */
+            <div className="sticky top-24 mt-8 h-[calc(100dvh-7rem)] lg:col-span-2">
               <PlannerMapLoader
                 days={resolvedDays}
                 className="h-full"
