@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Check, Clock, MapPin, Plus, Route, Star } from "lucide-react";
 import type { Place } from "@/data/types";
 import { PlaceImage } from "@/components/place-image";
+import { FavoriteButton } from "@/components/favorite-button";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore, useTripStoreHydrated, UNSCHEDULED } from "@/lib/trip-store";
@@ -184,6 +185,15 @@ export function PlaceCard({
             )
           : null}
       </button>
+
+      {/* Stacked under the add-to-plan control rather than beside it: that one
+          grows to a labelled pill in planner mode, so a side-by-side heart
+          would collide exactly when the card is busiest. */}
+      <FavoriteButton
+        slug={place.slug}
+        placeName={place.name[locale]}
+        className="absolute right-3 top-14 z-10 h-9 w-9"
+      />
 
       <Link
         href={`/${locale}/place/${place.slug}`}

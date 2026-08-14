@@ -1,24 +1,13 @@
 import type { NextRequest } from "next/server";
 import { ObjectId } from "mongodb";
-import { auth } from "@/auth";
 import { getTripsCollection } from "@/lib/db/collections";
 import { generateShareToken } from "@/lib/db/share-token";
 import { parseTripWritablePayload, toSerializedTrip } from "@/lib/db/types";
-import { checkRateLimit } from "@/lib/rate-limit";
-
-// Session-derived, never client-sent — see auth.ts's callback that puts the
-// adapter's user.id onto session.user.id. Every route in this file trusts
-// only this value for ownerId, never anything from the request body.
-async function requireUserId(): Promise<string | null> {
-  const session = await auth();
-  return session?.user?.id ?? null;
-}
+import { requireUserId, unauthorizedResponse, rateLimitResponse } from "@/lib/api-auth";
 
 export async function GET() {
   const userId = await requireUserId();
-  if (!userId) {
-    return Response.json({ error: "Sign in required" }, { status: 401 });
-  }
+  if (!userId) return unauthorizedResponse();
 
   const trips = await getTripsCollection();
   const docs = await trips
@@ -31,17 +20,10 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const userId = await requireUserId();
-  if (!userId) {
-    return Response.json({ error: "Sign in required" }, { status: 401 });
-  }
+  if (!userId) return unauthorizedResponse();
 
-  const rateLimit = checkRateLimit(`trips:create:${userId}`, { max: 20, windowMs: 60_000 });
-  if (!rateLimit.allowed) {
-    return Response.json(
-      { error: "Too many requests, please slow down" },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } }
-    );
-  }
+  const limited = rateLimitResponse(`trips:create:${userId}`, { max: 20, windowMs: 60_000 });
+  if (limited) return limited;
 
   let body: unknown;
   try {

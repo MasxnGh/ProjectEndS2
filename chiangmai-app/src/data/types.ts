@@ -76,6 +76,46 @@ export interface DressCode {
   note: LocalizedText | null;
 }
 
+/**
+ * A dish worth ordering by name. `priceThb` is what one portion costs, not a
+ * range — a single number is what a visitor can actually budget against, and
+ * `null` says honestly that we could not confirm a current price rather than
+ * printing a stale one.
+ */
+export interface SignatureDish {
+  name: LocalizedText;
+  /** Why this one and not the rest of the menu. */
+  note: LocalizedText;
+  priceThb: number | null;
+}
+
+/**
+ * An award or listing, with the years it covers.
+ *
+ * `current` is the field that matters: a restaurant that HELD a Michelin
+ * distinction and later lost it is a different claim from one that still holds
+ * it, and a site that shows both the same way is misinforming the visitor.
+ * `lastYear` is null exactly when `current` is true — an ongoing run has no end
+ * yet.
+ */
+export interface Award {
+  /** e.g. "Michelin Bib Gourmand", "Michelin Selected". */
+  name: LocalizedText;
+  /**
+   * First year of the run, or null when only the current listing could be
+   * confirmed. Michelin publishes one year at a time and Thai coverage tends to
+   * say "five years running" without naming the first, so a null here means
+   * "we know it holds this, not since when" — which beats back-computing a year
+   * from a press phrase and presenting the arithmetic as fact.
+   */
+  firstYear: number | null;
+  /** Final year of the run; null while it is ongoing. */
+  lastYear: number | null;
+  current: boolean;
+  /** Where this was verified — kept in the data so a future check knows what to re-check. */
+  source: string;
+}
+
 export interface Place {
   slug: string;
   name: LocalizedText;
@@ -137,6 +177,20 @@ export interface Place {
    * fall back to <PlaceImage>'s illustrated gradient instead.
    */
   photoQuery?: string;
+
+  // ── Depth: who this place is, beyond what it sells ──────────────
+  // All four are optional and researched per place rather than filled in
+  // wholesale. A place with no verifiable history is left without one; an
+  // invented founding year would be worse than a missing section.
+
+  /** Founding, lineage, where the recipe came from — the part a menu cannot tell you. */
+  story?: LocalizedText;
+  /** Dishes worth ordering by name, in the order we'd recommend trying them. */
+  signatureDishes?: SignatureDish[];
+  /** Awards and listings, newest run first. */
+  awards?: Award[];
+  /** Short practical or insider notes: cash only, unmarked entrance, sells out early. */
+  insiderNotes?: LocalizedText[];
 }
 
 export interface GuideSection {

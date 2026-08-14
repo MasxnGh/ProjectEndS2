@@ -31,8 +31,66 @@ function localizedTexts(place: Place): [string, LocalizedText][] {
     entries.push([`bestTimeWindows[${i}].label`, window.label]);
   }
   if (place.dressCode?.note) entries.push(["dressCode.note", place.dressCode.note]);
+  // The depth fields are optional, but a half-translated one is the same silent
+  // failure as anywhere else — an empty `th` renders a blank heading.
+  if (place.story) entries.push(["story", place.story]);
+  for (const [i, dish] of (place.signatureDishes ?? []).entries()) {
+    entries.push([`signatureDishes[${i}].name`, dish.name]);
+    entries.push([`signatureDishes[${i}].note`, dish.note]);
+  }
+  for (const [i, award] of (place.awards ?? []).entries()) {
+    entries.push([`awards[${i}].name`, award.name]);
+  }
+  for (const [i, note] of (place.insiderNotes ?? []).entries()) {
+    entries.push([`insiderNotes[${i}]`, note]);
+  }
   return entries;
 }
+
+describe("awards and signature dishes", () => {
+  const withAwards = places.filter((p) => p.awards?.length);
+  const withDishes = places.filter((p) => p.signatureDishes?.length);
+
+  it("has at least one place carrying each, or these fields are dead weight", () => {
+    expect(withAwards.length).toBeGreaterThan(0);
+    expect(withDishes.length).toBeGreaterThan(0);
+  });
+
+  it.each(withAwards.map((p) => [p.slug, p] as const))("%s has coherent award years", (_slug, place) => {
+    for (const award of place.awards!) {
+      // An ongoing run cannot have ended, and a finished one must say when.
+      if (award.current) {
+        expect(award.lastYear, "a current award has no last year").toBeNull();
+      } else {
+        expect(award.lastYear, "a lapsed award must say when it ended").not.toBeNull();
+      }
+
+      if (award.firstYear !== null && award.lastYear !== null) {
+        expect(award.lastYear).toBeGreaterThanOrEqual(award.firstYear);
+      }
+      for (const year of [award.firstYear, award.lastYear]) {
+        if (year !== null) {
+          expect(year).toBeGreaterThan(1900);
+          expect(year).toBeLessThanOrEqual(new Date().getFullYear() + 1);
+        }
+      }
+
+      // Every award claim is a factual assertion about a real business, so it
+      // carries where it came from — see docs/places-sources.md.
+      expect(award.source.trim().length, "an award must record its source").toBeGreaterThan(0);
+    }
+  });
+
+  it.each(withDishes.map((p) => [p.slug, p] as const))("%s has sane dish prices", (_slug, place) => {
+    for (const dish of place.signatureDishes!) {
+      // null means "not confirmed" and is allowed; a number must be plausible.
+      if (dish.priceThb !== null) {
+        expect(dish.priceThb).toBeGreaterThan(0);
+        expect(dish.priceThb).toBeLessThan(100_000);
+      }
+    }
+  });
+});
 
 describe("places catalogue", () => {
   it("has no duplicate slugs", () => {

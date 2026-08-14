@@ -50,9 +50,18 @@ from memory. Only these four of our restaurants appear in the Guide at all:
 | `khao-soi-mae-sai` | Bib Gourmand |
 | `blackitch-artisan-kitchen` | Selected (in the Guide, no Bib) |
 
+> **Correction (2026-08-13):** the line below originally listed `rote-yiam-beef-noodle`
+> among the places *not* in the Guide. That was wrong. The Guide has a full
+> inspector entry for it ("For over 30 years, this renowned shop has been famous
+> for its beef noodles… don't miss the coconut ice cream!"), so it is listed and
+> now carries an `awards` entry. The 2026-08-12 pass missed it because the Guide's
+> region listing was read as a page of results rather than searched per restaurant.
+> Huen Phen, SP Chicken, Cherng Doi and Lert Ros were re-checked on 2026-08-13 and
+> still show no Guide entry.
+
 Everything else on our restaurant list is **deliberately untagged** — several
 places widely described online as "Michelin restaurants" (Huen Phen, SP Chicken,
-Cherng Doi, Lert Ros, Rote Yiam) are not in the Guide's Chiang Mai listing, and
+Cherng Doi, Lert Ros) are not in the Guide's Chiang Mai listing, and
 tagging them would make the site assert something false. Tags distinguish
 `michelin bib gourmand` from `michelin selected` because they are not the same
 award; both also carry a bare `michelin` tag plus Thai search terms so the explore
@@ -64,6 +73,54 @@ Road, Chang Phueak), so the coordinate here is a geocode of that **street
 address**, accurate to the road rather than the shopfront — no OSM POI exists for
 it. Its Michelin status and address are verified; its opening hours are still an
 estimate, which is why `dataLastVerified` remains `null`.
+
+## Restaurant depth fields — `story`, `signatureDishes`, `awards`, `insiderNotes` (2026-08-13)
+
+These four optional fields are filled for the 16 `restaurant` places only. Every
+claim below came from a source checked on 2026-08-13; **where nothing could be
+confirmed the field was left empty rather than filled in plausibly.** That is why
+some restaurants have a founding year and others do not.
+
+| Place | What was confirmed | Source used |
+|---|---|---|
+| `khao-soi-lamduan-faham` | Opened 1943 (พ.ศ. 2486), 2nd-generation heir Wanida Mahadilok | Bangkok Biznews (two features) |
+| `huen-phen` | "More than 62 years" in business | The restaurant's own site + its Nimman branch page |
+| `huen-muan-jai` | Opened 2011 by former TV chef Charan Thipeung; name means "happy home"; Bib Gourmand in the 2026 Guide | MICHELIN Guide entry |
+| `khao-soi-mae-sai` | Passed down from the owner's grandparents, ~30 years; Bib Gourmand in the 2025 *and* 2026 Guides | MICHELIN Guide entries (two editions) + Wongnai owner interview |
+| `rote-yiam-beef-noodle` | Over 30 years; Chinese-herb broth; offal and beef balls made daily | MICHELIN Guide entry |
+| `blackitch-artisan-kitchen` | 16 seats; 10+ course seasonal tasting menu; chef Phanuphol Bulsuwan ferments in-house, taught by his grandmother | MICHELIN Guide entry |
+| `meena-rice-based-cuisine` | In the Lhong Him Kaw creative community; five-coloured rice | MICHELIN Guide entry |
+| `sp-chicken` | 39 years; rotisserie | The shop's own Facebook page |
+| `cherng-doi-roast-chicken` | Crispy-skin chicken at ฿85 | TrueID food review |
+| `lert-ros` | Trading since 1986; down an unmarked lane off Ratchadamnoen | The restaurant's Facebook page (`LertRosRestaurant1986`) |
+| `aroon-rai` | Widely called the city's oldest northern restaurant; grinds its own pastes | "เชียงใหม่มีเรื่องเล่า" feature + Wongnai |
+| `free-bird-cafe` | Charity café funding Thai Freedom House; founded by Lisa Nesser; vegan | Grassroots Volunteering, Chiang Mai Citylife, Read The Cloud |
+| `ginger-farm-kitchen` | Began as a farm in Saraphi; "farm to city"; no MSG | The company's own site + Facebook |
+| `khum-khantoke` | Founded by Dr Watchara Tantranon; 20+ years; nine performance sets | Review Chiang Mai + the venue's own page |
+| `khao-soi-khun-yai` | Beside Wat Kuan Kama at Sri Poom Soi 8; 10:00–14:00 | MGR Online + Wongnai reviews |
+| `kao-soy-nimman` | Over a decade in Nimman Soi 7 | LINE Today feature |
+
+**Award years are mostly `null` on purpose.** The Guide publishes one edition at a
+time and Thai coverage says things like "five years running" without naming the
+first year. `firstYear: null` means *we know it holds this, not since when* —
+back-computing a year from a press phrase and printing it as fact is exactly the
+error this field exists to avoid. `khao-soi-mae-sai` is confirmed in two separate
+editions (2025 and 2026) but its first year is still unknown.
+
+**Claims deliberately not recorded:**
+
+- `kao-soy-nimman` is described as a Michelin Guide restaurant by Trip.com and at
+  least one blog, but no `guide.michelin.com` entry was found for it. No `awards`
+  entry was added.
+- `huen-muan-jai` is said by one Thai review site to have started in Sydney. The
+  Guide's own entry says former TV chef, opened 2011, and says nothing about
+  Sydney — so the Sydney detail is omitted.
+- Founding years for `khao-soi-khun-yai`, `kao-soy-nimman` (beyond "over a
+  decade"), `cherng-doi-roast-chicken` and `aroon-rai` could not be confirmed and
+  are absent.
+
+**Also found, not yet in the catalogue:** `Khao Soi Mae Manee` has a MICHELIN Guide
+entry in Chiang Mai and is a candidate for a future pass.
 
 ## Ratings — editorial
 

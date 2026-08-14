@@ -12,6 +12,7 @@ import { PwaRegister } from "@/components/pwa-register";
 import { locales, isLocale, getDictionary } from "@/i18n";
 import { SITE_URL } from "@/lib/site";
 import { AuthSessionProvider } from "@/components/providers/auth-session-provider";
+import { FavoritesProvider } from "@/lib/favorites/favorites-provider";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -118,6 +119,9 @@ export default async function LocaleLayout({
           <ThemeProvider>
             <LocaleProvider locale={locale} dict={dict}>
               <ToastProvider>
+                {/* Inside ToastProvider and LocaleProvider: it reports failed
+                    saves through toasts in the reader's language. */}
+                <FavoritesProvider>
                 <SmoothScrollProvider>
                   <a
                     href="#main-content"
@@ -130,6 +134,7 @@ export default async function LocaleLayout({
                   <Footer />
                   <PwaRegister />
                 </SmoothScrollProvider>
+                </FavoritesProvider>
               </ToastProvider>
             </LocaleProvider>
           </ThemeProvider>

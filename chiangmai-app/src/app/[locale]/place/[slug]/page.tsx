@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Clock, MapPin, Star, Wallet } from "lucide-react";
+import { Award, Clock, Info, MapPin, Star, Wallet } from "lucide-react";
 import { getPlaceBySlug, places } from "@/data/places";
+import { cn } from "@/lib/utils";
 import { findNearbyExcluding } from "@/lib/geo/nearby";
 import { estimateTravelMinutes } from "@/lib/geo/travelTime";
 import type { TerrainType } from "@/lib/geo/distance";
@@ -13,6 +14,7 @@ import { getPlaceBlurDataURL } from "@/data/blur-manifest";
 import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
 import { AddToPlanButton } from "@/components/add-to-plan-button";
+import { FavoriteButton } from "@/components/favorite-button";
 import { Reveal } from "@/components/reveal";
 import { Suspense } from "react";
 import { PlaceWeatherPanel, WeatherPanelSkeleton } from "@/components/weather/place-weather-panel";
@@ -25,6 +27,22 @@ import { toJsonLdOpeningHoursSpecification } from "@/lib/opening-hours";
 
 export function generateStaticParams() {
   return places.map((p) => ({ slug: p.slug }));
+}
+
+/**
+ * Years are the least verifiable part of an award, so every combination has to
+ * read correctly — including the common one where we know a place holds a
+ * distinction but not since when. That case returns null and the UI shows the
+ * status badge alone rather than inventing a range.
+ */
+function formatAwardYears(
+  award: { firstYear: number | null; lastYear: number | null },
+  t: { awardSince: string; awardYears: string }
+): string | null {
+  if (award.firstYear === null) return award.lastYear === null ? null : String(award.lastYear);
+  if (award.lastYear === null) return t.awardSince.replace("{year}", String(award.firstYear));
+  if (award.lastYear === award.firstYear) return String(award.firstYear);
+  return t.awardYears.replace("{from}", String(award.firstYear)).replace("{to}", String(award.lastYear));
 }
 
 export async function generateMetadata({
@@ -158,6 +176,88 @@ export default async function PlaceDetailPage({
               </p>
             </Reveal>
 
+            {place.story ? (
+              <Reveal delay={0.05} className="mt-10">
+                <h2 className="font-serif-display text-2xl">{dict.place.story}</h2>
+                <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">
+                  {place.story[locale]}
+                </p>
+              </Reveal>
+            ) : null}
+
+            {place.awards && place.awards.length > 0 ? (
+              <Reveal delay={0.05} className="mt-10">
+                <h2 className="font-serif-display text-2xl">{dict.place.awards}</h2>
+                <ul className="mt-4 space-y-3">
+                  {place.awards.map((award) => (
+                    <li
+                      key={award.name.en}
+                      className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-border p-4"
+                    >
+                      <Award className="h-4 w-4 shrink-0 text-accent-text" />
+                      <span className="font-medium">{award.name[locale]}</span>
+                      {/* A distinction that has lapsed is a different claim from
+                          one still held, so the two never render the same way. */}
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-xs",
+                          award.current
+                            ? "bg-accent/15 text-accent-text"
+                            : "bg-surface-muted text-muted-foreground"
+                        )}
+                      >
+                        {award.current ? dict.place.awardHeld : dict.place.awardPast}
+                      </span>
+                      {formatAwardYears(award, dict.place) ? (
+                        <span className="text-sm text-muted-foreground">
+                          {formatAwardYears(award, dict.place)}
+                        </span>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ) : null}
+
+            {place.signatureDishes && place.signatureDishes.length > 0 ? (
+              <Reveal delay={0.05} className="mt-10">
+                <h2 className="font-serif-display text-2xl">{dict.place.signatureDishes}</h2>
+                <ul className="mt-4 space-y-4">
+                  {place.signatureDishes.map((dish) => (
+                    <li key={dish.name.en} className="border-l-2 border-accent/40 pl-4">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+                        <p className="font-medium">{dish.name[locale]}</p>
+                        {/* Only shown when we actually confirmed a price — a
+                            missing figure beats a stale one. */}
+                        {dish.priceThb !== null ? (
+                          <p className="text-sm tabular-nums text-accent-text">
+                            ฿{dish.priceThb.toLocaleString("en-US")}
+                          </p>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 leading-relaxed text-muted-foreground text-pretty">
+                        {dish.note[locale]}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ) : null}
+
+            {place.insiderNotes && place.insiderNotes.length > 0 ? (
+              <Reveal delay={0.05} className="mt-10">
+                <h2 className="font-serif-display text-2xl">{dict.place.insiderNotes}</h2>
+                <ul className="mt-4 space-y-2.5">
+                  {place.insiderNotes.map((note) => (
+                    <li key={note.en} className="flex items-start gap-3 leading-relaxed text-pretty">
+                      <Info className="mt-1 h-4 w-4 shrink-0 text-accent-text" />
+                      <span className="text-muted-foreground">{note[locale]}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
+            ) : null}
+
             <Reveal delay={0.1} className="mt-10 rounded-lg border-l-4 border-accent bg-surface-muted p-6">
               <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent-text">
                 {dict.place.localTip}
@@ -194,7 +294,15 @@ export default async function PlaceDetailPage({
                   </div>
                 </div>
               </dl>
-              <AddToPlanButton slug={place.slug} className="mt-6 w-full justify-center" />
+              <div className="mt-6 flex items-center gap-2">
+                <AddToPlanButton slug={place.slug} className="flex-1 justify-center" />
+                <FavoriteButton
+                  slug={place.slug}
+                  placeName={place.name[locale]}
+                  size="large"
+                  className="h-11 w-11 shrink-0"
+                />
+              </div>
             </div>
 
             <WeatherErrorBoundary

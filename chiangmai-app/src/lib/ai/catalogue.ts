@@ -26,6 +26,22 @@ function line(place: (typeof places)[number]): string {
   }
   if (place.requiresBooking) parts.push("booking required");
   if (place.outdoor) parts.push("outdoor");
+
+  // Awards and dish names are the two things travellers ask for by name ("a
+  // Michelin place", "somewhere for khao soi with beef"), so unlike
+  // `description` they earn their tokens. Lapsed awards are marked rather than
+  // dropped — a request for a current listing must not match a former one.
+  if (place.awards?.length) {
+    parts.push(
+      place.awards
+        .map((a) => `${a.name.en}${a.current ? " (current)" : " (no longer listed)"}`)
+        .join("; ")
+    );
+  }
+  if (place.signatureDishes?.length) {
+    parts.push(`dishes: ${place.signatureDishes.map((d) => d.name.en).join(", ")}`);
+  }
+
   parts.push(place.tags.join(", "));
 
   return parts.join(" | ");
@@ -43,7 +59,8 @@ export function buildPlaceCatalogue(): string {
   const rows = [...places].sort((a, b) => a.slug.localeCompare(b.slug)).map(line);
 
   return [
-    "FORMAT: slug | name EN / name TH | category | district | price | typical visit | rating | hours | [closed days] | [booking] | [outdoor] | tags",
+    "FORMAT: slug | name EN / name TH | category | district | price | typical visit | rating | hours | [closed days] | [booking] | [outdoor] | [awards] | [dishes] | tags",
+    "An award marked (no longer listed) is a past distinction — do not offer it as a current one.",
     "",
     ...rows,
     "",

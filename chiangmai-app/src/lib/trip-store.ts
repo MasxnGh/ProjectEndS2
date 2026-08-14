@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Trip, TravelMode } from "@/data/types";
-import type { TripWritablePayload } from "@/lib/db/types";
+import type { SerializedTrip, TripWritablePayload } from "@/lib/db/types";
 import { addDaysIso } from "@/lib/date-utils";
 
 export const UNSCHEDULED = "unscheduled";
@@ -86,6 +86,7 @@ export interface TripState {
   /** Adds a packing item by dictionary key (e.g. from a smart suggestion) so it re-localizes on locale switch, unlike free-text items. No-op if that key is already in the list. */
   addPackingItemByKey: (labelKey: string) => void;
   removePackingItem: (id: string) => void;
+  loadRemoteTrip: (trip: SerializedTrip) => void;
   setRemoteTripMeta: (id: string | null, updatedAt: string | null) => void;
   setSaveStatus: (status: TripState["saveStatus"]) => void;
   /** Detaches this device's plan from whatever cloud trip it was syncing to, without touching the local plan content — used on sign-out (so a different account signing in later doesn't sync over someone else's trip) and defensively if the server reports the remote trip no longer belongs to the current session. */
@@ -363,6 +364,58 @@ export const useTripStore = create<TripState>()(
       removePackingItem: (id) => {
         const state = get();
         set({ packingItems: state.packingItems.filter((item) => item.id !== id) });
+      },
+
+      /**
+       * The inverse of buildWritableTripPayload: takes a saved trip and makes
+       * it the plan on screen. Lives in the store because reconstructing
+       * `lockedTimes` needs lockedTimeKey's exact format — putting this in a
+       * component would let the two drift and silently drop pinned times.
+       *
+       * Sets remoteTripId/remoteUpdatedAt in the same `set` as the itinerary
+       * so autosave can never observe an in-between state where the new plan
+       * is loaded but still pointed at the previously-open trip — that would
+       * write this trip's contents over that one.
+       */
+      loadRemoteTrip: (trip) => {
+        const dayIds = trip.days.map((_, i) => `day-${i + 1}`);
+        const containers: Record<string, string[]> = { [UNSCHEDULED]: [] };
+        const lockedTimes: Record<string, string> = {};
+
+        trip.days.forEach((day, i) => {
+          const dayId = dayIds[i];
+          containers[dayId] = day.stops.map((stop) => stop.placeSlug);
+          for (const stop of day.stops) {
+            if (stop.userLocked && stop.plannedArrival) {
+              lockedTimes[lockedTimeKey(dayId, stop.placeSlug)] = stop.plannedArrival;
+            }
+          }
+        });
+
+        // A saved trip always has at least one day on screen, even if it was
+        // stored with none — an empty board has nowhere to drop a place.
+        if (dayIds.length === 0) {
+          dayIds.push("day-1");
+          containers["day-1"] = [];
+        }
+
+        set({
+          dayIds,
+          containers,
+          lockedTimes,
+          nextDayNumber: dayIds.length + 1,
+          tripName: trip.title,
+          travelDate: trip.startDate ?? "",
+          baseLocation: trip.baseLocation,
+          travelMode: trip.travelMode,
+          travelers: trip.travelers,
+          budgetThb: trip.budgetThb,
+          accommodationThb: trip.accommodationThb,
+          packingItems: trip.packingItems,
+          remoteTripId: trip.id,
+          remoteUpdatedAt: trip.updatedAt,
+          saveStatus: "saved",
+        });
       },
 
       setRemoteTripMeta: (id, updatedAt) => set({ remoteTripId: id, remoteUpdatedAt: updatedAt }),
