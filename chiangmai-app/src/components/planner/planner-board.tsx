@@ -37,6 +37,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { categorySpendBreakdown, dayStats, estimateTripCostThb } from "@/lib/trip-calculations";
 import { PlanImportListener } from "@/components/planner/plan-import-listener";
+import { SavedTripLoader } from "@/components/planner/saved-trip-loader";
 import { PlacePickerUrlSync } from "@/components/planner/place-picker-url-sync";
 import { PlacePickerPanel } from "@/components/planner/place-picker-panel";
 import { PlannerHighlightSync } from "@/components/planner/planner-highlight-sync";
@@ -518,6 +519,9 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
     <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
       <Suspense fallback={null}>
         <PlanImportListener />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SavedTripLoader />
       </Suspense>
       <Suspense fallback={null}>
         <PlacePickerUrlSync

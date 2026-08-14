@@ -52,6 +52,27 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "The shop sits in an open yard beside Wat Kuan Kama, across from Wat Lok Molee, and runs on a single pot: doors open at 10am and close when the curry is gone, usually by early afternoon. It drew a wave of foreign coverage after khao soi was named the world's best soup, but the operation never grew to match the attention.",
+      th: "ร้านตั้งอยู่ในลานโล่งข้างวัดควรค่าม้า เยื้องกับวัดโลกโมฬี และขายจากหม้อเดียว เปิดสิบโมงเช้าแล้วปิดเมื่อน้ำแกงหมด ซึ่งมักเป็นช่วงบ่ายต้น ร้านนี้ถูกสื่อต่างประเทศพูดถึงมากหลังข้าวซอยได้รับการจัดอันดับเป็นซุปที่ดีที่สุดในโลก แต่ตัวร้านไม่เคยขยายตามความสนใจนั้น",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Khao soi gai (chicken)", th: "ข้าวซอยไก่" },
+        note: { en: "The order most tables make, with a whole chicken leg in the bowl.", th: "เมนูที่เกือบทุกโต๊ะสั่ง มาพร้อมน่องไก่ทั้งชิ้น" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Tom yam noodles", th: "ก๋วยเตี๋ยวต้มยำ" },
+        note: { en: "The alternative regulars order when the khao soi runs out.", th: "ทางเลือกที่ลูกค้าประจำสั่งเมื่อข้าวซอยหมด" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Entrance is at the mouth of Sri Poom Soi 8, beside Wat Kuan Kama — easy to drive past.", th: "ทางเข้าอยู่ปากซอยศรีภูมิ 8 ข้างวัดควรค่าม้า ขับผ่านได้ง่ายๆ ถ้าไม่สังเกต" },
+      { en: "There is parking inside the yard, unusual for a shop this small.", th: "มีที่จอดรถในลานร้าน ซึ่งหาไม่ค่อยได้สำหรับร้านขนาดนี้" },
+      { en: "10:00–14:00 is the plan, not a promise — a busy day ends earlier.", th: "เวลา 10:00–14:00 เป็นแผน ไม่ใช่คำสัญญา วันไหนขายดีก็ปิดเร็วกว่านั้น" },
+    ],
   },
   {
     slug: "khao-soi-lamduan-faham",
@@ -96,6 +117,26 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
+    story: {
+      en: "Open since 1943, in the middle of the Second World War, which makes this the oldest khao soi house still running in Chiang Mai — a little over eighty years. The second-generation heir, Wanida Mahadilok, still tells the shop's story to anyone who asks, and the recipe has passed down rather than been reinvented.",
+      th: "เปิดตั้งแต่ พ.ศ. 2486 กลางสงครามโลกครั้งที่สอง ทำให้เป็นร้านข้าวซอยเก่าแก่ที่สุดที่ยังเปิดอยู่ในเชียงใหม่ นับได้กว่าแปดสิบปี ทายาทรุ่นที่สอง วนิดา มหาดิลก ยังเป็นผู้เล่าเรื่องร้านให้คนที่ถามฟังเสมอ และสูตรนี้ถูกส่งต่อมา ไม่ใช่ถูกคิดใหม่",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Khao soi nuea (beef)", th: "ข้าวซอยเนื้อ" },
+        note: { en: "Long-simmered shin — what regulars come back for over the chicken.", th: "น่องเนื้อเคี่ยวนาน คือเหตุผลที่ลูกค้าประจำเลือกแทนไก่" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Khao soi gai (chicken)", th: "ข้าวซอยไก่" },
+        note: { en: "The milder original, closest to what the shop opened with.", th: "แบบดั้งเดิมที่รสอ่อนกว่า ใกล้เคียงกับตอนร้านเปิดใหม่ที่สุด" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Faham Road is Chiang Mai's khao soi street — rival shops sit within a hundred metres, so a comparison is a short walk.", th: "ถนนฟ้าฮ่ามคือถนนข้าวซอยของเชียงใหม่ ร้านคู่แข่งอยู่ในระยะร้อยเมตร เดินเทียบกันได้สบาย" },
+      { en: "There are several branches now; this Faham address is the original.", th: "ปัจจุบันมีหลายสาขา แต่ที่ฟ้าฮ่ามคือร้านต้นตำรับ" },
+    ],
   },
   {
     slug: "khao-soi-mae-sai",
@@ -149,6 +190,34 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
+    story: {
+      en: "A Santitham shop passed down from the owner's grandparents and running for around three decades. Locals rarely use the full name — ask for 'Khao Soi Mae Sai (Pa Na)' and any motorbike taxi will know it.",
+      th: "ร้านย่านสันติธรรมที่สืบทอดมาจากรุ่นปู่ย่าของเจ้าของ เปิดมาราวสามสิบปี คนท้องถิ่นแทบไม่เรียกชื่อเต็ม บอกว่า \"ข้าวซอยแม่สาย (ป้านะ)\" แล้ววินมอเตอร์ไซค์รู้จักทันที",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Khao soi gai (chicken)", th: "ข้าวซอยไก่" },
+        note: { en: "The bowl the Michelin inspectors singled out — rich broth balancing coconut and spice.", th: "ชามที่ผู้ตรวจสอบมิชลินชี้ชม น้ำแกงเข้มข้นที่บาลานซ์กะทิกับเครื่องเทศได้พอดี" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Khao soi nuea (beef)", th: "ข้าวซอยเนื้อ" },
+        note: { en: "Same broth, heavier: order it if you like the curry more than the meat.", th: "น้ำแกงเดียวกันแต่หนักกว่า สั่งอันนี้ถ้าชอบน้ำแกงมากกว่าเนื้อ" },
+        priceThb: null,
+      },
+    ],
+    awards: [
+      {
+        name: { en: "MICHELIN Bib Gourmand", th: "มิชลิน บิบ กูร์มองด์" },
+        firstYear: null,
+        lastYear: null,
+        current: true,
+        source: "guide.michelin.com, checked 2026-08-13 (2025 and 2026 MICHELIN Guide Thailand)",
+      },
+    ],
+    insiderNotes: [
+      { en: "Portions run generous — one bowl each is usually enough before ordering sides.", th: "ปริมาณให้เยอะ สั่งคนละชามก่อนค่อยเติมเครื่องเคียงก็พอแล้ว" },
+    ],
   },
   {
     slug: "kao-soy-nimman",
@@ -190,6 +259,20 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "A Nimman Soi 7 shop that has been running for over a decade — old enough to predate most of the street around it, and the closest thing the neighbourhood has to a neighbourhood khao soi house rather than a destination one.",
+      th: "ร้านในซอยนิมมาน 7 ที่เปิดมากว่าสิบปี เก่าแก่กว่าร้านส่วนใหญ่บนถนนเส้นนี้ และเป็นสิ่งที่ใกล้เคียงที่สุดกับคำว่าร้านข้าวซอยประจำย่าน มากกว่าจะเป็นร้านที่ต้องตั้งใจไป",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Khao soi", th: "ข้าวซอย" },
+        note: { en: "The house recipe, served in a tidier room than the old-city shops.", th: "สูตรของร้าน เสิร์ฟในห้องที่เรียบร้อยกว่าร้านในเมืองเก่า" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Inside Nimman Soi 7, walkable from the Nimmanhaemin strip.", th: "อยู่ในซอยนิมมาน 7 เดินจากถนนนิมมานเหมินท์ได้" },
+    ],
   },
   {
     slug: "huen-phen",
@@ -249,6 +332,31 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "The restaurant's own account puts it at more than sixty years in business, which would date the first shop to the mid-1960s and makes it one of the longest-running northern kitchens in the city. Press write-ups vary between forty and sixty-two years; the figure here is the one the restaurant itself publishes.",
+      th: "ทางร้านระบุเองว่าเปิดให้บริการมากว่าหกสิบปี ซึ่งย้อนไปถึงราวกลางทศวรรษ 2500 และทำให้เป็นครัวอาหารเหนือที่เปิดต่อเนื่องยาวนานที่สุดแห่งหนึ่งของเมือง สื่อเขียนไว้ตั้งแต่สี่สิบถึงหกสิบสองปี ตัวเลขที่ใช้ตรงนี้คือตัวเลขที่ร้านประกาศเอง",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Gaeng hang le", th: "แกงฮังเล" },
+        note: { en: "Burmese-influenced pork curry, slow-cooked with ginger and tamarind — the dish the house is judged on.", th: "แกงหมูอิทธิพลพม่า เคี่ยวกับขิงและมะขาม เป็นจานที่ใช้ตัดสินฝีมือร้านนี้" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Nam prik ong", th: "น้ำพริกอ่อง" },
+        note: { en: "Tomato-and-pork relish with crisp vegetables and pork crackling.", th: "น้ำพริกมะเขือเทศกับหมู กินกับผักสดและแคบหมู" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Sai ua", th: "ไส้อั่ว" },
+        note: { en: "Northern herb sausage, grilled and sliced.", th: "ไส้อั่วสมุนไพรเหนือ ย่างแล้วหั่นเสิร์ฟ" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Two different restaurants share the name and address: a plain rice-and-curry counter by day, a full Lanna dining room in the wooden house at night.", th: "ที่เดียวกันแต่เป็นสองร้าน กลางวันเป็นเคาน์เตอร์ข้าวราดแกงเรียบง่าย กลางคืนเป็นห้องอาหารล้านนาเต็มรูปแบบในเรือนไม้" },
+      { en: "There are now several branches — the Ratchamanka original is the one people mean.", th: "ปัจจุบันมีหลายสาขา แต่ที่คนหมายถึงคือร้านเดิมย่านราชมรรคา" },
+    ],
   },
   {
     slug: "huen-muan-jai",
@@ -302,6 +410,35 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "Opened in 2011 by Charan Thipeung, a former television chef, in a Lanna house with a tree-shaded garden. The name means 'happy home', and the kitchen has kept to northern Thai cooking rather than broadening into general Thai food as its reputation grew.",
+      th: "เปิดในปี 2554 โดยจรัญ ทิพย์เอื้อง อดีตเชฟรายการโทรทัศน์ ในเรือนล้านนาที่มีสวนร่มไม้ ชื่อร้านแปลว่า \"บ้านที่มีความสุข\" และครัวยังคงทำอาหารเหนือ ไม่ได้ขยายไปทำอาหารไทยทั่วไปตามชื่อเสียงที่โตขึ้น",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Gaeng hang le", th: "แกงฮังเล" },
+        note: { en: "The benchmark northern curry, cooked to the version the chef grew up on.", th: "แกงเหนือมาตรฐานที่ใช้วัดฝีมือ ทำตามแบบที่เชฟโตมากับมัน" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Nam prik num with pork crackling", th: "น้ำพริกหนุ่มแคบหมู" },
+        note: { en: "Charred green chilli relish — the plate that arrives first at most tables.", th: "น้ำพริกพริกหนุ่มเผา จานที่มาถึงโต๊ะเป็นอันดับแรกของเกือบทุกโต๊ะ" },
+        priceThb: null,
+      },
+    ],
+    awards: [
+      {
+        name: { en: "MICHELIN Bib Gourmand", th: "มิชลิน บิบ กูร์มองด์" },
+        firstYear: null,
+        lastYear: null,
+        current: true,
+        source: "guide.michelin.com, checked 2026-08-13 (2026 MICHELIN Guide Thailand)",
+      },
+    ],
+    insiderNotes: [
+      { en: "Set in a garden house on Ratchaphruek Road, a little outside the moat — worth the short ride.", th: "อยู่ในเรือนมีสวนบนถนนราชพฤกษ์ นอกคูเมืองออกไปเล็กน้อย คุ้มกับการนั่งรถไปหน่อย" },
+      { en: "Michelin rates it in the ฿฿ band — cheaper than its reputation suggests.", th: "มิชลินจัดอยู่ในช่วงราคา ฿฿ ถูกกว่าที่ชื่อเสียงทำให้คิด" },
+    ],
   },
   {
     slug: "sp-chicken",
@@ -343,6 +480,21 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "The shop's own count puts it at thirty-nine years of grilling, which places its start in the late 1980s. The whole operation turns on one thing: chickens on a rotisserie in the window, basted and turned until the skin sets.",
+      th: "ทางร้านนับเองว่าย่างไก่มาสามสิบเก้าปี ซึ่งย้อนไปถึงปลายทศวรรษ 2520 ทั้งร้านหมุนรอบสิ่งเดียว คือไก่บนเตาหมุนที่หน้าร้าน ทาน้ำหมักและหมุนไปจนหนังเซ็ตตัว",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Rotisserie chicken", th: "ไก่ย่างเตาหมุน" },
+        note: { en: "Half or whole, off the turning spit — order it and little else.", th: "สั่งครึ่งตัวหรือทั้งตัวจากเตาหมุน สั่งอย่างอื่นน้อยๆ ก็พอ" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Open 10:00–17:00 — it is a lunch place, not a dinner one.", th: "เปิด 10:00–17:00 เป็นร้านมื้อกลางวัน ไม่ใช่มื้อเย็น" },
+      { en: "Tucked in a lane near Wat Phra Singh, with a handful of tables — expect to wait or take away.", th: "อยู่ในซอยแถววัดพระสิงห์ มีโต๊ะไม่กี่ตัว เตรียมใจว่าต้องรอหรือซื้อกลับ" },
+    ],
   },
   {
     slug: "cherng-doi-roast-chicken",
@@ -387,6 +539,25 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "A small Isaan grill on the Nimman side of town that built its name on one preparation: chicken roasted until the skin crackles while the meat stays wet. Nothing about the room has been dressed up to match the queue.",
+      th: "ร้านย่างอีสานเล็กๆ ฝั่งนิมมาน ที่สร้างชื่อจากวิธีเดียว คือย่างไก่จนหนังกรอบแต่เนื้อยังฉ่ำ ไม่มีอะไรในร้านถูกแต่งให้ดูดีขึ้นตามคิวที่ยาวขึ้น",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Crispy-skin roast chicken", th: "ไก่ย่างหนังกรอบ" },
+        note: { en: "The only order that matters here — crackling skin, juicy meat.", th: "จานเดียวที่สำคัญของร้านนี้ หนังกรอบ เนื้อฉ่ำ" },
+        priceThb: 85,
+      },
+      {
+        name: { en: "Som tam", th: "ส้มตำ" },
+        note: { en: "Ordered alongside by nearly every table to cut the richness.", th: "เกือบทุกโต๊ะสั่งคู่กันเพื่อตัดความมัน" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Under ฿100 a head is normal, even ordering freely.", th: "ต่อหัวไม่ถึง 100 บาทเป็นเรื่องปกติ ถึงจะสั่งไม่ยั้งก็ตาม" },
+    ],
   },
   {
     slug: "lert-ros",
@@ -428,6 +599,25 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "Trading since 1986, down a narrow lane off Ratchadamnoen near Tha Phae — close enough to the Sunday walking street to be central, hidden enough that most people walk past the entrance. It is an Isaan kitchen in a northern city, and it grills whole fish over charcoal in the alley.",
+      th: "เปิดมาตั้งแต่ปี 2529 อยู่ในซอยแคบแยกจากถนนราชดำเนินแถวท่าแพ ใกล้ถนนคนเดินวันอาทิตย์พอที่จะเรียกว่าใจกลางเมือง แต่ซ่อนพอที่คนส่วนใหญ่จะเดินผ่านปากทางไป เป็นครัวอีสานในเมืองเหนือ และย่างปลาทั้งตัวบนเตาถ่านในซอย",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Salt-crusted grilled fish", th: "ปลาเผาเกลือ" },
+        note: { en: "Grilled whole in the lane — the smell is how most people find the place.", th: "ย่างทั้งตัวในซอย กลิ่นคือสิ่งที่พาคนส่วนใหญ่มาเจอร้านนี้" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Larb", th: "ลาบ" },
+        note: { en: "Ordered with sticky rice, the way the regulars eat.", th: "สั่งคู่ข้าวเหนียว แบบที่ลูกค้าประจำกิน" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "The entrance is an unmarked lane off Ratchadamnoen — look for the charcoal smoke rather than a sign.", th: "ทางเข้าเป็นซอยไม่มีป้ายแยกจากถนนราชดำเนิน มองหาควันเตาถ่านแทนที่จะมองหาป้าย" },
+    ],
   },
   {
     slug: "aroon-rai",
@@ -469,6 +659,30 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
+    story: {
+      en: "Frequently described locally as the oldest northern-food restaurant in Chiang Mai, sitting just outside the moat near Tha Phae Gate. It grinds its own curry pastes rather than buying them in, which is the reason the older regulars give for still coming.",
+      th: "คนท้องถิ่นมักเรียกว่าเป็นร้านอาหารเมืองที่เก่าแก่ที่สุดในเชียงใหม่ ตั้งอยู่นอกคูเมืองแถวประตูท่าแพ ร้านตำเครื่องแกงเอง ไม่ได้ซื้อสำเร็จ ซึ่งเป็นเหตุผลที่ลูกค้าเก่าๆ ยกมาว่าทำไมยังกลับมา",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Larb khua", th: "ลาบคั่ว" },
+        note: { en: "Northern-style larb, dry-fried with the house spice mix.", th: "ลาบแบบเหนือ คั่วแห้งกับเครื่องลาบสูตรร้าน" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Naem stir-fried with egg and pickled garlic", th: "แหนมผัดไข่กระเทียมโทนดอง" },
+        note: { en: "The dish reviewers name most often after the larb.", th: "จานที่คนรีวิวพูดถึงบ่อยที่สุดรองจากลาบ" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Gaeng hang le", th: "แกงฮังเล" },
+        note: { en: "Made with the house-ground paste.", th: "ทำจากเครื่องแกงที่ตำเอง" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Budget ฿101–250 a head, mid-range for northern food in the old city.", th: "ตั้งงบราว 101–250 บาทต่อหัว ถือว่ากลางๆ สำหรับอาหารเหนือในเมืองเก่า" },
+    ],
   },
   {
     slug: "rote-yiam-beef-noodle",
@@ -510,6 +724,40 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
+    story: {
+      en: "More than thirty years of one dish: beef noodles in a broth built on Chinese herbs, with the beef balls and offal prepared fresh each morning rather than bought in. The Michelin inspectors describe it as a renowned shop, and the queue agrees.",
+      th: "กว่าสามสิบปีกับอาหารจานเดียว คือก๋วยเตี๋ยวเนื้อในน้ำซุปที่สร้างจากเครื่องยาจีน ลูกชิ้นและเครื่องในทำสดใหม่ทุกเช้า ไม่ได้ซื้อสำเร็จ ผู้ตรวจสอบมิชลินเรียกที่นี่ว่าร้านที่มีชื่อเสียง และคิวก็เห็นด้วย",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Beef noodles", th: "ก๋วยเตี๋ยวเนื้อ" },
+        note: { en: "Tender beef in the herb broth — the reason the shop exists.", th: "เนื้อนุ่มในน้ำซุปเครื่องยาจีน คือเหตุผลที่ร้านนี้มีอยู่" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Creamy beef curry", th: "แกงกะหรี่เนื้อ" },
+        note: { en: "Michelin's suggestion for anyone who does not want noodles.", th: "ข้อเสนอของมิชลินสำหรับคนที่ไม่อยากกินเส้น" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Coconut ice cream", th: "ไอศกรีมกะทิ" },
+        note: { en: "Called out by the inspectors — do not skip it.", th: "ผู้ตรวจสอบมิชลินระบุถึงโดยเฉพาะ อย่าข้าม" },
+        priceThb: null,
+      },
+    ],
+    awards: [
+      {
+        name: { en: "MICHELIN Guide listed", th: "ร้านในมิชลิน ไกด์" },
+        firstYear: null,
+        lastYear: null,
+        current: true,
+        source: "guide.michelin.com, checked 2026-08-13 (current MICHELIN Guide Thailand)",
+      },
+    ],
+    insiderNotes: [
+      { en: "Close to Art in Paradise, which makes it an easy stop after that museum.", th: "อยู่ใกล้ Art in Paradise แวะต่อจากพิพิธภัณฑ์นั้นได้สะดวก" },
+      { en: "The menu is hard to read without Thai — pointing works fine.", th: "เมนูอ่านยากถ้าไม่รู้ภาษาไทย ชี้เอาก็ได้ ไม่มีปัญหา" },
+    ],
   },
   {
     slug: "blackitch-artisan-kitchen",
@@ -562,6 +810,30 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "Sixteen seats and a seasonal tasting menu of more than ten courses, built from ingredients gathered across Thailand. Chef Phanuphol 'Black' Bulsuwan ferments and ages much of it in-house — soybean among them — a practice he learned from his grandmother rather than from a kitchen.",
+      th: "สิบหกที่นั่งกับเทสติ้งเมนูตามฤดูกาลกว่าสิบคอร์ส สร้างจากวัตถุดิบที่รวบรวมมาจากทั่วประเทศไทย เชฟภานุภน \"แบล็ค\" บุลสุวรรณ หมักและบ่มวัตถุดิบหลายอย่างเองในร้าน รวมถึงถั่วเหลือง ซึ่งเป็นวิชาที่เรียนมาจากย่า ไม่ใช่จากครัวไหน",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Seasonal tasting menu", th: "เทสติ้งเมนูตามฤดูกาล" },
+        note: { en: "There is no à la carte — the menu is the meal, and it changes with what is available.", th: "ไม่มีสั่งแยกจาน เมนูคือมื้ออาหารทั้งมื้อ และเปลี่ยนไปตามวัตถุดิบที่หาได้" },
+        priceThb: null,
+      },
+    ],
+    awards: [
+      {
+        name: { en: "MICHELIN Guide listed", th: "ร้านในมิชลิน ไกด์" },
+        firstYear: null,
+        lastYear: null,
+        current: true,
+        source: "guide.michelin.com, checked 2026-08-13 (current MICHELIN Guide Thailand)",
+      },
+    ],
+    insiderNotes: [
+      { en: "Sixteen seats means booking ahead is not optional.", th: "สิบหกที่นั่ง แปลว่าการจองล่วงหน้าไม่ใช่ทางเลือก" },
+      { en: "Tell them about allergies when booking, not on arrival — the menu is fixed and prepped in advance.", th: "แจ้งเรื่องแพ้อาหารตอนจอง ไม่ใช่ตอนไปถึง เพราะเมนูตายตัวและเตรียมล่วงหน้า" },
+    ],
   },
   {
     slug: "meena-rice-based-cuisine",
@@ -612,6 +884,30 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
+    story: {
+      en: "A countryside room in the Lhong Him Kaw creative community outside the city, built around rice rather than around a chef. Its signature is five-coloured rice — five varieties tinted with butterfly pea, turmeric and other plants — served as the centre of the plate instead of an afterthought beside it.",
+      th: "ห้องอาหารกลางทุ่งในชุมชนสร้างสรรค์โหล่งฮิมคาวนอกเมือง สร้างขึ้นรอบ \"ข้าว\" ไม่ใช่รอบตัวเชฟ จุดเด่นคือข้าวห้าสี ข้าวห้าชนิดที่ย้อมด้วยอัญชัน ขมิ้น และพืชอื่น เสิร์ฟเป็นศูนย์กลางของจาน ไม่ใช่ของแถมข้างจาน",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Five-coloured rice", th: "ข้าวห้าสี" },
+        note: { en: "The dish the restaurant is known for, and the reason to make the drive out.", th: "จานที่ทำให้ร้านนี้เป็นที่รู้จัก และเป็นเหตุผลที่ควรขับรถออกมา" },
+        priceThb: null,
+      },
+    ],
+    awards: [
+      {
+        name: { en: "MICHELIN Bib Gourmand", th: "มิชลิน บิบ กูร์มองด์" },
+        firstYear: null,
+        lastYear: null,
+        current: true,
+        source: "guide.michelin.com, checked 2026-08-13 (current MICHELIN Guide Thailand)",
+      },
+    ],
+    insiderNotes: [
+      { en: "Open-air seating by a pond and rice fields — pleasant in cool season, hot at midday in April.", th: "ที่นั่งกลางแจ้งริมสระและทุ่งนา สบายในหน้าหนาว แต่ร้อนมากตอนเที่ยงเดือนเมษายน" },
+      { en: "It is a drive from the old city; pair it with the Lhong Him Kaw craft village around it.", th: "ต้องขับรถออกจากเมืองเก่า ควรไปคู่กับหมู่บ้านหัตถกรรมโหล่งฮิมคาวที่อยู่รอบๆ" },
+    ],
   },
   {
     slug: "free-bird-cafe",
@@ -653,6 +949,26 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
+    story: {
+      en: "A plant-based café run as a charity: the proceeds fund Thai Freedom House, a language and arts learning centre for refugees and indigenous people from Burma and the Shan State, founded by American Lisa Nesser. The same premises also run a donation centre and a thrift store, so the café is one part of a larger operation.",
+      th: "คาเฟ่มังสวิรัติที่ดำเนินการแบบการกุศล รายได้สนับสนุน Thai Freedom House ศูนย์เรียนรู้ภาษาและศิลปะสำหรับผู้ลี้ภัยและกลุ่มชาติพันธุ์จากพม่าและรัฐฉาน ก่อตั้งโดยลิซ่า เนสเซอร์ ชาวอเมริกัน สถานที่เดียวกันยังเป็นศูนย์รับบริจาคและร้านมือสอง คาเฟ่จึงเป็นเพียงส่วนหนึ่งของงานที่ใหญ่กว่า",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Burmese and Shan dishes", th: "อาหารพม่าและไทใหญ่" },
+        note: { en: "Cooked by the community the café supports — the part of the menu you cannot get elsewhere.", th: "ปรุงโดยชุมชนที่คาเฟ่นี้สนับสนุน เป็นส่วนของเมนูที่หากินที่อื่นไม่ได้" },
+        priceThb: null,
+      },
+      {
+        name: { en: "Breakfast and smoothies", th: "อาหารเช้าและสมูทตี้" },
+        note: { en: "Vegan throughout; the café is open for breakfast and lunch only.", th: "วีแกนทั้งหมด คาเฟ่เปิดเฉพาะมื้อเช้าและกลางวัน" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Entirely plant-based — there is no meat option, by design.", th: "เป็นมังสวิรัติทั้งร้าน ไม่มีตัวเลือกเนื้อสัตว์ ซึ่งเป็นความตั้งใจ" },
+      { en: "Bring clothes or books you no longer need — the thrift store and donation centre are on the same site.", th: "เอาเสื้อผ้าหรือหนังสือที่ไม่ใช้แล้วไปด้วยได้ เพราะร้านมือสองและศูนย์รับบริจาคอยู่ที่เดียวกัน" },
+    ],
   },
   {
     slug: "ginger-farm-kitchen",
@@ -694,6 +1010,21 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
+    story: {
+      en: "It started as an actual farm in Saraphi — rice paddies, native vegetable beds, livestock — and the kitchen came second, after visitors kept asking to eat what was being grown. The city restaurants opened under a 'farm to city' idea and there are now branches in Bangkok too, but the Saraphi farm is still the source.",
+      th: "เริ่มจากฟาร์มจริงๆ ที่อำเภอสารภี มีนาข้าว แปลงผักพื้นบ้าน และสัตว์เลี้ยง ครัวมาทีหลัง หลังจากคนที่มาเยี่ยมเอาแต่ขอกินสิ่งที่ปลูกอยู่ ร้านในเมืองเปิดขึ้นด้วยแนวคิด \"farm to city\" ตอนนี้มีสาขาในกรุงเทพฯ ด้วย แต่ฟาร์มที่สารภียังเป็นต้นทางเหมือนเดิม",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Northern Thai dishes from the farm's own produce", th: "อาหารเหนือจากผลผลิตของฟาร์มเอง" },
+        note: { en: "The menu is built around what the Saraphi farm grows.", th: "เมนูสร้างขึ้นรอบสิ่งที่ฟาร์มสารภีปลูกได้" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "The kitchen states it adds no MSG.", th: "ทางร้านระบุว่าไม่ใส่ผงชูรส" },
+      { en: "The original farm in Saraphi runs its own activities — a different visit from the restaurant.", th: "ฟาร์มต้นทางที่สารภีมีกิจกรรมของตัวเอง เป็นคนละทริปกับการมากินที่ร้าน" },
+    ],
   },
   {
     slug: "khum-khantoke",
@@ -746,5 +1077,20 @@ export const restaurants: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
+    story: {
+      en: "Founded by Dr Watchara Tantranon out of an attachment to his home city, and running for more than two decades. The format is khantoke — a Lanna meal served on a low round tray — staged with a programme of nine traditional performances, so it is as much a show as a dinner.",
+      th: "ก่อตั้งโดย ดร.วัชระ ตันตรานนท์ ด้วยความผูกพันกับเมืองเกิด และเปิดมากว่ายี่สิบปี รูปแบบคือขันโตก สำรับล้านนาที่เสิร์ฟบนโตกกลมเตี้ย จัดคู่กับการแสดงพื้นเมืองเก้าชุด จึงเป็นทั้งการแสดงและมื้อค่ำพอๆ กัน",
+    },
+    signatureDishes: [
+      {
+        name: { en: "Khantoke set", th: "สำรับขันโตก" },
+        note: { en: "A fixed Lanna spread — hang le curry, nam prik, sai ua, crackling — eaten from the shared tray.", th: "สำรับล้านนาตายตัว แกงฮังเล น้ำพริก ไส้อั่ว แคบหมู กินร่วมกันจากโตกเดียว" },
+        priceThb: null,
+      },
+    ],
+    insiderNotes: [
+      { en: "Book ahead — seating is arranged around the performance schedule, not around walk-ins.", th: "ควรจองล่วงหน้า เพราะที่นั่งจัดตามรอบการแสดง ไม่ได้จัดสำหรับคนเดินเข้า" },
+      { en: "Nine performance sets run through the meal; arriving late means missing the opening ones.", th: "มีการแสดงเก้าชุดตลอดมื้อ มาสายแปลว่าพลาดชุดแรกๆ" },
+    ],
   },
 ];

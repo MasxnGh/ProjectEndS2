@@ -1,13 +1,25 @@
 import type { NextRequest } from "next/server";
 import { ObjectId } from "mongodb";
-import { auth } from "@/auth";
 import { getTripsCollection } from "@/lib/db/collections";
 import { parseTripWritablePayload, toSerializedTrip } from "@/lib/db/types";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { requireUserId, unauthorizedResponse, rateLimitResponse } from "@/lib/api-auth";
 
-async function requireUserId(): Promise<string | null> {
-  const session = await auth();
-  return session?.user?.id ?? null;
+/** Reads one trip the caller owns — what "Open" in My Trips loads into the planner. */
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const userId = await requireUserId();
+  if (!userId) return unauthorizedResponse();
+
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) {
+    return Response.json({ error: "Invalid trip id" }, { status: 400 });
+  }
+
+  const trips = await getTripsCollection();
+  const doc = await trips.findOne({ _id: new ObjectId(id), ownerId: userId, deletedAt: null });
+  if (!doc) {
+    return Response.json({ error: "Trip not found" }, { status: 404 });
+  }
+  return Response.json({ trip: toSerializedTrip(doc) });
 }
 
 /**
@@ -21,22 +33,15 @@ async function requireUserId(): Promise<string | null> {
  */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userId = await requireUserId();
-  if (!userId) {
-    return Response.json({ error: "Sign in required" }, { status: 401 });
-  }
+  if (!userId) return unauthorizedResponse();
 
   const { id } = await params;
   if (!ObjectId.isValid(id)) {
     return Response.json({ error: "Invalid trip id" }, { status: 400 });
   }
 
-  const rateLimit = checkRateLimit(`trips:update:${userId}`, { max: 60, windowMs: 60_000 });
-  if (!rateLimit.allowed) {
-    return Response.json(
-      { error: "Too many requests, please slow down" },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } }
-    );
-  }
+  const limited = rateLimitResponse(`trips:update:${userId}`, { max: 60, windowMs: 60_000 });
+  if (limited) return limited;
 
   let body: unknown;
   try {
@@ -78,4 +83,38 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 
   return Response.json({ trip: toSerializedTrip(updated), conflict });
+}
+
+/**
+ * Soft delete: stamps `deletedAt` so every read path (which all filter on
+ * `deletedAt: null`) stops returning it, while the document itself survives
+ * for the undo window in My Trips. A hard delete here would make "undo"
+ * impossible to honour, and the brief asks for one.
+ *
+ * Deleting an already-deleted trip is treated as not found rather than as an
+ * error to re-stamp — that would move the undo window and, worse, would let a
+ * double-click quietly extend it.
+ */
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const userId = await requireUserId();
+  if (!userId) return unauthorizedResponse();
+
+  const { id } = await params;
+  if (!ObjectId.isValid(id)) {
+    return Response.json({ error: "Invalid trip id" }, { status: 400 });
+  }
+
+  const limited = rateLimitResponse(`trips:delete:${userId}`, { max: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
+  const trips = await getTripsCollection();
+  const result = await trips.updateOne(
+    { _id: new ObjectId(id), ownerId: userId, deletedAt: null },
+    { $set: { deletedAt: new Date() } }
+  );
+
+  if (result.matchedCount === 0) {
+    return Response.json({ error: "Trip not found" }, { status: 404 });
+  }
+  return Response.json({ ok: true });
 }

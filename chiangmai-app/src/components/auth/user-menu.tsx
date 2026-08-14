@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { Heart, LogOut, Luggage, ShieldCheck } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 
 export function UserMenu({
   name,
   email,
   image,
+  locale,
   onSignOutRequest,
 }: {
   name: string | null;
   email: string | null;
   image: string | null;
+  locale: string;
   onSignOutRequest: () => void;
 }) {
   const { dict } = useLocale();
@@ -65,6 +68,33 @@ export function UserMenu({
             <p className="truncate text-sm font-medium">{displayName}</p>
             {email ? <p className="truncate text-xs text-muted-foreground">{email}</p> : null}
           </div>
+          <Link
+            href={`/${locale}/my-trips`}
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+            className="mt-1 flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+          >
+            <Luggage className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {dict.myTrips.navLabel}
+          </Link>
+          <Link
+            href={`/${locale}/favorites`}
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+            className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+          >
+            <Heart className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {dict.favorites.navLabel}
+          </Link>
+          <Link
+            href={`/${locale}/account`}
+            role="menuitem"
+            onClick={() => setIsOpen(false)}
+            className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+          >
+            <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+            {dict.account.navLabel}
+          </Link>
           <button
             type="button"
             role="menuitem"
@@ -72,7 +102,7 @@ export function UserMenu({
               setIsOpen(false);
               onSignOutRequest();
             }}
-            className="mt-1 flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+            className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
           >
             <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
             {dict.auth.menu.signOut}

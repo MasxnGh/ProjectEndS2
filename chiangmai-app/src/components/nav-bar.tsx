@@ -97,6 +97,7 @@ export function NavBar() {
               name={sessionUser.name}
               email={sessionUser.email}
               image={sessionUser.image}
+              locale={locale}
               onSignOutRequest={() => setSignOutConfirmOpen(true)}
             />
           ) : (
