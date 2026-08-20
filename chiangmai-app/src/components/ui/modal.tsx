@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { EASE } from "@/lib/motion";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -116,7 +117,7 @@ export function Modal({
               initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 8 }}
               animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
               exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 8 }}
-              transition={shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={shouldReduceMotion ? { duration: 0.01 } : { duration: 0.2, ease: EASE }}
               className={cn(
                 "relative w-full max-w-md rounded-2xl border border-border bg-background p-6 shadow-elevated",
                 className

@@ -192,4 +192,125 @@ describe("buildDayTimeline", () => {
     expect(timeline.stops[1].conflict).toBe(true);
     expect(timeline.stops[1].arrivalMinutes).toBe(9 * 60 + 30);
   });
+
+  // Reported from the running planner: Wat Chiang Man's "sunrise-30 to
+  // sunrise+90" window put the whole day at 05:36, which landed a khao soi
+  // shop that opens at 08:00 at 06:27 with nothing on screen saying so.
+  describe("keeping an anchored day inside opening hours", () => {
+    const OLD_CITY = { lat: 18.7873, lng: 98.9853 };
+    const NEARBY = { lat: 18.7876, lng: 98.9908 };
+
+    function sunriseTemple(overrides: Partial<Place> = {}) {
+      return makePlace({
+        slug: "temple",
+        coordinates: OLD_CITY,
+        durationMinutes: 45,
+        openingHours: { opens: "05:00", closes: "18:00" },
+        bestTimeWindows: [
+          {
+            label: { en: "Almsgiving", th: "ตักบาตร" },
+            anchor: "sunrise",
+            start: -30,
+            end: 90,
+            quality: "ideal",
+          },
+        ],
+        ...overrides,
+      });
+    }
+
+    it("slides the anchor later so a later stop is not scheduled while shut", () => {
+      const lateOpener = makePlace({
+        slug: "khao-soi",
+        coordinates: NEARBY,
+        durationMinutes: 40,
+        openingHours: { opens: "08:00", closes: "16:00" },
+      });
+
+      const timeline = buildDayTimeline({
+        order: [sunriseTemple(), lateOpener],
+        sun: SUN,
+        baseLocation: null,
+      });
+
+      expect(timeline.stops.every((s) => !s.outsideOpeningHours)).toBe(true);
+      expect(timeline.stops[1].arrivalMinutes).toBeGreaterThanOrEqual(8 * 60);
+    });
+
+    it("still starts at the window's first minute when nothing downstream objects", () => {
+      const alsoEarly = makePlace({
+        slug: "also-early",
+        coordinates: NEARBY,
+        durationMinutes: 30,
+        openingHours: { opens: "05:00", closes: "18:00" },
+      });
+
+      const timeline = buildDayTimeline({
+        order: [sunriseTemple(), alsoEarly],
+        sun: SUN,
+        baseLocation: null,
+      });
+
+      // Sunrise is 06:00 in these tests, so the window opens at 05:30.
+      expect(timeline.stops[0].arrivalMinutes).toBe(5 * 60 + 30);
+    });
+
+    it("never slides past the end of the window", () => {
+      // Opens long after the window closes — no shift can satisfy it.
+      const impossible = makePlace({
+        slug: "impossible",
+        coordinates: NEARBY,
+        durationMinutes: 30,
+        openingHours: { opens: "15:00", closes: "18:00" },
+      });
+
+      const timeline = buildDayTimeline({
+        order: [sunriseTemple(), impossible],
+        sun: SUN,
+        baseLocation: null,
+      });
+
+      const windowEnd = SUN.sunriseMinutes + 90;
+      expect(timeline.stops[0].arrivalMinutes).toBeLessThanOrEqual(windowEnd);
+      // And it says so rather than pretending the shop is open.
+      expect(timeline.stops[1].outsideOpeningHours).toBe(true);
+    });
+
+    it("does not slide a user-locked anchor, whose contract is that it never moves", () => {
+      const locked = makePlace({
+        slug: "locked",
+        coordinates: OLD_CITY,
+        durationMinutes: 30,
+        openingHours: { opens: "10:00", closes: "18:00" },
+      });
+
+      const timeline = buildDayTimeline({
+        order: [locked],
+        sun: SUN,
+        baseLocation: null,
+        lockedArrivals: { locked: "07:00" },
+      });
+
+      expect(timeline.stops[0].arrivalMinutes).toBe(7 * 60);
+      expect(timeline.stops[0].outsideOpeningHours).toBe(true);
+    });
+
+    it("leaves places with unverified hours alone rather than guessing", () => {
+      const unknownHours = makePlace({
+        slug: "unknown",
+        coordinates: NEARBY,
+        durationMinutes: 30,
+        openingHours: null,
+      });
+
+      const timeline = buildDayTimeline({
+        order: [sunriseTemple(), unknownHours],
+        sun: SUN,
+        baseLocation: null,
+      });
+
+      expect(timeline.stops[0].arrivalMinutes).toBe(5 * 60 + 30);
+      expect(timeline.stops[1].outsideOpeningHours).toBe(false);
+    });
+  });
 });

@@ -4,18 +4,9 @@ import type { ReactNode } from "react";
 import { Pencil, Users, Wallet } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
-import { formatMinutes, formatThb } from "@/lib/trip-calculations";
 import { DateRangePicker } from "@/components/planner/date-range-picker";
 
-interface TripStats {
-  days: number;
-  places: number;
-  minutes: number;
-  /** System-calculated estimate (entry + transport + food + accommodation) — distinct from the "Budget" field above, which is what the traveller typed in. */
-  estimatedCostThb: number;
-}
-
-export function TripDetailsForm({ stats, actions }: { stats?: TripStats; actions?: ReactNode }) {
+export function TripDetailsForm({ actions }: { actions?: ReactNode }) {
   const { dict } = useLocale();
   const t = dict.planner.details;
 
@@ -115,27 +106,6 @@ export function TripDetailsForm({ stats, actions }: { stats?: TripStats; actions
           </div>
         </div>
       </div>
-
-      {stats ? (
-        <div className="mt-6 grid grid-cols-2 divide-y divide-border border-t border-border pt-4 sm:grid-cols-4 sm:divide-y-0 sm:divide-x">
-          <div className="py-2 sm:py-0 sm:pr-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">{dict.planner.totalDays}</p>
-            <p className="mt-1 font-serif-display text-xl">{stats.days}</p>
-          </div>
-          <div className="py-2 sm:py-0 sm:px-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">{dict.planner.totalPlaces}</p>
-            <p className="mt-1 font-serif-display text-xl">{stats.places}</p>
-          </div>
-          <div className="py-2 sm:py-0 sm:px-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">{dict.planner.totalTime}</p>
-            <p className="mt-1 font-serif-display text-xl">{formatMinutes(stats.minutes)}</p>
-          </div>
-          <div className="py-2 sm:py-0 sm:pl-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">{dict.planner.estimatedCost}</p>
-            <p className="mt-1 font-serif-display text-xl text-accent-text">~{formatThb(stats.estimatedCostThb)}</p>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
+import { EASE } from "@/lib/motion";
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Logo } from "@/components/logo";
@@ -127,7 +128,7 @@ export function NavBar() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: EASE }}
             className="overflow-hidden border-t border-border bg-background md:hidden"
           >
             <div className="flex flex-col gap-1 px-6 py-6">

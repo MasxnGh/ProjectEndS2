@@ -32,8 +32,9 @@ function BudgetPanel({ days }: { days: { places: Place[] }[] }) {
   const accommodationThb = useTripStore((s) => s.accommodationThb);
   const setAccommodationThb = useTripStore((s) => s.setAccommodationThb);
   const travelers = useTripStore((s) => s.travelers);
+  const travelMode = useTripStore((s) => s.travelMode);
 
-  const breakdown = useMemo(() => categorySpendBreakdown(days), [days]);
+  const breakdown = useMemo(() => categorySpendBreakdown(days, travelMode), [days, travelMode]);
   const entry = breakdown.entry * travelers;
   const food = breakdown.food * travelers;
   const transport = breakdown.transport;

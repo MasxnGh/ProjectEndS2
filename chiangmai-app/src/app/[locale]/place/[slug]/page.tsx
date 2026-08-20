@@ -15,6 +15,7 @@ import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
 import { AddToPlanButton } from "@/components/add-to-plan-button";
 import { FavoriteButton } from "@/components/favorite-button";
+import { PlaceStickyActions } from "@/components/place-sticky-actions";
 import { Reveal } from "@/components/reveal";
 import { Suspense } from "react";
 import { PlaceWeatherPanel, WeatherPanelSkeleton } from "@/components/weather/place-weather-panel";
@@ -294,6 +295,7 @@ export default async function PlaceDetailPage({
                   </div>
                 </div>
               </dl>
+              <PlaceStickyActions slug={place.slug} placeName={place.name[locale]} />
               <div className="mt-6 flex items-center gap-2">
                 <AddToPlanButton slug={place.slug} className="flex-1 justify-center" />
                 <FavoriteButton

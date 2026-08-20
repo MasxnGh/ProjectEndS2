@@ -9,6 +9,8 @@ import { getPlacePhoto } from "@/data/photo-manifest";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore, useTripStoreHydrated, UNSCHEDULED } from "@/lib/trip-store";
 import { useToast } from "@/components/toast/toast-provider";
+import { motion } from "motion/react";
+import { useMotionTokens } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 function formatDuration(minutes: number, locale: "en" | "th", labels: { minutes: string; hours: string }) {
@@ -97,8 +99,16 @@ export function PlaceCard({
     });
   }
 
+  const m = useMotionTokens();
+
   return (
-    <div
+    <motion.div
+      // The most repeated element on the site, and until now it did not react
+      // to being pointed at beyond a shadow. No `layout` here on purpose: the
+      // explore grid re-keys when filters change, and a layout animation on
+      // top of that remount fights it.
+      whileHover={m.reduced ? undefined : { y: -4 }}
+      transition={m.spring("soft")}
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow duration-300 hover:shadow-elevated",
         className
@@ -200,6 +210,6 @@ export function PlaceCard({
         className="absolute inset-0 z-0"
         aria-label={`${dict.common.viewDetails}: ${place.name[locale]}`}
       />
-    </div>
+    </motion.div>
   );
 }

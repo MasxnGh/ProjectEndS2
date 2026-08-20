@@ -38,7 +38,22 @@ export interface VehicleComparisonRow {
  * include days that actually have stops — an empty day contributes no
  * distance and no rental day.
  */
-export function compareVehicleModes(days: { places: Place[] }[]): VehicleComparisonRow[] {
+export const TRAVEL_MODES: readonly TravelMode[] = [
+  "walk",
+  "songthaew",
+  "grab",
+  "rented-bike",
+  "rented-car",
+];
+
+/** The distance/leg/day totals every mode is priced against. */
+export interface TripTravelTotals {
+  totalDistanceKm: number;
+  totalLegs: number;
+  dayCount: number;
+}
+
+export function tripTravelTotals(days: { places: Place[] }[]): TripTravelTotals {
   const usedDays = days.filter((d) => d.places.length > 0);
 
   let totalDistanceKm = 0;
@@ -50,32 +65,45 @@ export function compareVehicleModes(days: { places: Place[] }[]): VehicleCompari
       totalLegs++;
     }
   }
-  const dayCount = usedDays.length;
 
-  const modes: TravelMode[] = ["walk", "songthaew", "grab", "rented-bike", "rented-car"];
+  return { totalDistanceKm, totalLegs, dayCount: usedDays.length };
+}
 
-  return modes.map((mode) => {
-    const totalTravelMinutes = Math.round((totalDistanceKm / VEHICLE_SPEED_KMH[mode]) * 60);
+/**
+ * What one mode costs over the whole trip.
+ *
+ * The single place this arithmetic lives: the comparison table and the
+ * headline "estimated cost" both call it, so the row a traveller selects and
+ * the total they are shown can never disagree — which they did, with Walk
+ * reading ฿0 in the table while the total still billed 8 THB/km.
+ */
+export function modeCostThb(mode: TravelMode, totals: TripTravelTotals): number {
+  const { totalDistanceKm, totalLegs, dayCount } = totals;
 
-    let totalCostThb: number;
-    switch (mode) {
-      case "walk":
-        totalCostThb = 0;
-        break;
-      case "songthaew":
-        totalCostThb = totalLegs * SONGTHAEW_FARE_PER_LEG_THB;
-        break;
-      case "grab":
-        totalCostThb = totalLegs > 0 ? totalLegs * GRAB_BASE_FARE_THB + totalDistanceKm * GRAB_PER_KM_THB : 0;
-        break;
-      case "rented-bike":
-        totalCostThb = dayCount * BIKE_RENTAL_PER_DAY_THB + totalDistanceKm * BIKE_FUEL_PER_KM_THB;
-        break;
-      case "rented-car":
-        totalCostThb = dayCount * CAR_RENTAL_PER_DAY_THB + totalDistanceKm * CAR_FUEL_PER_KM_THB;
-        break;
-    }
+  switch (mode) {
+    case "walk":
+      return 0;
+    case "songthaew":
+      return Math.round(totalLegs * SONGTHAEW_FARE_PER_LEG_THB);
+    case "grab":
+      return totalLegs > 0
+        ? Math.round(totalLegs * GRAB_BASE_FARE_THB + totalDistanceKm * GRAB_PER_KM_THB)
+        : 0;
+    // Rental is charged per day you have the vehicle, not per kilometre
+    // ridden — a day with a single stop still costs a full day's rental.
+    case "rented-bike":
+      return Math.round(dayCount * BIKE_RENTAL_PER_DAY_THB + totalDistanceKm * BIKE_FUEL_PER_KM_THB);
+    case "rented-car":
+      return Math.round(dayCount * CAR_RENTAL_PER_DAY_THB + totalDistanceKm * CAR_FUEL_PER_KM_THB);
+  }
+}
 
-    return { mode, totalTravelMinutes, totalCostThb: Math.round(totalCostThb) };
-  });
+export function compareVehicleModes(days: { places: Place[] }[]): VehicleComparisonRow[] {
+  const totals = tripTravelTotals(days);
+
+  return TRAVEL_MODES.map((mode) => ({
+    mode,
+    totalTravelMinutes: Math.round((totals.totalDistanceKm / VEHICLE_SPEED_KMH[mode]) * 60),
+    totalCostThb: modeCostThb(mode, totals),
+  }));
 }

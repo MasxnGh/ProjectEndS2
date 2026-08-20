@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ShinyText } from "@/components/ui/shiny-text";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import { HeroBackground } from "@/components/landing/hero-background";
@@ -53,7 +54,7 @@ export function Hero() {
               href={`/${locale}/planner`}
               className="flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-medium text-accent-foreground shadow-elevated transition-transform"
             >
-              {dict.home.hero.cta}
+              <ShinyText>{dict.home.hero.cta}</ShinyText>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </MagneticButton>

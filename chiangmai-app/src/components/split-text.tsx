@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { EASE } from "@/lib/motion";
 
 export function SplitText({
   text,
@@ -28,7 +29,7 @@ export function SplitText({
             transition={{
               duration: shouldReduceMotion ? 0.01 : 0.9,
               delay: shouldReduceMotion ? 0 : delay + i * 0.07,
-              ease: [0.16, 1, 0.3, 1],
+              ease: EASE,
             }}
           >
             {word}

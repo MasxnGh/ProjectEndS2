@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "motion/react";
+import { EASE } from "@/lib/motion";
 
 interface RevealProps {
   children: React.ReactNode;
@@ -21,7 +22,7 @@ export function Reveal({ children, className, delay = 0, y = 28, as = "div" }: R
       transition: {
         duration: shouldReduceMotion ? 0.01 : 0.8,
         delay: shouldReduceMotion ? 0 : delay,
-        ease: [0.16, 1, 0.3, 1],
+        ease: EASE,
       },
     },
   };
@@ -69,6 +70,6 @@ export const revealItemVariants: Variants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+    transition: { duration: 0.7, ease: EASE },
   },
 };

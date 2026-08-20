@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Heart } from "lucide-react";
+import { motion } from "motion/react";
+import { useMotionTokens } from "@/lib/motion";
 import { useFavorites } from "@/lib/favorites/favorites-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import { SignInPromptModal } from "@/components/auth/sign-in-prompt-modal";
@@ -28,13 +30,17 @@ export function FavoriteButton({
   const { isFavorite, isSignedIn, toggle } = useFavorites();
   const [promptOpen, setPromptOpen] = useState(false);
 
+  const m = useMotionTokens();
+
   const active = isFavorite(slug);
   const iconSize = size === "large" ? "h-5 w-5" : "h-4 w-4";
 
   return (
     <>
-      <button
+      <motion.button
         type="button"
+        whileTap={{ scale: m.reduced ? 1 : 0.88 }}
+        transition={m.spring("press")}
         onClick={(event) => {
           // Hearts sit inside linked cards; without this, favouriting would
           // also navigate to the place.
@@ -59,8 +65,18 @@ export function FavoriteButton({
           className
         )}
       >
-        <Heart className={cn(iconSize, active && "fill-current")} aria-hidden="true" />
-      </button>
+        {/* Keyed on state so becoming a favourite plays the pop; un-favouriting
+            simply settles back without one. */}
+        <motion.span
+          key={active ? "on" : "off"}
+          initial={m.reduced ? false : { scale: active ? 0.6 : 1 }}
+          animate={{ scale: 1 }}
+          transition={m.spring("press")}
+          className="flex items-center justify-center"
+        >
+          <Heart className={cn(iconSize, active && "fill-current")} aria-hidden="true" />
+        </motion.span>
+      </motion.button>
 
       <SignInPromptModal open={promptOpen} onClose={() => setPromptOpen(false)} variant="favorite" />
     </>
