@@ -4,6 +4,9 @@ import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { cn } from "@/lib/utils";
 
+/** Never dim enough to stop someone reading the sentence. */
+const BASE_OPACITY = 0.6;
+
 /**
  * Reveals a paragraph word by word as it passes through the viewport —
  * adapted from React Bits' Scroll Reveal
@@ -53,9 +56,13 @@ function Word({
   progress: ReturnType<typeof useScroll>["scrollYProgress"];
   range: [number, number];
 }) {
-  // Dim rather than invisible: the paragraph stays readable at any scroll
-  // position, which matters because someone may land mid-page from a link.
-  const opacity = useTransform(progress, range, [0.25, 1]);
+  // The floor is deliberately high. React Bits' original dims to near zero,
+  // but this is a body paragraph on a reading site, and 0.25 opacity text is
+  // not readable — if the scroll progress never advances (a throttled frame
+  // loop, a smooth-scroll library that motion does not see, anything at all)
+  // the reader is left with grey mush. At 0.6 the reveal is still visible as
+  // a reveal, and the worst case is merely a slightly soft paragraph.
+  const opacity = useTransform(progress, range, [BASE_OPACITY, 1]);
   return (
     <motion.span style={{ opacity }} className="mr-[0.25em] inline-block">
       {children}

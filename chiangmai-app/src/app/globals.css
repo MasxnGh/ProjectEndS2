@@ -120,20 +120,30 @@
 }
 
 /*
- * A slow band of the site's accent gold travelling across text. Paired with
- * <ShinyText>, which renders nothing animated at all under reduced motion, so
- * this class is only ever applied when movement is welcome.
+ * A slow band of the site's accent gold travelling across text.
+ *
+ * This is an overlay drawn on top of real text, never a replacement for it.
+ * Clipping a gradient to glyphs requires `color: transparent`, and an earlier
+ * version put `currentColor` inside the gradient as well — which then resolved
+ * to that same transparent colour and made the label disappear. Here the
+ * gradient is transparent everywhere except the moving gold band, so the
+ * overlay only ever adds a highlight to the readable text beneath it.
+ *
+ * Paired with <ShinyText>, which renders plain text and no overlay at all
+ * under reduced motion.
  */
-.shiny-text {
+.shiny-text-sweep {
   background-image: linear-gradient(
     110deg,
-    currentColor 0%,
-    currentColor 40%,
+    transparent 0%,
+    transparent 40%,
     var(--color-accent) 50%,
-    currentColor 60%,
-    currentColor 100%
+    transparent 60%,
+    transparent 100%
   );
   background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   animation: shiny-sweep var(--shiny-duration, 6s) linear infinite;
 }

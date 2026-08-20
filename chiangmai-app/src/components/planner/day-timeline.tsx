@@ -9,11 +9,19 @@ import { CHIANGMAI_CENTER } from "@/lib/geo";
 import type { Place } from "@/data/types";
 import type { DailyForecastEntry } from "@/lib/weather/types";
 import { minutesToClock } from "@/lib/opening-hours";
-import { buildDayTimeline, resolveSunTimes, type SunTimes } from "@/lib/planner/golden-hour";
+import { buildDayTimeline, resolveSunTimes, type SunTimes, type TimelineStop } from "@/lib/planner/golden-hour";
 import { cn } from "@/lib/utils";
 
 const PX_PER_MINUTE = 1.1;
 const MIN_BLOCK_HEIGHT = 60;
+/**
+ * What a block needs, in pixels, beyond its title and time line. A stop can
+ * add a golden-hour note, a "reset to automatic time" link, and a warning —
+ * and at 1.1px per minute a 40-minute stop only earns 44px of timeline, which
+ * is not enough to hold any of them.
+ */
+const BLOCK_BASE_CONTENT_PX = 46;
+const BLOCK_ROW_PX = 20;
 const SNAP_MINUTES = 5;
 const KEYBOARD_STEP_MINUTES = 15;
 const MAX_MINUTES = 23 * 60 + 55;
@@ -32,6 +40,28 @@ function hourMarks(startMinutes: number, endMinutes: number): HourMark[] {
     marks.push({ minutes: m, top: (m - startMinutes) * PX_PER_MINUTE });
   }
   return marks;
+}
+
+/**
+ * Rows a block will render under its heading. Mirrors the conditions in the
+ * block's own JSX — if a row is added there, it belongs here too, or the
+ * block will overflow its box again.
+ */
+function contentRowsFor(stop: TimelineStop): number {
+  let rows = 0;
+  if (stop.isGoldenHour && stop.goldenHourType) rows++;
+  if (stop.userLocked) rows++;
+  if (stop.outsideOpeningHours || stop.conflict || stop.waitMinutes > 0) rows++;
+  return rows;
+}
+
+/** The height a block needs: its duration, but never less than its content. */
+function blockHeightFor(stop: TimelineStop, durationMinutes: number): number {
+  return Math.max(
+    durationMinutes * PX_PER_MINUTE,
+    MIN_BLOCK_HEIGHT,
+    BLOCK_BASE_CONTENT_PX + contentRowsFor(stop) * BLOCK_ROW_PX
+  );
 }
 
 function todayIso(): string {
@@ -152,7 +182,18 @@ export function DayTimeline({
   const stops = timeline.stops;
   const startMinutes = Math.min(timeline.leaveByMinutes ?? stops[0].arrivalMinutes, stops[0].arrivalMinutes) - 30;
   const endMinutes = stops[stops.length - 1].departureMinutes + 30;
-  const trackHeight = Math.max(endMinutes - startMinutes, 60) * PX_PER_MINUTE;
+
+  // The track is `overflow-hidden`, so it has to be at least as tall as the
+  // lowest block reaches. A block that grew to fit a warning used to run past
+  // the bottom edge and get cut off there.
+  const lowestBlockBottom = stops.reduce((lowest, stop) => {
+    const top = (stop.arrivalMinutes - startMinutes) * PX_PER_MINUTE;
+    return Math.max(lowest, top + blockHeightFor(stop, stop.departureMinutes - stop.arrivalMinutes));
+  }, 0);
+  const trackHeight = Math.max(
+    Math.max(endMinutes - startMinutes, 60) * PX_PER_MINUTE,
+    lowestBlockBottom + BLOCK_ROW_PX
+  );
 
   const goldenHourLabel = (type: NonNullable<Place["goldenHourType"]>) =>
     type === "sunrise" ? t.sunrise : type === "sunset" ? t.sunset : type === "blue_hour" ? t.blueHour : t.night;
@@ -173,7 +214,7 @@ export function DayTimeline({
       displayArrival,
       displayDeparture,
       top: (displayArrival - startMinutes) * PX_PER_MINUTE,
-      height: Math.max((stop.departureMinutes - stop.arrivalMinutes) * PX_PER_MINUTE, MIN_BLOCK_HEIGHT),
+      height: blockHeightFor(stop, stop.departureMinutes - stop.arrivalMinutes),
     };
   });
 
@@ -263,7 +304,7 @@ export function DayTimeline({
                 stop.conflict || stop.outsideOpeningHours ? "ring-2 ring-destructive" : "",
                 isDragging ? "z-20 opacity-90" : ""
               )}
-              style={{ top, height }}
+              style={{ top, height, minHeight: "fit-content" }}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
