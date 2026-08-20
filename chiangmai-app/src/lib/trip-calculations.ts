@@ -1,6 +1,7 @@
 import type { Place, PlaceCategory } from "@/data/types";
 import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
 import { estimateTravelMinutes as estimateRoadTravelMinutes } from "@/lib/geo/travelTime";
+import { countUnplannedMeals } from "@/lib/planner/meals";
 
 export const SPEND_ESTIMATE_THB: Record<Place["priceLevel"], number> = {
   1: 250,
@@ -36,6 +37,16 @@ function categoryBucket(category: PlaceCategory): "entry" | "food" {
     : "entry";
 }
 
+/**
+ * What one meal the itinerary does not name is assumed to cost.
+ *
+ * Deliberately the catalogue's own price-level-1 figure rather than a second
+ * invented scale: adding a cheap restaurant to the plan and leaving that meal
+ * unplanned then cost the same, so the total does not lurch when a traveller
+ * fills the gap in.
+ */
+export const ASSUMED_MEAL_THB = SPEND_ESTIMATE_THB[1];
+
 export function categorySpendBreakdown(days: { places: Place[] }[]) {
   let entry = 0;
   let food = 0;
@@ -55,22 +66,36 @@ export function categorySpendBreakdown(days: { places: Place[] }[]) {
     }
   }
 
-  return { entry, food, transport, total: entry + food + transport };
+  // A day out that runs through lunch still costs lunch money. Counting only
+  // the food stops someone remembered to drag in reports ฿0 for a full day of
+  // temples, which is the one number in this planner most likely to be wrong
+  // in a way that matters. Kept as its own field so the Budget panel can show
+  // the assumption instead of burying it in "food".
+  const assumedMeals = countUnplannedMeals(days) * ASSUMED_MEAL_THB;
+
+  return {
+    entry,
+    food,
+    transport,
+    assumedMeals,
+    total: entry + food + transport + assumedMeals,
+  };
 }
 
 /**
  * The one "estimated cost" figure shown across the planner — the top stats
  * bar and Summary → Budget must both call this rather than adding up their
- * own totals, or the two numbers drift apart. Entry/food scale per
- * traveller; transport is a shared ride/vehicle cost, not per-person;
+ * own totals, or the two numbers drift apart. Entry/food/assumed meals scale
+ * per traveller; transport is a shared ride/vehicle cost, not per-person;
  * accommodation is the flat amount the user typed in.
  */
 export function estimateTripCostThb(
-  breakdown: { entry: number; food: number; transport: number },
+  breakdown: { entry: number; food: number; transport: number; assumedMeals?: number },
   travelers: number,
   accommodationThb: number
 ): number {
-  return (breakdown.entry + breakdown.food) * travelers + breakdown.transport + accommodationThb;
+  const perPerson = breakdown.entry + breakdown.food + (breakdown.assumedMeals ?? 0);
+  return perPerson * travelers + breakdown.transport + accommodationThb;
 }
 
 export function formatMinutes(minutes: number) {

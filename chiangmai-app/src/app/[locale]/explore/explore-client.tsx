@@ -72,6 +72,19 @@ const districts: District[] = [
   "mae-wang",
   "hang-dong",
   "samoeng",
+  "mae-ai",
+  "fang",
+  "chai-prakan",
+  "wiang-haeng",
+  "phrao",
+  "mae-taeng",
+  "doi-saket",
+  "mae-on",
+  "galyani-vadhana",
+  "san-pa-tong",
+  "hot",
+  "omkoi",
+  "doi-tao",
 ];
 const prices: PriceLevel[] = [1, 2, 3];
 const times: BestTime[] = ["morning", "afternoon", "evening", "anytime"];

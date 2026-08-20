@@ -5,7 +5,7 @@ import { Check, Plus, Snowflake, Sun, CloudRain, X } from "lucide-react";
 import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
-import { categorySpendBreakdown, estimateTripCostThb, formatMinutes, formatThb } from "@/lib/trip-calculations";
+import { ASSUMED_MEAL_THB, categorySpendBreakdown, estimateTripCostThb, formatMinutes, formatThb } from "@/lib/trip-calculations";
 import { suggestPackingItems } from "@/lib/planner/packing-suggestions";
 import { compareVehicleModes } from "@/lib/planner/vehicle-comparison";
 import { cn } from "@/lib/utils";
@@ -42,10 +42,18 @@ function BudgetPanel({ days }: { days: { places: Place[] }[] }) {
   const hasBudget = budgetThb > 0;
   const remaining = budgetThb - totalWithStay;
 
+  // Meals the itinerary runs through without naming a place. Shown as its own
+  // row rather than folded into "food" so the assumption is visible — it is
+  // the only line here the traveller did not choose.
+  const assumedMeals = breakdown.assumedMeals * travelers;
+
   const categories = [
     { key: "entry", label: t.categories.entry, amount: entry },
     { key: "transport", label: t.categories.transport, amount: transport },
     { key: "food", label: t.categories.food, amount: food },
+    ...(assumedMeals > 0
+      ? [{ key: "assumedMeals", label: t.categories.assumedMeals, amount: assumedMeals }]
+      : []),
     ...(accommodationThb > 0 ? [{ key: "accommodation", label: t.accommodation, amount: accommodationThb }] : []),
   ];
 
@@ -89,6 +97,12 @@ function BudgetPanel({ days }: { days: { places: Place[] }[] }) {
       </div>
 
       {!hasBudget ? <p className="text-sm text-muted-foreground">{t.noBudget}</p> : null}
+
+      {assumedMeals > 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {t.assumedMealsNote.replace("{amount}", ASSUMED_MEAL_THB.toLocaleString("en-US"))}
+        </p>
+      ) : null}
 
       <div className="space-y-3">
         {categories.map((c) => {

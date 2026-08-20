@@ -87,6 +87,19 @@ const th: Dictionary = {
       "hang-dong": "หางดง",
       samoeng: "สะเมิง",
       "chiang-mai-city": "ตัวเมืองเชียงใหม่",
+      "mae-ai": "แม่อาย",
+      fang: "ฝาง",
+      "chai-prakan": "ไชยปราการ",
+      "wiang-haeng": "เวียงแหง",
+      phrao: "พร้าว",
+      "mae-taeng": "แม่แตง",
+      "doi-saket": "ดอยสะเก็ด",
+      "mae-on": "แม่ออน",
+      "galyani-vadhana": "กัลยาณิวัฒนา",
+      "san-pa-tong": "สันป่าตอง",
+      hot: "ฮอด",
+      omkoi: "อมก๋อย",
+      "doi-tao": "ดอยเต่า",
     },
     bestTime: {
       morning: "ช่วงเช้า",
@@ -513,7 +526,14 @@ const th: Dictionary = {
         accommodation: "ค่าที่พัก",
         remaining: "ยอดคงเหลือ",
         overBudget: "เกินงบ",
-        categories: { entry: "ค่าเข้าชม & กิจกรรม", transport: "ค่าเดินทาง", food: "ค่าอาหาร" },
+        categories: {
+          entry: "ค่าเข้าชม & กิจกรรม",
+          transport: "ค่าเดินทาง",
+          food: "ค่าอาหาร",
+          assumedMeals: "มื้อที่ยังไม่ได้วางแผน",
+        },
+        assumedMealsNote:
+          "มื้อที่แผนของคุณคร่อมอยู่แต่ยังไม่ได้เลือกร้าน คิดมื้อละ ฿{amount}",
         noBudget: "ตั้งงบประมาณด้านบนเพื่อติดตามยอดคงเหลือ",
       },
       weather: {
@@ -595,6 +615,23 @@ const th: Dictionary = {
       applied: "จัดเส้นทางใหม่แล้ว — ประหยัดเวลา ~{minutes} นาที",
       exceedsTenHours: "วันนี้ใช้เวลารวมเกิน 10 ชั่วโมงแล้ว ลองลดจำนวนสถานที่ลง",
       outsideHours: "อาจอยู่นอกเวลาเปิด-ปิด",
+    },
+    suggestions: {
+      title: "น่าเพิ่มลงวันนี้",
+      mealGapLunch:
+        "ยังไม่มีมื้อกลางวัน — คุณอยู่ข้างนอกตั้งแต่ {start} ถึง {end}",
+      mealGapDinner:
+        "ยังไม่มีมื้อเย็น — คุณอยู่ข้างนอกตั้งแต่ {start} ถึง {end}",
+      mealNone:
+        "ไม่มีร้านในคู่มือที่เปิดอยู่แถวนั้นในช่วงเวลานี้",
+      onRoute: "ช่วง {from} → {to} ขับรถ {minutes} นาที",
+      awayMinutes: "ห่าง {minutes} นาที",
+      addedMinutes: "+{minutes} นาที",
+      addedNothing: "แทบไม่อ้อมเลย",
+      add: "เพิ่ม {place}",
+      added: "เพิ่ม {place} ลงวันที่ {day} แล้ว",
+      estimateNote:
+        "เวลาเป็นการประมาณจากระยะเส้นตรง ไม่ใช่การนำทางจริง",
     },
     feasibility: {
       closedOnDay: "{place} ปิดในวันนี้",

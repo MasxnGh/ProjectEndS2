@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { categorySpendBreakdown, SPEND_ESTIMATE_THB } from "./trip-calculations";
+import {
+  ASSUMED_MEAL_THB,
+  categorySpendBreakdown,
+  estimateTripCostThb,
+  SPEND_ESTIMATE_THB,
+} from "./trip-calculations";
 import type { Place, PlaceCategory } from "@/data/types";
 
 function makePlace(category: PlaceCategory, overrides: Partial<Place> = {}): Place {
@@ -72,6 +77,53 @@ describe("categorySpendBreakdown", () => {
       },
     ]);
     expect(pair.transport).toBeGreaterThan(0);
-    expect(pair.total).toBe(pair.entry + pair.food + pair.transport);
+    // This pair is done by 11:15, before any meal window opens.
+    expect(pair.assumedMeals).toBe(0);
+    expect(pair.total).toBe(pair.entry + pair.food + pair.transport + pair.assumedMeals);
+  });
+});
+
+// The planner will happily schedule a full day of temples and then report a
+// food budget of ฿0. These pin the correction in place.
+describe("assumed meal cost", () => {
+  const OLD_CITY = { lat: 18.7873, lng: 98.9853 };
+  const NEARBY = { lat: 18.7876, lng: 98.9908 };
+
+  /** 09:00 start, three 90-minute stops — the last runs 12:10–13:40, straight through lunch. */
+  function dayThroughLunch(lastCategory: PlaceCategory = "temple") {
+    return {
+      places: [
+        makePlace("temple", { slug: "a", coordinates: OLD_CITY, durationMinutes: 90 }),
+        makePlace("temple", { slug: "b", coordinates: NEARBY, durationMinutes: 90 }),
+        makePlace(lastCategory, { slug: "c", coordinates: OLD_CITY, durationMinutes: 90 }),
+      ],
+    };
+  }
+
+  it("charges for a meal the itinerary runs through but never names", () => {
+    const breakdown = categorySpendBreakdown([dayThroughLunch()]);
+    expect(breakdown.food).toBe(0);
+    expect(breakdown.assumedMeals).toBe(ASSUMED_MEAL_THB);
+  });
+
+  it("stops assuming once a real food stop covers the window", () => {
+    const breakdown = categorySpendBreakdown([dayThroughLunch("restaurant")]);
+    expect(breakdown.assumedMeals).toBe(0);
+    expect(breakdown.food).toBe(SPEND_ESTIMATE_THB[1]);
+  });
+
+  it("assumes nothing for an empty trip", () => {
+    expect(categorySpendBreakdown([{ places: [] }]).assumedMeals).toBe(0);
+  });
+
+  it("scales the assumption per traveller, like any other meal", () => {
+    const breakdown = categorySpendBreakdown([dayThroughLunch()]);
+    const solo = estimateTripCostThb(breakdown, 1, 0);
+    const pair = estimateTripCostThb(breakdown, 2, 0);
+    expect(pair - solo).toBe(breakdown.entry + breakdown.food + breakdown.assumedMeals);
+  });
+
+  it("still totals correctly for callers that predate the field", () => {
+    expect(estimateTripCostThb({ entry: 100, food: 50, transport: 20 }, 1, 0)).toBe(170);
   });
 });
