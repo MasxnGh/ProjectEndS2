@@ -26,7 +26,24 @@ export type District =
   | "mae-wang"
   | "hang-dong"
   | "samoeng"
-  | "chiang-mai-city";
+  | "chiang-mai-city"
+  // Outer amphoe of the province, roughly north to south. The eighteen above
+  // are the ones a visitor navigates by (neighbourhoods and named mountains);
+  // these are administrative districts, which is how anything more than an
+  // hour out of the city is actually signposted.
+  | "mae-ai"
+  | "fang"
+  | "chai-prakan"
+  | "wiang-haeng"
+  | "phrao"
+  | "mae-taeng"
+  | "doi-saket"
+  | "mae-on"
+  | "galyani-vadhana"
+  | "san-pa-tong"
+  | "hot"
+  | "omkoi"
+  | "doi-tao";
 
 export type BestTime = "morning" | "afternoon" | "evening" | "anytime";
 export type PriceLevel = 1 | 2 | 3;

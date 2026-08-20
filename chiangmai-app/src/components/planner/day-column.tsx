@@ -17,6 +17,7 @@ import { fetchDurationMatrix } from "@/lib/routing/fetch-matrix";
 import { checkDayFeasibility } from "@/lib/planner/feasibility";
 import { computeDayPace } from "@/lib/planner/pace";
 import { PaceMeter } from "@/components/planner/pace-meter";
+import { DaySuggestions } from "@/components/planner/day-suggestions";
 import { pickDaySuggestion } from "@/lib/weather/day-forecast";
 import { useSeasonalAverage } from "@/lib/weather/use-weather";
 import { CHIANGMAI_CENTER } from "@/lib/geo";
@@ -271,6 +272,13 @@ export function DayColumn({
         })}
 
         <PaceMeter pace={pace} easeLabel={paceEaseLabel} onEase={onEasePace} />
+
+        <DaySuggestions
+          dayId={dayId}
+          dayNumber={dayNumber}
+          schedule={schedule}
+          date={date}
+        />
 
         {places.length >= 3 ? (
           <button

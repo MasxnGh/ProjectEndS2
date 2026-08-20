@@ -1,6 +1,6 @@
 # Where the place data came from
 
-This documents the sourcing for the 101 places in `src/data/places/`, so anyone
+This documents the sourcing for the 193 places in `src/data/places/`, so anyone
 grading or maintaining this project can tell verified fact from editorial
 judgment. Read it alongside [PHASE0-TODO.md](../PHASE0-TODO.md), which covers the
 same distinction for the original 26 places.
@@ -169,3 +169,89 @@ markets) and is **deliberately absent for named businesses** — a Pexels photo 
 a generic "Thai coffee shop" captioned as Ristr8to would misinform the visitor.
 Those places fall back to `<PlaceImage>`'s illustrated gradient, which claims
 nothing.
+
+## Province-wide expansion — 91 places added (2026-08-20)
+
+The catalogue went from 102 places to **193**. The earlier passes covered the
+city and its immediate ring; this one was aimed at the rest of the province, so
+most of what was added is an hour or more outside the moat.
+
+### Coordinates — OpenStreetMap Nominatim, same rule as before
+
+Every one of the 91 new places was geocoded through
+[Nominatim](https://nominatim.openstreetmap.org/), searched inside a Chiang Mai
+province bounding box, and **anything that did not resolve was dropped rather
+than estimated**. Around 130 distinct candidates were queried across four passes; roughly 30 never
+returned a usable match and are not in the data — among them Ban Pa Bong Piang's
+rice terraces, the San Pa Tong buffalo market, Somphet market, the Doi Pui Hmong
+village, Mae Kuang dam, and a long list of named cafés and restaurants (Tong Tem
+Toh, Kiat Ocha, David's Kitchen, Rustic & Blue, The Barn, Omnia, Akha Ama Living
+Factory, Graph Ground, Pun Pun, The Riverside). That is why this pass added 26
+nature places and only 6 cafés: OSM covers public landmarks well and Thai
+shopfronts badly.
+
+A further six results were **rejected after inspection** because the returned
+object was the wrong entity even though it was inside the bounding box:
+
+| Query | What Nominatim returned | Why rejected |
+|---|---|---|
+| วัดเม็งราย | Wat Sri Suphan | Different temple, already in the catalogue |
+| น้ำพุร้อนโป่งเดือด (pass 3 wording) | ดอยผาสามเส้า, Mae Taeng | Unrelated feature |
+| ดอยเวียงผา | A point in Mae Suai | Chiang Rai province, not Chiang Mai |
+| อุทยานแห่งชาติแม่ปิง | A point in Li | Lamphun province |
+| ตลาดแม่มาลัย | "มาลัย", Doi Saket | Wrong place, wrong district |
+| Paak Dang | บ้านริมปิง | Name did not match |
+
+Three coordinates are **deliberately approximate and flagged here** rather than
+presented as exact:
+
+- **`ang-ka-luang-nature-trail`** uses the Doi Inthanon summit pin. The boardwalk
+  starts a couple of hundred metres from it; no separate OSM object for the trail
+  could be resolved.
+- **`tham-tap-tao-forest-park`** uses the pin for Ban Tham Tap Tao, the village
+  beside the forest park, for the same reason.
+- **`kad-suan-kaew`** matched a police service point inside the mall complex. The
+  coordinate is the mall; the OSM object's name is not.
+
+### Opening hours
+
+17 of the new places carry an `opening_hours` tag from the matching OSM object
+and are marked `dataLastVerified: "2026-08-20"`. Everything else keeps `null`,
+with `openingHoursText` hedged ("roughly", "or until sold out") so the display
+copy does not overclaim. Two judgment calls worth recording:
+
+- **`chiang-mai-gate-market`** — OSM tags it `Th-Mo`, i.e. closed Tuesday and
+  Wednesday. That does not match a market this size and a wrong "closed today"
+  banner is worse than a vague one, so the tag was **not** used: hours are stored
+  open-daily and `dataLastVerified` stays `null`.
+- **`dara-pirom-palace-museum`** — the tag is written with German day
+  abbreviations (`Mi-So`), i.e. Wednesday–Sunday. Mixed-locale tagging is a
+  quality signal, but the value is at least internally coherent, so it was used
+  as `closedOnDays: [1, 2]`. Re-check before relying on it.
+
+### Ratings are editorial, not scraped
+
+`rating` on every new place is an editorial judgment in the 4.0–4.8 band, the
+same convention the existing catalogue uses. These are **not** Google or TripAdvisor
+scores and should not be presented as aggregate review data anywhere in the UI.
+
+### New districts
+
+Thirteen amphoe were added to the `District` union, with en/th labels and explore
+filter pills: Mae Ai, Fang, Chai Prakan, Wiang Haeng, Phrao, Mae Taeng, Doi
+Saket, Mae On, Galyani Vadhana, San Pa Tong, Hot, Omkoi and Doi Tao. Every one of
+them has at least one place — a district pill that filters to zero results would
+be a bug, so none were added speculatively. Mae Chaem was considered and left
+out for exactly that reason: its candidate places (Pa Bong Piang, the teen jok
+weaving centre) did not geocode, and the Doi Inthanon summit places are filed
+under the existing `doi-inthanon` district because that is how a visitor
+navigates to them, even though the ridge itself is administratively in Mae Chaem.
+
+### Depth fields
+
+`story`, `awards` and `signatureDishes` remain filled only where something was
+actually confirmed. The three new restaurants that carry `signatureDishes` name
+the dish and leave `priceThb: null` — no current price could be verified for any
+of them. **No new `awards` entries were written**: none of the new restaurants
+was checked against the MICHELIN Guide in this pass, and an unverified award
+claim is the one thing this file exists to prevent.
