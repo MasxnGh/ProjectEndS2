@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal } from "@/components/reveal";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { useLocale } from "@/components/providers/locale-provider";
 
 export function Intro() {
@@ -19,9 +20,14 @@ export function Intro() {
           </h2>
         </Reveal>
         <Reveal delay={0.15}>
-          <p className="text-lg leading-relaxed text-muted-foreground text-pretty lg:text-xl">
-            {dict.home.intro.body}
-          </p>
+          {/* The one place on the site that reveals per word rather than per
+              block — this is the paragraph that sets the tone, and it is long
+              enough that tying it to scroll position reads as pacing rather
+              than as a gimmick. */}
+          <ScrollReveal
+            text={dict.home.intro.body}
+            className="text-lg leading-relaxed text-muted-foreground text-pretty lg:text-xl"
+          />
         </Reveal>
       </div>
     </section>

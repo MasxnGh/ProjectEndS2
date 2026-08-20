@@ -1,15 +1,14 @@
-import type { Place, PlaceCategory } from "@/data/types";
-import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
+import type { Place, PlaceCategory, TravelMode } from "@/data/types";
+import { terrainBetween } from "@/lib/geo/distance";
 import { estimateTravelMinutes as estimateRoadTravelMinutes } from "@/lib/geo/travelTime";
 import { countUnplannedMeals } from "@/lib/planner/meals";
+import { modeCostThb, tripTravelTotals } from "@/lib/planner/vehicle-comparison";
 
 export const SPEND_ESTIMATE_THB: Record<Place["priceLevel"], number> = {
   1: 250,
   2: 700,
   3: 1800,
 };
-
-const TRANSPORT_THB_PER_KM = 8;
 
 /** Terrain-adjusted road-time estimate — same basis as schedule.ts/golden-hour.ts, so the day cards, budget, and Timeline never disagree. */
 export function estimateTravelMinutes(a: Place, b: Place) {
@@ -47,10 +46,18 @@ function categoryBucket(category: PlaceCategory): "entry" | "food" {
  */
 export const ASSUMED_MEAL_THB = SPEND_ESTIMATE_THB[1];
 
-export function categorySpendBreakdown(days: { places: Place[] }[]) {
+/**
+ * `travelMode` decides what the trip's kilometres actually cost — walking is
+ * free, a rented car is a daily rate plus fuel. Callers must pass the mode
+ * the traveller selected, or the total will disagree with the mode they see
+ * highlighted in Summary → Transport.
+ */
+export function categorySpendBreakdown(
+  days: { places: Place[] }[],
+  travelMode: TravelMode = "walk"
+) {
   let entry = 0;
   let food = 0;
-  let transport = 0;
 
   for (const day of days) {
     for (const place of day.places) {
@@ -58,13 +65,9 @@ export function categorySpendBreakdown(days: { places: Place[] }[]) {
       if (categoryBucket(place.category) === "food") food += spend;
       else entry += spend;
     }
-    for (let i = 0; i < day.places.length - 1; i++) {
-      const a = day.places[i];
-      const b = day.places[i + 1];
-      const km = estimateRoadDistanceKm(a.coordinates, b.coordinates, terrainBetween(a, b));
-      transport += Math.round(km * TRANSPORT_THB_PER_KM);
-    }
   }
+
+  const transport = modeCostThb(travelMode, tripTravelTotals(days));
 
   // A day out that runs through lunch still costs lunch money. Counting only
   // the food stops someone remembered to drag in reports ฿0 for a full day of

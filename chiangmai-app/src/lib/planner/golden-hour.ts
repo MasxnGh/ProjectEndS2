@@ -122,6 +122,71 @@ export interface DayTimeline {
   hasAnchor: boolean;
 }
 
+/** How finely the anchor is allowed to slide within its window — matches the timeline's own drag snap. */
+const ANCHOR_SHIFT_STEP_MINUTES = 5;
+
+interface ChainResult {
+  arrivals: number[];
+  departures: number[];
+  travelMinutesArr: number[];
+  waitMinutesArr: number[];
+  conflictArr: boolean[];
+}
+
+/**
+ * Chains a day outward from one fixed stop: forward through later stops,
+ * backward through earlier ones. Later locked stops are honored exactly —
+ * arriving early becomes `waitMinutes`, arriving impossibly late becomes
+ * `conflict`, and neither silently moves the lock.
+ */
+function chainFromAnchor(
+  order: Place[],
+  anchorIndex: number,
+  anchorArrival: number,
+  desired: (number | null)[]
+): ChainResult {
+  const arrivals = new Array<number>(order.length);
+  const departures = new Array<number>(order.length);
+  const travelMinutesArr = new Array<number>(order.length).fill(0);
+  const waitMinutesArr = new Array<number>(order.length).fill(0);
+  const conflictArr = new Array<boolean>(order.length).fill(false);
+
+  arrivals[anchorIndex] = anchorArrival;
+  departures[anchorIndex] = anchorArrival + order[anchorIndex].durationMinutes;
+
+  for (let i = anchorIndex + 1; i < order.length; i++) {
+    const travel = estimateTravelMinutes(order[i - 1].coordinates, order[i].coordinates, terrainBetween(order[i - 1], order[i]));
+    travelMinutesArr[i] = travel;
+    const naturalArrival = departures[i - 1] + travel;
+    if (desired[i] !== null) {
+      arrivals[i] = desired[i]!;
+      if (arrivals[i] > naturalArrival) waitMinutesArr[i] = arrivals[i] - naturalArrival;
+      else if (arrivals[i] < naturalArrival) conflictArr[i] = true;
+    } else {
+      arrivals[i] = naturalArrival;
+    }
+    departures[i] = arrivals[i] + order[i].durationMinutes;
+  }
+
+  for (let i = anchorIndex - 1; i >= 0; i--) {
+    const travel = estimateTravelMinutes(order[i].coordinates, order[i + 1].coordinates, terrainBetween(order[i], order[i + 1]));
+    travelMinutesArr[i + 1] = travel;
+    departures[i] = arrivals[i + 1] - travel;
+    arrivals[i] = departures[i] - order[i].durationMinutes;
+  }
+
+  return { arrivals, departures, travelMinutesArr, waitMinutesArr, conflictArr };
+}
+
+/** Stops this chain would have the traveller show up to while the door is locked. Places with unknown hours never count — isOutsideHours does not guess. */
+function countClosedStops(order: Place[], chain: ChainResult): number {
+  let closed = 0;
+  for (let i = 0; i < order.length; i++) {
+    if (isOutsideHours(order[i].openingHours, chain.arrivals[i], chain.departures[i])) closed++;
+  }
+  return closed;
+}
+
 /**
  * Builds a day's timeline by anchoring the schedule to the first stop that
  * either has a user-locked time or an ideal-quality bestTimeWindow, then
@@ -130,6 +195,10 @@ export interface DayTimeline {
  * locked stops are honored exactly (their contract is they never move);
  * gaps become `waitMinutes`, impossible ones become `conflict: true` rather
  * than silently drifting the lock.
+ *
+ * A window-driven anchor may slide later within its own span when that stops
+ * the rest of the day landing in front of closed doors; a user-locked anchor
+ * never slides.
  *
  * Days with no lock and no ideal-quality window fall back to the exact same
  * forward-only chaining as `buildSchedule` in schedule.ts, starting from
@@ -150,11 +219,21 @@ export function buildDayTimeline(params: {
 
   const desired: (number | null)[] = order.map(() => null);
   let anchorIndex = -1;
+  /**
+   * Slack the anchor is allowed to slide within. A user lock has none — its
+   * whole contract is that it never moves. A bestTimeWindow has the rest of
+   * its own span, because "sunrise-30 to sunrise+90" means any time in those
+   * two hours is the good time, not only the first minute of it.
+   */
+  let anchorLatest = -1;
   order.forEach((place, i) => {
     const locked = lockedArrivals[place.slug];
     if (locked) {
       desired[i] = clockToMinutes(locked);
-      if (anchorIndex === -1) anchorIndex = i;
+      if (anchorIndex === -1) {
+        anchorIndex = i;
+        anchorLatest = desired[i]!;
+      }
       return;
     }
     if (anchorIndex === -1) {
@@ -162,15 +241,16 @@ export function buildDayTimeline(params: {
       if (anchor && anchor.quality === "ideal") {
         desired[i] = anchor.start;
         anchorIndex = i;
+        anchorLatest = anchor.end;
       }
     }
   });
 
-  const arrivals = new Array<number>(order.length);
-  const departures = new Array<number>(order.length);
-  const travelMinutesArr = new Array<number>(order.length).fill(0);
-  const waitMinutesArr = new Array<number>(order.length).fill(0);
-  const conflictArr = new Array<boolean>(order.length).fill(false);
+  let arrivals = new Array<number>(order.length);
+  let departures = new Array<number>(order.length);
+  let travelMinutesArr = new Array<number>(order.length).fill(0);
+  let waitMinutesArr = new Array<number>(order.length).fill(0);
+  let conflictArr = new Array<boolean>(order.length).fill(false);
 
   if (anchorIndex === -1) {
     let cursor = clockToMinutes(fallbackDayStartClock);
@@ -185,29 +265,22 @@ export function buildDayTimeline(params: {
       cursor = departures[i];
     });
   } else {
-    arrivals[anchorIndex] = desired[anchorIndex]!;
-    departures[anchorIndex] = arrivals[anchorIndex] + order[anchorIndex].durationMinutes;
-
-    for (let i = anchorIndex + 1; i < order.length; i++) {
-      const travel = estimateTravelMinutes(order[i - 1].coordinates, order[i].coordinates, terrainBetween(order[i - 1], order[i]));
-      travelMinutesArr[i] = travel;
-      const naturalArrival = departures[i - 1] + travel;
-      if (desired[i] !== null) {
-        arrivals[i] = desired[i]!;
-        if (arrivals[i] > naturalArrival) waitMinutesArr[i] = arrivals[i] - naturalArrival;
-        else if (arrivals[i] < naturalArrival) conflictArr[i] = true;
-      } else {
-        arrivals[i] = naturalArrival;
+    // Anchoring to the very first minute of a wide window drags every later
+    // stop along with it: Wat Chiang Man's "sunrise-30" window put a khao soi
+    // shop that opens at 08:00 at 06:27. So try the window's own span, five
+    // minutes at a time, and keep the earliest start that leaves nothing
+    // scheduled while it is shut. Falls back to the window start when no
+    // shift works, which is the old behaviour plus a visible warning.
+    let best: ChainResult | null = null;
+    for (let start = desired[anchorIndex]!; start <= anchorLatest; start += ANCHOR_SHIFT_STEP_MINUTES) {
+      const candidate = chainFromAnchor(order, anchorIndex, start, desired);
+      if (best === null) best = candidate;
+      if (countClosedStops(order, candidate) === 0) {
+        best = candidate;
+        break;
       }
-      departures[i] = arrivals[i] + order[i].durationMinutes;
     }
-
-    for (let i = anchorIndex - 1; i >= 0; i--) {
-      const travel = estimateTravelMinutes(order[i].coordinates, order[i + 1].coordinates, terrainBetween(order[i], order[i + 1]));
-      travelMinutesArr[i + 1] = travel;
-      departures[i] = arrivals[i + 1] - travel;
-      arrivals[i] = departures[i] - order[i].durationMinutes;
-    }
+    ({ arrivals, departures, travelMinutesArr, waitMinutesArr, conflictArr } = best!);
   }
 
   const stops: TimelineStop[] = order.map((place, i) => ({

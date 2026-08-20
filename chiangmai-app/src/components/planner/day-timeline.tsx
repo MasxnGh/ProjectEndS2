@@ -260,7 +260,7 @@ export function DayTimeline({
               className={cn(
                 "absolute left-2 right-2 z-10 rounded-md border bg-surface/95 px-3 py-2 text-xs shadow-sm backdrop-blur-sm",
                 stop.isGoldenHour ? "border-accent shadow-[0_0_0_2px_var(--color-accent)]" : "border-border-strong",
-                stop.conflict ? "ring-2 ring-destructive" : "",
+                stop.conflict || stop.outsideOpeningHours ? "ring-2 ring-destructive" : "",
                 isDragging ? "z-20 opacity-90" : ""
               )}
               style={{ top, height }}
@@ -306,7 +306,12 @@ export function DayTimeline({
                 </button>
               ) : null}
 
-              {stop.conflict ? (
+              {stop.outsideOpeningHours ? (
+                <p className="mt-1 flex items-center gap-1 text-[11px] text-destructive">
+                  <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+                  {t.closedAtThisTime.replace("{opens}", stop.place.openingHours?.opens ?? "")}
+                </p>
+              ) : stop.conflict ? (
                 <p className="mt-1 flex items-center gap-1 text-[11px] text-destructive">
                   <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
                   {t.conflict}

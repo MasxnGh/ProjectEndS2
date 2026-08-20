@@ -6,6 +6,7 @@ import {
   SPEND_ESTIMATE_THB,
 } from "./trip-calculations";
 import type { Place, PlaceCategory } from "@/data/types";
+import { compareVehicleModes } from "./planner/vehicle-comparison";
 
 function makePlace(category: PlaceCategory, overrides: Partial<Place> = {}): Place {
   return {
@@ -65,17 +66,20 @@ describe("categorySpendBreakdown", () => {
   );
 
   it("adds a transport estimate only between stops, not for a single stop", () => {
-    const single = categorySpendBreakdown([{ places: [makePlace("temple")] }]);
+    const single = categorySpendBreakdown([{ places: [makePlace("temple")] }], "songthaew");
     expect(single.transport).toBe(0);
 
-    const pair = categorySpendBreakdown([
-      {
-        places: [
-          makePlace("temple", { slug: "a", coordinates: { lat: 18.79, lng: 98.99 } }),
-          makePlace("restaurant", { slug: "b", coordinates: { lat: 18.85, lng: 99.05 } }),
-        ],
-      },
-    ]);
+    const pair = categorySpendBreakdown(
+      [
+        {
+          places: [
+            makePlace("temple", { slug: "a", coordinates: { lat: 18.79, lng: 98.99 } }),
+            makePlace("restaurant", { slug: "b", coordinates: { lat: 18.85, lng: 99.05 } }),
+          ],
+        },
+      ],
+      "songthaew"
+    );
     expect(pair.transport).toBeGreaterThan(0);
     // This pair is done by 11:15, before any meal window opens.
     expect(pair.assumedMeals).toBe(0);
@@ -125,5 +129,35 @@ describe("assumed meal cost", () => {
 
   it("still totals correctly for callers that predate the field", () => {
     expect(estimateTripCostThb({ entry: 100, food: 50, transport: 20 }, 1, 0)).toBe(170);
+  });
+});
+
+// Picking "Walk" showed 0 THB in Summary -> Transport while the headline total
+// still billed 8 THB/km. One model now drives both.
+describe("transport cost follows the selected travel mode", () => {
+  const twoStopDay = [
+    {
+      places: [
+        makePlace("temple", { slug: "a", coordinates: { lat: 18.79, lng: 98.99 } }),
+        makePlace("temple", { slug: "b", coordinates: { lat: 18.85, lng: 99.05 } }),
+      ],
+    },
+  ];
+
+  it("charges nothing to walk", () => {
+    expect(categorySpendBreakdown(twoStopDay, "walk").transport).toBe(0);
+  });
+
+  it("agrees with the figure the comparison table shows for that mode", () => {
+    const rows = compareVehicleModes(twoStopDay);
+    for (const row of rows) {
+      expect(categorySpendBreakdown(twoStopDay, row.mode).transport).toBe(row.totalCostThb);
+    }
+  });
+
+  it("moves the trip total when the mode changes", () => {
+    const walking = estimateTripCostThb(categorySpendBreakdown(twoStopDay, "walk"), 2, 0);
+    const driving = estimateTripCostThb(categorySpendBreakdown(twoStopDay, "rented-car"), 2, 0);
+    expect(driving).toBeGreaterThan(walking);
   });
 });

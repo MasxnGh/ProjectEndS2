@@ -1,5 +1,6 @@
 "use client";
 
+import { InfoHint } from "@/components/ui/info-hint";
 import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -22,6 +23,10 @@ import { ExploreMapLoader } from "@/components/map/explore-map-loader";
 import { ExploreViewUrlSync } from "./explore-view-url-sync";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
+import { motion, useReducedMotion } from "motion/react";
+import { EASE } from "@/lib/motion";
+import { ExploreResultsBar, type ActiveFilterChip } from "@/components/explore/explore-results-bar";
+import { sortPlaces, type ExploreSort } from "@/lib/explore/sort";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { distanceBucketFrom, type DistanceBucket } from "@/lib/geo";
@@ -36,6 +41,14 @@ import { cn } from "@/lib/utils";
 
 const RADIUS_STEPS_KM = [1, 3, 5, 10, 25] as const;
 /** How many cards the grid renders before the visitor asks for more. */
+/**
+ * How many cards the grid mounts before asking for more.
+ *
+ * Raising this to fit more of the 193-place catalogue per page was tried and
+ * reverted: on a phone each card is ~450px tall, so 36 cards meant a
+ * 23-screen page. The answer to a long catalogue is a denser card and a
+ * result bar that says how far through you are, not a taller page.
+ */
 const GRID_PAGE_SIZE = 24;
 
 interface ProximityReference {
@@ -143,6 +156,8 @@ export function ExploreClient({
   const [view, setView] = useState<"grid" | "map">(initialView);
   const [compareSlugs, setCompareSlugs] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sort, setSort] = useState<ExploreSort>("recommended");
+  const reducedMotion = useReducedMotion();
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(GRID_PAGE_SIZE);
 
@@ -269,10 +284,57 @@ export function ExploreClient({
     setPrevFilterKey(filterKey);
     setVisibleCount(GRID_PAGE_SIZE);
   }
-  const visiblePlaces = filtered.slice(0, visibleCount);
-  const hasMore = filtered.length > visiblePlaces.length;
+  const sorted = useMemo(
+    () => sortPlaces(filtered, sort, reference?.coords ?? null),
+    [filtered, sort, reference]
+  );
+
+  const visiblePlaces = sorted.slice(0, visibleCount);
+  const hasMore = sorted.length > visiblePlaces.length;
 
   const hasFilters = Boolean(query || category || district || price || time || distance);
+
+  // What is actually applied, spelled out and individually removable. Before
+  // this the only signal was a count badge on a collapsed panel, so you could
+  // see that three filters were on without being told which three.
+  const activeChips = useMemo<ActiveFilterChip[]>(() => {
+    const chips: ActiveFilterChip[] = [];
+    if (query) chips.push({ id: "query", label: `"${query}"`, onClear: () => setQuery("") });
+    if (category)
+      chips.push({
+        id: "category",
+        label: dict.common.categories[category],
+        onClear: () => setCategory(null),
+      });
+    if (district)
+      chips.push({
+        id: "district",
+        label: dict.common.districts[district],
+        onClear: () => setDistrict(null),
+      });
+    if (price)
+      chips.push({ id: "price", label: "\u0e3f".repeat(price), onClear: () => setPrice(null) });
+    if (time)
+      chips.push({
+        id: "time",
+        label: dict.common.bestTime[time],
+        onClear: () => setTime(null),
+      });
+    if (distance)
+      chips.push({
+        id: "distance",
+        label: dict.common.distance[distance],
+        onClear: () => setDistance(null),
+      });
+    return chips;
+  }, [query, category, district, price, time, distance, dict]);
+
+  /**
+   * Re-staggers the grid when the *filters* change, but deliberately not when
+   * the search box changes: re-keying on every keystroke would restart the
+   * animation on each letter typed and make the grid strobe.
+   */
+  const filterSignature = [category, district, price, time, distance, sort].join("|");
   const secondaryActiveCount = [district, price, time, distance].filter(Boolean).length;
   const comparePlaces = useMemo(
     () => compareSlugs.map((slug) => places.find((p) => p.slug === slug)).filter((p): p is NonNullable<typeof p> => Boolean(p)),
@@ -525,8 +587,12 @@ export function ExploreClient({
 
             <div className="flex flex-wrap gap-x-8 gap-y-4">
               <div>
-                <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <p className="mb-2 flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground">
                   {dict.explore.filters.price}
+                  <InfoHint
+                    label={dict.common.hints.priceLevel.label}
+                    text={dict.common.hints.priceLevel.text}
+                  />
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {prices.map((p) => (
@@ -605,46 +671,80 @@ export function ExploreClient({
         ) : null}
       </div>
 
-      <div className="mt-8 flex items-center justify-between border-y border-border py-3">
-        <p className="text-sm text-muted-foreground">
-          {filtered.length} {dict.explore.filters.results}
-        </p>
-        <div className="flex items-center gap-1 rounded-full border border-border p-1">
-          <button
-            type="button"
-            onClick={() => handleSetView("grid")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-              view === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-            )}
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
-            {dict.explore.view.grid}
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSetView("map")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
-              view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-            )}
-          >
-            <MapIcon className="h-3.5 w-3.5" />
-            {dict.explore.view.map}
-          </button>
-        </div>
+      <div className="mt-8">
+        <ExploreResultsBar
+          total={sorted.length}
+          shown={visiblePlaces.length}
+          sort={sort}
+          onSortChange={setSort}
+          hasReference={Boolean(reference)}
+          chips={activeChips}
+          viewToggle={
+            <div className="flex items-center gap-1 rounded-full border border-border p-1">
+              <button
+                type="button"
+                onClick={() => handleSetView("grid")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  view === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                {dict.explore.view.grid}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetView("map")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                )}
+              >
+                <MapIcon className="h-3.5 w-3.5" />
+                {dict.explore.view.map}
+              </button>
+            </div>
+          }
+        />
       </div>
 
       {filtered.length === 0 ? (
         <p className="py-24 text-center text-muted-foreground">{dict.explore.filters.noResults}</p>
       ) : view === "grid" ? (
         <>
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <motion.div
+          // Re-keyed on the filters only, never on the query: keying on the
+          // search text too would restart this animation on every keystroke
+          // and make the grid strobe while someone types.
+          key={filterSignature}
+          // Two columns even on the narrowest phone: one column of 450px cards
+          // turned 24 results into sixteen screens of scrolling.
+          className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3"
+          initial="hidden"
+          animate="visible"
+          transition={{ staggerChildren: reducedMotion ? 0 : 0.04 }}
+        >
           {visiblePlaces.map((place) => {
             const selected = compareSlugs.includes(place.slug);
             const proximity = proximityDetailsBySlug.get(place.slug);
             return (
-              <div key={place.slug} className="relative">
+              <motion.div
+                key={place.slug}
+                className="relative"
+                // Transform only, deliberately no opacity. An entrance that
+                // starts at `opacity: 0` hides its content until the animation
+                // runs, and a background tab throttles requestAnimationFrame to
+                // nothing — which left every card in this grid invisible. A
+                // card that has not animated yet should look slightly low, not
+                // absent.
+                variants={{
+                  hidden: { y: reducedMotion ? 0 : 12 },
+                  visible: {
+                    y: 0,
+                    transition: { duration: reducedMotion ? 0 : 0.45, ease: EASE },
+                  },
+                }}
+              >
                 <PlaceCard
                   // The Compare pill below is positioned against this grid
                   // cell, not the card. `h-full` makes the card fill the cell
@@ -673,10 +773,10 @@ export function ExploreClient({
                   {selected ? <Check className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
                   {dict.explore.compare.pill}
                 </button>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
         {hasMore ? (
           <div className="mt-12 flex flex-col items-center gap-3">
             <p className="text-sm text-muted-foreground">

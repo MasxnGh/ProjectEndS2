@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { AlertTriangle, Plus, Sparkles, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, Plus, Sparkles, Trash2 } from "lucide-react";
 import type { Place } from "@/data/types";
 import type { AirQualityResponse, DailyForecastEntry } from "@/lib/weather/types";
 import { SortablePlaceItem } from "@/components/planner/sortable-place-item";
@@ -22,6 +22,7 @@ import { pickDaySuggestion } from "@/lib/weather/day-forecast";
 import { useSeasonalAverage } from "@/lib/weather/use-weather";
 import { CHIANGMAI_CENTER } from "@/lib/geo";
 import { useToast } from "@/components/toast/toast-provider";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { cn } from "@/lib/utils";
 
 function formatDayDate(iso: string, locale: string): string {
@@ -87,6 +88,10 @@ export function DayColumn({
   const schedule = buildSchedule(places);
   const pace = computeDayPace(places, schedule);
   const feasibilityIssues = checkDayFeasibility(places, date ?? null);
+  // Drives the summary chip and whether the disclosure starts open — the
+  // things a traveller must not be able to miss.
+  const warningCount = feasibilityIssues.length + (schedule.exceedsTenHours ? 1 : 0);
+  const hasWarnings = warningCount > 0;
   const suggestion = pickDaySuggestion({
     date,
     entry: forecastEntry,
@@ -138,8 +143,9 @@ export function DayColumn({
   }
 
   return (
-    <div
+    <SpotlightCard
       id={dayId}
+      data-day-card=""
       className={cn(
         "flex w-[380px] shrink-0 snap-start scroll-mx-6 flex-col rounded-lg border bg-surface transition-shadow duration-500 lg:w-[400px]",
         highlighted ? "border-accent shadow-[0_0_0_3px_var(--color-accent)]" : "border-border"
@@ -230,16 +236,50 @@ export function DayColumn({
         ) : null}
       </div>
 
-      <div className="space-y-2 border-t border-border p-4 text-sm">
-        <div className="flex justify-between text-muted-foreground">
-          <span>{dict.planner.estimatedTime}</span>
-          <span className="font-medium text-foreground">{formatMinutes(stats.totalMinutes)}</span>
+      {/* Always on screen: the two numbers that answer "can I actually do
+          this day", side by side rather than stacked. */}
+      <div className="grid grid-cols-2 gap-2 border-t border-border p-4 text-sm">
+        <div>
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+            {dict.planner.estimatedTime}
+          </p>
+          <p className="mt-0.5 font-medium tabular-nums">{formatMinutes(stats.totalMinutes)}</p>
         </div>
-        <div className="flex justify-between text-muted-foreground">
-          <span>{dict.planner.estimatedBudget}</span>
-          <span className="font-medium text-foreground">{formatThb(stats.budgetThb * travelers)}</span>
+        <div className="text-right">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+            {dict.planner.estimatedBudget}
+          </p>
+          <p className="mt-0.5 font-medium tabular-nums">{formatThb(stats.budgetThb * travelers)}</p>
         </div>
+      </div>
 
+      {/* Everything the traveller needs sometimes rather than always. Open by
+          default when the day has something wrong with it — a warning nobody
+          can see is worse than a tall card. */}
+      <details
+        open={hasWarnings}
+        className="group border-t border-border text-sm [&[open]_.day-details-chevron]:rotate-180"
+      >
+        <summary className="no-print flex cursor-pointer list-none items-center justify-between gap-2 p-4 hover:bg-surface-muted/50">
+          <span className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <span className="text-xs font-medium">{dict.planner.dayCard.detailsToggle}</span>
+            {warningCount > 0 ? (
+              <span className="flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+                {dict.planner.dayCard.warningsChip.replace("{count}", String(warningCount))}
+              </span>
+            ) : null}
+            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+              {dict.planner.pace.bands[pace.band]}
+            </span>
+          </span>
+          <ChevronDown
+            className="day-details-chevron h-4 w-4 shrink-0 text-muted-foreground transition-transform"
+            aria-hidden="true"
+          />
+        </summary>
+
+        <div className="space-y-2 px-4 pb-4">
         {schedule.exceedsTenHours ? (
           <p className="flex items-start gap-1.5 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -333,7 +373,8 @@ export function DayColumn({
             </div>
           </div>
         ) : null}
-      </div>
-    </div>
+        </div>
+      </details>
+    </SpotlightCard>
   );
 }

@@ -40,6 +40,10 @@ import { PlanImportListener } from "@/components/planner/plan-import-listener";
 import { SavedTripLoader } from "@/components/planner/saved-trip-loader";
 import { PlacePickerUrlSync } from "@/components/planner/place-picker-url-sync";
 import { PlacePickerPanel } from "@/components/planner/place-picker-panel";
+import { PlanProgressBar } from "@/components/planner/plan-progress-bar";
+import { TripSummaryBar } from "@/components/planner/trip-summary-bar";
+import { DayScroller } from "@/components/planner/day-scroller";
+import { derivePlanProgress } from "@/lib/planner/plan-progress";
 import { PlannerHighlightSync } from "@/components/planner/planner-highlight-sync";
 import { UnscheduledPanel } from "@/components/planner/unscheduled-panel";
 import { DayColumn } from "@/components/planner/day-column";
@@ -88,10 +92,12 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
   const travelDate = useTripStore((s) => s.travelDate);
   const tripName = useTripStore((s) => s.tripName);
   const accommodationThb = useTripStore((s) => s.accommodationThb);
+  const travelMode = useTripStore((s) => s.travelMode);
 
   const [selectedView, setView] = useState<"list" | "map" | "summary" | "timeline">("list");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const [sharedMessage, setSharedMessage] = useState(false);
+  const remoteTripId = useTripStore((s) => s.remoteTripId);
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const cloudSync = useTripCloudSync();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -161,9 +167,25 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
   // the exact same figure from the exact same categorySpendBreakdown, so the
   // two never drift apart.
   const estimatedCostThb = useMemo(
-    () => estimateTripCostThb(categorySpendBreakdown(resolvedDays), travelers, accommodationThb),
-    [resolvedDays, travelers, accommodationThb]
+    () => estimateTripCostThb(categorySpendBreakdown(resolvedDays, travelMode), travelers, accommodationThb),
+    [resolvedDays, travelMode, travelers, accommodationThb]
   );
+
+  // Drives the "you are here" strip. `savedOrShared` counts a cloud-synced
+  // trip or a copied share link — both mean the plan has left this device.
+  const planProgress = useMemo(
+    () =>
+      derivePlanProgress({
+        travelDate,
+        days: resolvedDays,
+        unscheduledCount: unscheduledPlaces.length,
+        savedOrShared: Boolean(remoteTripId) || sharedMessage,
+      }),
+    [travelDate, resolvedDays, unscheduledPlaces.length, remoteTripId, sharedMessage]
+  );
+
+  const unresolvedIssueCount =
+    planProgress.steps.find((step) => step.id === "arrange")?.remaining ?? 0;
 
   const isEmpty = tripTotals.places === 0 && unscheduledPlaces.length === 0;
   const activePlace = activeSlug ? places.find((p) => p.slug === activeSlug) : null;
@@ -550,20 +572,25 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
       />
       <SectionHeading kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
 
-      <div className="mt-8">
-        <TripDetailsForm
-          stats={
-            isEmpty
-              ? undefined
-              : {
-                  days: dayIds.length,
-                  places: tripTotals.places,
-                  minutes: tripTotals.minutes,
-                  estimatedCostThb,
-                }
-          }
-          actions={isEmpty ? undefined : renderSaveAction()}
-        />
+      {isEmpty ? null : (
+        <div className="mt-8">
+          <TripSummaryBar
+            stats={{
+              days: dayIds.length,
+              places: tripTotals.places,
+              minutes: tripTotals.minutes,
+              estimatedCostThb,
+            }}
+          />
+        </div>
+      )}
+
+      <div className="mt-6">
+        <PlanProgressBar progress={planProgress} />
+      </div>
+
+      <div id="planner-details" className="mt-6 scroll-mt-28">
+        <TripDetailsForm actions={isEmpty ? undefined : renderSaveAction()} />
       </div>
 
       <div className="mt-6">
@@ -645,7 +672,10 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
         </div>
       ) : (
         <>
-          <div className="no-print mt-8 flex flex-wrap items-center justify-between gap-4">
+          <div
+            id="planner-toolbar"
+            className="no-print mt-8 flex scroll-mt-28 flex-wrap items-center justify-between gap-4"
+          >
             <div className="flex items-center gap-1 rounded-full border border-border p-1 w-fit">
               <button
                 type="button"
@@ -712,7 +742,7 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                 <button
                   type="button"
                   onClick={handleReflowByWeather}
-                  className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:brightness-95"
+                  className="flex items-center gap-1.5 rounded-full border border-border-strong px-4 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
                 >
                   <CloudSun className="h-4 w-4" />
                   {dict.weather.planner.reflow.button}
@@ -731,10 +761,20 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                 <button
                   type="button"
                   onClick={handleFixDaysClick}
-                  className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:brightness-95"
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                    unresolvedIssueCount > 0
+                      ? "border-destructive text-destructive hover:bg-destructive/10"
+                      : "border-border-strong hover:border-accent hover:text-accent-text"
+                  )}
                 >
                   <Calendar className="h-4 w-4" />
                   {dayFix.fixDays}
+                  {unresolvedIssueCount > 0 ? (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[11px] font-semibold text-destructive-foreground">
+                      {unresolvedIssueCount}
+                    </span>
+                  ) : null}
                 </button>
                 {dayFixSuggestion ? (
                   <div className="absolute left-0 top-full z-10 mt-2 w-80 space-y-3 rounded-lg border border-accent bg-background p-4 text-xs shadow-lg">
@@ -887,7 +927,11 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                 <UnscheduledPanel places={unscheduledPlaces} />
               </div>
 
-              <div className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4">
+              <DayScroller
+                dayCount={resolvedDays.length}
+                className="mt-8 scroll-mt-28"
+                id="planner-days"
+              >
                 {resolvedDays.map((day) => {
                   const forecast = dayForecasts.find((d) => d.dayId === day.id);
                   const showPaceEase = paceRelief?.fromDayId === day.id;
@@ -929,7 +973,7 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                   <Plus className="h-5 w-5" />
                   {dict.planner.addDay}
                 </button>
-              </div>
+              </DayScroller>
 
               <DragOverlay>
                 {activePlace ? (

@@ -66,6 +66,40 @@ const en = {
       museum: "Museums & Art",
       activity: "Activities",
     },
+    hints: {
+      priceLevel: {
+        label: "What the price symbols mean",
+        text: "A rough spend per person for one visit: ฿ under 300, ฿฿ 300–1,000, ฿฿฿ above 1,000. An estimate for comparing places, not a menu price.",
+      },
+      duration: {
+        label: "What this duration means",
+        text: "How long the visit itself usually takes, not counting travel to get there. The planner adds travel time separately.",
+      },
+      pace: {
+        label: "What pace means",
+        text: "How demanding a day is, from the travel time, altitude change, number of stops, spare time and how strenuous each place is.",
+      },
+      goldenHour: {
+        label: "What golden hour means",
+        text: "The hour around sunrise or sunset when the light is warm and low. Calculated from this date's real sun times for Chiang Mai, not a fixed clock time.",
+      },
+      airQuality: {
+        label: "What the air quality number means",
+        text: "PM2.5 air quality index. Chiang Mai's burning season runs roughly February to April, when outdoor viewpoints can lose their view entirely.",
+      },
+      estimatedCost: {
+        label: "What the estimated cost includes",
+        text: "Entry and activities, food stops, transport for your chosen travel mode, any accommodation you entered, plus an allowance for meals your itinerary runs through but has not named yet.",
+      },
+      compareOnMap: {
+        label: "What comparing on the map does",
+        text: "Pins the places you tick onto the map together, so you can see how far apart they really are before committing them to a day.",
+      },
+      dataVerified: {
+        label: "About these opening hours",
+        text: "Hours marked as checked came from OpenStreetMap on the date shown. The rest are editorial estimates — worth confirming with the venue before a long drive.",
+      },
+    },
     districts: {
       "old-city": "Old City",
       nimman: "Nimmanhaemin",
@@ -178,6 +212,16 @@ const en = {
       placeholder: "Search places…",
       ariaLabel: "Search places",
     },
+    sort: {
+      label: "Sort by",
+      recommended: "Recommended",
+      rating: "Highest rated",
+      nearest: "Nearest first",
+      shortest: "Quickest visit",
+    },
+    activeFilters: "Filters on",
+    clearOne: "Remove {filter}",
+    progress: "{shown} of {total}",
     filters: {
       category: "Category",
       district: "District",
@@ -615,6 +659,38 @@ const en = {
       exceedsTenHours: "This day now runs over 10 hours — consider trimming a stop.",
       outsideHours: "may be outside opening hours",
     },
+    progress: {
+      label: "Planning progress",
+      steps: {
+        details: "Trip details",
+        places: "Choose places",
+        arrange: "Arrange the days",
+        share: "Save & share",
+      },
+      hints: {
+        details: "Pick your travel dates to unlock day-by-day timing.",
+        places: "Add places from Explore, or let AI draft a plan for you.",
+        arrange: "{count} thing(s) still need sorting out across your days.",
+        share: "Your plan is ready — save it or share it with whoever is coming.",
+      },
+      allDone: "Everything is in place. Have a wonderful trip.",
+    },
+    tools: {
+      label: "Tools",
+      groupPlan: "Adjust the plan",
+      groupShare: "Save & share",
+      issuesBadge: "{count}",
+    },
+    dayCard: {
+      detailsToggle: "Day details",
+      warningsChip: "{count} to check",
+      suggestionsChip: "{count} suggested",
+    },
+    scroller: {
+      previous: "Previous day",
+      next: "Next day",
+      position: "Day {current} of {total}",
+    },
     suggestions: {
       title: "Worth adding to this day",
       mealGapLunch: "No lunch stop — you are out from {start} to {end}",
@@ -690,6 +766,7 @@ const en = {
       lockedHint: "Locked to this time — drag to move, or press Reset.",
       dragHint: "Drag to change this stop's time.",
       reset: "Reset to automatic time",
+      closedAtThisTime: "Closed at this time — it opens at {opens}.",
       conflict: "This time may not be reachable from the previous stop.",
       wait: "{minutes} min to spare before this stop.",
       longGap: "Unusually long gap — {minutes} min free before this stop. Worth double-checking.",
