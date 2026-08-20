@@ -71,7 +71,7 @@ export function NavBar() {
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Primary">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -83,7 +83,7 @@ export function NavBar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           <HeaderWeatherWidget />
           <LocaleToggle />
           <ThemeToggle />
@@ -113,7 +113,7 @@ export function NavBar() {
 
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-border lg:hidden"
           onClick={() => setMenuOpen((v) => !v)}
           aria-label={menuOpen ? dict.nav.close : dict.nav.menu}
           aria-expanded={menuOpen}
@@ -129,7 +129,7 @@ export function NavBar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: EASE }}
-            className="overflow-hidden border-t border-border bg-background md:hidden"
+            className="overflow-hidden border-t border-border bg-background lg:hidden"
           >
             <div className="flex flex-col gap-1 px-6 py-6">
               {links.map((link) => (
