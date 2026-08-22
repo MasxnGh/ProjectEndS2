@@ -122,6 +122,49 @@ editions (2025 and 2026) but its first year is still unknown.
 **Also found, not yet in the catalogue:** `Khao Soi Mae Manee` has a MICHELIN Guide
 entry in Chiang Mai and is a candidate for a future pass.
 
+## Award reference links (2026-08-15)
+
+Every `awards[]` entry carries a `sourceUrl` and a `sourceName`, rendered on the
+place page as "check the source at <publisher>", opening in a new tab.
+
+| Place | Reference | Publisher |
+|---|---|---|
+| `khao-soi-mae-sai` | `/michelin-khao-soi-mae-sai` | ThailandAddict |
+| `huen-muan-jai` | `/michelin-huen-muan-jai` | ThailandAddict |
+| `meena-rice-based-cuisine` | `/michelin-meena` | ThailandAddict |
+| `rote-yiam-beef-noodle` | `restaurantguru.com/Rote-Yiam-Beef-Noodle-Chiang-Mai` | Restaurant Guru |
+| `blackitch-artisan-kitchen` | `wongnai.com/restaurants/130076cC-blackitch-artisan-kitchen` | Wongnai |
+
+**These deliberately do not point at guide.michelin.com, and that was learned
+the hard way.** An earlier pass linked to
+`guide.michelin.com/en/th/chiang-mai-region/chiang-mai/restaurant/<slug>`,
+verified only by finding the pages in a search index. The prefix was wrong —
+the Guide uses `<country>/<language>`, so `en/th` is backwards — and the first
+person to click the link got Michelin's 404 page.
+
+The reason the mistake survived review is worth recording: the host cannot be
+checked from here. It answers automated requests with an empty `202`,
+**identically for a real slug and for the invented control
+`this-restaurant-does-not-exist-12345`**, and answers a real browser automation
+with a CloudFront `403`. So no fetch against that host distinguishes a working
+URL from a broken one, and a "verified" link there is not verified at all.
+
+Each URL in the table above was instead opened and confirmed to (a) return 200
+with real content and (b) name both the restaurant and its Michelin
+distinction. `places.test.ts` now refuses any `sourceUrl` on `michelin.com`,
+and requires a `sourceName` alongside every link.
+
+**Known discrepancy, not resolved.** Restaurant Guru and AutoReserve both
+describe `rote-yiam-beef-noodle` as **Bib Gourmand**, while our `awards` entry
+claims only "listed in the MICHELIN Guide". The weaker claim is kept on purpose:
+it is true under either reading, and without reaching Michelin itself there is
+no way to adjudicate. Understating an award is a smaller error than inventing
+one.
+
+**These are third-party write-ups, not the awarding body.** The place page says
+so in as many words, so a reader is not led to believe they are clicking
+Michelin.
+
 ## Ratings — editorial
 
 The `rating` field is an editorial score in the same spirit as the original 26

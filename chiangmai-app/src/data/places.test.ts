@@ -78,6 +78,28 @@ describe("awards and signature dishes", () => {
       // Every award claim is a factual assertion about a real business, so it
       // carries where it came from — see docs/places-sources.md.
       expect(award.source.trim().length, "an award must record its source").toBeGreaterThan(0);
+
+      // The reference has to be something a reader can actually open. A link
+      // that is not absolute, or points at our own site, is not a source —
+      // it is a citation of ourselves.
+      if (award.sourceUrl !== undefined) {
+        expect(award.sourceUrl, "a source URL must be absolute https").toMatch(/^https:\/\//);
+        expect(award.sourceUrl).not.toContain("chiangmai");
+        expect(() => new URL(award.sourceUrl!), "a source URL must parse").not.toThrow();
+
+        // A citation with no publisher named is not a citation.
+        expect(award.sourceName?.trim(), "a source URL needs a visible credit").toBeTruthy();
+
+        // guide.michelin.com is unreachable to us — it answers automated
+        // requests with an empty 202 or a 403, so a link to it cannot be
+        // checked before shipping. One was shipped on an inferred URL pattern
+        // and 404'd for the first person who clicked it. Cite a page we can
+        // actually open instead.
+        expect(
+          new URL(award.sourceUrl!).hostname,
+          "link a source we can verify, not guide.michelin.com"
+        ).not.toContain("michelin.com");
+      }
     }
   });
 

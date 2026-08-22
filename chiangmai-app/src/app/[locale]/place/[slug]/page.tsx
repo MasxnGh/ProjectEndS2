@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Award, Clock, Info, MapPin, Star, Wallet } from "lucide-react";
+import { Award, Clock, ExternalLink, Info, MapPin, Star, Wallet } from "lucide-react";
 import { getPlaceBySlug, places } from "@/data/places";
 import { cn } from "@/lib/utils";
 import { findNearbyExcluding } from "@/lib/geo/nearby";
@@ -197,31 +197,72 @@ export default async function PlaceDetailPage({
             {place.awards && place.awards.length > 0 ? (
               <Reveal delay={0.05} className="mt-10">
                 <h2 className="font-serif-display text-2xl">{dict.place.awards}</h2>
-                <ul className="mt-4 space-y-3">
+                <p className="mt-2 text-sm text-muted-foreground text-pretty">
+                  {dict.place.awardSourceNote}
+                </p>
+                <ul className="mt-5 space-y-4">
                   {place.awards.map((award) => (
                     <li
                       key={award.name.en}
-                      className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-lg border border-border p-4"
+                      className="rounded-lg border border-accent/35 bg-accent/[0.04] p-5"
                     >
-                      <Award className="h-4 w-4 shrink-0 text-accent-text" />
-                      <span className="font-medium">{award.name[locale]}</span>
-                      {/* A distinction that has lapsed is a different claim from
-                          one still held, so the two never render the same way. */}
-                      <span
-                        className={cn(
-                          "rounded-full px-2.5 py-0.5 text-xs",
-                          award.current
-                            ? "bg-accent/15 text-accent-text"
-                            : "bg-surface-muted text-muted-foreground"
-                        )}
-                      >
-                        {award.current ? dict.place.awardHeld : dict.place.awardPast}
-                      </span>
-                      {formatAwardYears(award, dict.place) ? (
-                        <span className="text-sm text-muted-foreground">
-                          {formatAwardYears(award, dict.place)}
+                      <div className="flex items-start gap-3.5">
+                        <span
+                          aria-hidden="true"
+                          className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent-text"
+                        >
+                          <Award className="h-4.5 w-4.5" />
                         </span>
-                      ) : null}
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                            <span className="font-serif-display text-lg leading-snug">
+                              {award.name[locale]}
+                            </span>
+                            {/* A distinction that has lapsed is a different claim
+                                from one still held, so the two never render the
+                                same way. */}
+                            <span
+                              className={cn(
+                                "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                award.current
+                                  ? "bg-accent text-accent-foreground"
+                                  : "bg-surface-muted text-muted-foreground"
+                              )}
+                            >
+                              {award.current ? dict.place.awardHeld : dict.place.awardPast}
+                            </span>
+                            {formatAwardYears(award, dict.place) ? (
+                              <span className="text-sm tabular-nums text-muted-foreground">
+                                {formatAwardYears(award, dict.place)}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {/* The point of the section. A claim about someone
+                              else's business should be checkable by whoever
+                              reads it, so the source is a link when we have a
+                              page for it, and named in plain text when we do
+                              not — never left implicit. */}
+                          {award.sourceUrl ? (
+                            <a
+                              href={award.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2.5 inline-flex items-center gap-1.5 text-sm font-medium text-accent-text underline-offset-4 hover:underline"
+                            >
+                              {dict.place.awardSourceLink.replace(
+                                "{source}",
+                                award.sourceName ?? new URL(award.sourceUrl).hostname
+                              )}
+                              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                            </a>
+                          ) : (
+                            <p className="mt-2.5 text-xs text-muted-foreground">
+                              {dict.place.awardSourcePlain.replace("{source}", award.source)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -231,25 +272,36 @@ export default async function PlaceDetailPage({
             {place.signatureDishes && place.signatureDishes.length > 0 ? (
               <Reveal delay={0.05} className="mt-10">
                 <h2 className="font-serif-display text-2xl">{dict.place.signatureDishes}</h2>
-                <ul className="mt-4 space-y-4">
-                  {place.signatureDishes.map((dish) => (
-                    <li key={dish.name.en} className="border-l-2 border-accent/40 pl-4">
-                      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-                        <p className="font-medium">{dish.name[locale]}</p>
-                        {/* Only shown when we actually confirmed a price — a
-                            missing figure beats a stale one. */}
-                        {dish.priceThb !== null ? (
-                          <p className="text-sm tabular-nums text-accent-text">
-                            ฿{dish.priceThb.toLocaleString("en-US")}
-                          </p>
-                        ) : null}
+                <ol className="mt-5 divide-y divide-border overflow-hidden rounded-lg border border-border">
+                  {place.signatureDishes.map((dish, index) => (
+                    <li key={dish.name.en} className="flex gap-4 p-5">
+                      {/* Numbered because the order is the recommendation —
+                          these are listed in the order we'd try them, and an
+                          unnumbered list loses that entirely. */}
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-accent/40 font-serif-display text-sm text-accent-text"
+                      >
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                          <p className="font-medium">{dish.name[locale]}</p>
+                          {/* Only shown when a price was actually confirmed. A
+                              missing figure is more useful than a stale one. */}
+                          {dish.priceThb !== null ? (
+                            <span className="shrink-0 rounded-full bg-accent/12 px-2.5 py-0.5 text-sm tabular-nums text-accent-text">
+                              ฿{dish.priceThb.toLocaleString("en-US")}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="mt-1.5 leading-relaxed text-muted-foreground text-pretty">
+                          {dish.note[locale]}
+                        </p>
                       </div>
-                      <p className="mt-1 leading-relaxed text-muted-foreground text-pretty">
-                        {dish.note[locale]}
-                      </p>
                     </li>
                   ))}
-                </ul>
+                </ol>
               </Reveal>
             ) : null}
 

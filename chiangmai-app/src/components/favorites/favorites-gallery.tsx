@@ -161,7 +161,10 @@ export function FavoritesGallery({
             exit={{ opacity: 0, scale: m.reduced ? 1 : 0.96 }}
             transition={{ ...m.tween("base"), delay: Math.min(index, 8) * m.stagger(0.05) }}
           >
-            <PlaceCard place={place} className="h-full pb-14" />
+            {/* No `pb-14` here: that band exists on Explore to hold its Compare
+                pill, and this page has no pill — reserving the space would
+                just leave 56px of blank card under every entry. */}
+            <PlaceCard place={place} className="h-full" />
           </motion.li>
         ))}
         </AnimatePresence>
