@@ -17,7 +17,6 @@ import {
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import {
   AlertTriangle,
-  Calendar,
   Check,
   CloudSun,
   Compass,
@@ -67,7 +66,7 @@ import { cn } from "@/lib/utils";
 import { CHIANGMAI_CENTER } from "@/lib/geo";
 import { useWeatherBundle } from "@/lib/weather/use-weather";
 import { resolveDayDate, findDailyForecast, isBadWeatherDay, isBurningSeasonDate } from "@/lib/weather/day-forecast";
-import { suggestDayFixes, type PlaceRelocation } from "@/lib/planner/feasibility";
+import { suggestDayFixes } from "@/lib/planner/feasibility";
 import { buildSchedule } from "@/lib/planner/schedule";
 import { suggestPaceRelief } from "@/lib/planner/pace";
 import type { AqiLevel } from "@/lib/weather/types";
@@ -101,12 +100,15 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
   const [signInPromptOpen, setSignInPromptOpen] = useState(false);
   const cloudSync = useTripCloudSync();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
-  const [reflowStatus, setReflowStatus] = useState<"idle" | "applied" | "noChange" | "needsDate">("idle");
+  // Weather reorganising now reports through a toast rather than a popover
+  // anchored to its old toolbar button — the action lives in the overflow menu
+  // and that menu closes on click, so there is nothing left to anchor to.
+  const reportReflow = (outcome: "applied" | "noChange" | "needsDate") =>
+    showToast({ message: dict.weather.planner.reflow[outcome] });
   const [pickerDayId, setPickerDayId] = useState<string | null>(null);
   const pickerTriggerRef = useRef<HTMLElement | null>(null);
   const pickerPushedRef = useRef(false);
   const [highlightedDayId, setHighlightedDayId] = useState<string | null>(null);
-  const [dayFixSuggestion, setDayFixSuggestion] = useState<PlaceRelocation[] | null>(null);
   const [hoveredPlaceSlug, setHoveredPlaceSlug] = useState<string | null>(null);
   const [focusedItemId, setFocusedItemId] = useState<string | null>(null);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -184,8 +186,6 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
     [travelDate, resolvedDays, unscheduledPlaces.length, remoteTripId, sharedMessage]
   );
 
-  const unresolvedIssueCount =
-    planProgress.steps.find((step) => step.id === "arrange")?.remaining ?? 0;
 
   const isEmpty = tripTotals.places === 0 && unscheduledPlaces.length === 0;
   const activePlace = activeSlug ? places.find((p) => p.slug === activeSlug) : null;
@@ -216,6 +216,68 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
       ),
     [resolvedDays]
   );
+
+  /**
+   * Which places on which day would be better off elsewhere, grouped by the
+   * day they are currently on so each column can offer to fix only itself.
+   * `suggestDayFixes` stays the single source of truth — this only regroups
+   * what it returns and resolves day ids to the numbers people read.
+   */
+  const relocationsByDay = useMemo(() => {
+    const dayNumberOf = new Map(resolvedDays.map((day) => [day.id, day.dayNumber]));
+    const feasibilityDays = resolvedDays.map((day) => ({
+      dayId: day.id,
+      isoDate: dayForecasts.find((d) => d.dayId === day.id)?.date ?? null,
+      places: day.places,
+    }));
+    const grouped = new Map<string, { placeSlug: string; toDayNumber: number }[]>();
+    for (const relocation of suggestDayFixes(feasibilityDays)) {
+      const list = grouped.get(relocation.fromDayId) ?? [];
+      list.push({
+        placeSlug: relocation.placeSlug,
+        toDayNumber: dayNumberOf.get(relocation.toDayId) ?? 0,
+      });
+      grouped.set(relocation.fromDayId, list);
+    }
+    return grouped;
+  }, [resolvedDays, dayForecasts]);
+
+  function handleApplyDayRelocations(fromDayId: string) {
+    const forDay = relocationsByDay.get(fromDayId);
+    if (!forDay || forDay.length === 0) return;
+
+    const dayIdOfNumber = new Map(resolvedDays.map((day) => [day.dayNumber, day.id]));
+    const moved: { slug: string; back: string }[] = [];
+    for (const relocation of forDay) {
+      const toDayId = dayIdOfNumber.get(relocation.toDayNumber);
+      if (!toDayId) continue;
+      moveItem({
+        slug: relocation.placeSlug,
+        toContainer: toDayId,
+        toIndex: containers[toDayId]?.length ?? 0,
+      });
+      moved.push({ slug: relocation.placeSlug, back: fromDayId });
+    }
+    if (moved.length === 0) return;
+
+    showToast({
+      message: dayFix.fixDaysApplied.replace("{count}", String(moved.length)),
+      actions: [
+        {
+          label: dict.planner.toast.undo,
+          onClick: () => {
+            for (const item of moved) {
+              moveItem({
+                slug: item.slug,
+                toContainer: item.back,
+                toIndex: containers[item.back]?.length ?? 0,
+              });
+            }
+          },
+        },
+      ],
+    });
+  }
 
   function handleEasePace() {
     if (!paceRelief) return;
@@ -249,8 +311,7 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
 
   function handleReflowByWeather() {
     if (!travelDate) {
-      setReflowStatus("needsDate");
-      setTimeout(() => setReflowStatus("idle"), 3000);
+      reportReflow("needsDate");
       return;
     }
     if (!weatherBundle.weather) return;
@@ -287,8 +348,7 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
     }
 
     if (!swaps.length) {
-      setReflowStatus("noChange");
-      setTimeout(() => setReflowStatus("idle"), 3000);
+      reportReflow("noChange");
       return;
     }
 
@@ -296,53 +356,11 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
       moveItem({ slug: swap.outdoorSlug, toContainer: swap.goodDay, toIndex: containers[swap.goodDay]?.length ?? 0 });
       moveItem({ slug: swap.indoorSlug, toContainer: swap.badDay, toIndex: containers[swap.badDay]?.length ?? 0 });
     }
-    setReflowStatus("applied");
-    setTimeout(() => setReflowStatus("idle"), 3000);
+    reportReflow("applied");
   }
 
-  function handleFixDaysClick() {
-    const feasibilityDays = resolvedDays.map((day) => ({
-      dayId: day.id,
-      isoDate: dayForecasts.find((d) => d.dayId === day.id)?.date ?? null,
-      places: day.places,
-    }));
-    const relocations = suggestDayFixes(feasibilityDays);
-    if (relocations.length === 0) {
-      showToast({ message: dayFix.fixDaysNone });
-      return;
-    }
-    setDayFixSuggestion(relocations);
-  }
 
-  function handleConfirmFixDays() {
-    if (!dayFixSuggestion) return;
-    const previousContainerOf = new Map(dayFixSuggestion.map((r) => [r.placeSlug, r.fromDayId]));
-    for (const relocation of dayFixSuggestion) {
-      moveItem({
-        slug: relocation.placeSlug,
-        toContainer: relocation.toDayId,
-        toIndex: containers[relocation.toDayId]?.length ?? 0,
-      });
-    }
-    showToast({
-      message: dayFix.fixDaysApplied.replace("{count}", String(dayFixSuggestion.length)),
-      actions: [
-        {
-          label: dict.planner.toast.undo,
-          onClick: () => {
-            for (const [slug, dayId] of previousContainerOf) {
-              moveItem({ slug, toContainer: dayId, toIndex: containers[dayId]?.length ?? 0 });
-            }
-          },
-        },
-      ],
-    });
-    setDayFixSuggestion(null);
-  }
 
-  function handleCancelFixDays() {
-    setDayFixSuggestion(null);
-  }
 
   function handleDragStart(event: DragStartEvent) {
     setActiveSlug(String(event.active.id));
@@ -585,13 +603,22 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
         </div>
       )}
 
-      <div className="mt-6">
-        <PlanProgressBar progress={planProgress} />
-      </div>
+      {/* Step 1 is "start", and a progress rail reading 0% is not a step — it
+          is four greyed-out circles telling a first-time visitor how much they
+          have not done. Both this and the details form appear the moment the
+          plan has something in it, which is also the first moment either can
+          say anything useful. */}
+      {isEmpty ? null : (
+        <div className="mt-6">
+          <PlanProgressBar progress={planProgress} />
+        </div>
+      )}
 
-      <div id="planner-details" className="mt-6 scroll-mt-28">
-        <TripDetailsForm actions={isEmpty ? undefined : renderSaveAction()} />
-      </div>
+      {isEmpty ? null : (
+        <div id="planner-details" className="mt-6 scroll-mt-28">
+          <TripDetailsForm actions={renderSaveAction()} />
+        </div>
+      )}
 
       <div className="mt-6">
         {travelDate ? <FestivalBanner travelDate={travelDate} dayCount={dayIds.length} /> : null}
@@ -676,50 +703,61 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
             id="planner-toolbar"
             className="no-print mt-8 flex scroll-mt-28 flex-wrap items-center justify-between gap-4"
           >
-            <div className="flex items-center gap-1 rounded-full border border-border p-1 w-fit">
+            {/* Two modes, not four tabs. "Build" is where the itinerary is
+                assembled; "Review" is where it is checked and sent. Summary and
+                Timeline were never separate jobs — they are both ways of
+                reading a finished plan, so they now live together under Review
+                and the traveller has one less decision to make. */}
+            <div
+              role="tablist"
+              aria-label={dict.planner.title}
+              className="flex items-center gap-1 rounded-full border border-border p-1 w-fit"
+            >
               <button
                 type="button"
+                role="tab"
+                aria-selected={view !== "summary"}
                 onClick={() => setView("list")}
                 className={cn(
                   "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
-                  view === "list" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                  view !== "summary" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                 )}
               >
-                {dict.planner.listView}
+                {dict.planner.buildMode}
               </button>
-              {isDesktop ? null : (
-                <button
-                  type="button"
-                  onClick={() => setView("map")}
-                  className={cn(
-                    "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
-                    view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {dict.planner.mapView}
-                </button>
-              )}
               <button
                 type="button"
+                role="tab"
+                aria-selected={view === "summary"}
                 onClick={() => setView("summary")}
                 className={cn(
                   "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
                   view === "summary" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                 )}
               >
-                {dict.planner.summaryView}
-              </button>
-              <button
-                type="button"
-                onClick={() => setView("timeline")}
-                className={cn(
-                  "rounded-full px-4 py-1.5 text-xs font-medium transition-colors",
-                  view === "timeline" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )}
-              >
-                {dict.planner.timelineView}
+                {dict.planner.reviewMode}
               </button>
             </div>
+
+            {/* Mobile only: the map is a permanent sidebar on desktop, so a
+                toggle there would switch to a view the traveller can already
+                see. */}
+            {isDesktop ? null : (
+              <button
+                type="button"
+                onClick={() => setView(view === "map" ? "list" : "map")}
+                aria-pressed={view === "map"}
+                className={cn(
+                  "rounded-full border px-4 py-1.5 text-xs font-medium transition-colors",
+                  view === "map"
+                    ? "border-accent bg-accent text-accent-foreground"
+                    : "border-border text-muted-foreground"
+                )}
+              >
+                {dict.planner.mapView}
+              </button>
+            )}
+
 
             <div className="flex flex-wrap items-center gap-2">
               {aiEnabled ? (
@@ -738,81 +776,10 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                   {dict.planner.ai.button}
                 </button>
               ) : null}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={handleReflowByWeather}
-                  className="flex items-center gap-1.5 rounded-full border border-border-strong px-4 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
-                >
-                  <CloudSun className="h-4 w-4" />
-                  {dict.weather.planner.reflow.button}
-                </button>
-                {reflowStatus !== "idle" ? (
-                  <div className="absolute left-0 top-full z-10 mt-2 w-64 rounded-lg border border-border bg-background p-3 text-xs text-foreground/75 shadow-lg">
-                    {reflowStatus === "applied"
-                      ? dict.weather.planner.reflow.applied
-                      : reflowStatus === "needsDate"
-                        ? dict.weather.planner.reflow.needsDate
-                        : dict.weather.planner.reflow.noChange}
-                  </div>
-                ) : null}
-              </div>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={handleFixDaysClick}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                    unresolvedIssueCount > 0
-                      ? "border-destructive text-destructive hover:bg-destructive/10"
-                      : "border-border-strong hover:border-accent hover:text-accent-text"
-                  )}
-                >
-                  <Calendar className="h-4 w-4" />
-                  {dayFix.fixDays}
-                  {unresolvedIssueCount > 0 ? (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[11px] font-semibold text-destructive-foreground">
-                      {unresolvedIssueCount}
-                    </span>
-                  ) : null}
-                </button>
-                {dayFixSuggestion ? (
-                  <div className="absolute left-0 top-full z-10 mt-2 w-80 space-y-3 rounded-lg border border-accent bg-background p-4 text-xs shadow-lg">
-                    <p className="font-medium text-foreground">{dayFix.fixDaysTitle}</p>
-                    <ul className="space-y-1 text-foreground/75">
-                      {dayFixSuggestion.map((relocation) => {
-                        const place = places.find((p) => p.slug === relocation.placeSlug);
-                        const fromDay = dayIds.indexOf(relocation.fromDayId) + 1;
-                        const toDay = dayIds.indexOf(relocation.toDayId) + 1;
-                        return (
-                          <li key={relocation.placeSlug}>
-                            {dayFix.fixDaysMove
-                              .replace("{place}", place?.name[locale] ?? relocation.placeSlug)
-                              .replace("{fromDay}", String(fromDay))
-                              .replace("{toDay}", String(toDay))}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={handleConfirmFixDays}
-                        className="flex-1 rounded-full bg-accent px-3 py-1.5 font-medium text-accent-foreground"
-                      >
-                        {dict.planner.route.confirm}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleCancelFixDays}
-                        className="flex-1 rounded-full border border-border-strong px-3 py-1.5 font-medium hover:border-accent hover:text-accent-text"
-                      >
-                        {dict.planner.route.cancel}
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-              </div>
+              {/* The "fix scheduling issues" button used to live here and
+                  rearrange every day at once. It now sits inside the day that
+                  actually has the problem — see DayColumn — so a traveller
+                  only ever accepts changes to a day they are looking at. */}
               <div className="relative" ref={moreMenuRef}>
                 <button
                   type="button"
@@ -858,6 +825,24 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                         <p className="mt-2 text-xs text-foreground/70">{dict.planner.qr.hint}</p>
                       </div>
                     ) : null}
+                    {/* Moved out of the toolbar. Reorganising by weather is a
+                        once-in-a-while action, and it was sitting at the same
+                        visual weight as the two things people do constantly.
+                        Its result now arrives as a toast, because a popover
+                        anchored to a menu item would be dismissed by the same
+                        click that triggers it. */}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setMoreMenuOpen(false);
+                        handleReflowByWeather();
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm hover:bg-surface-muted"
+                    >
+                      <CloudSun className="h-4 w-4 shrink-0" />
+                      {dict.weather.planner.reflow.button}
+                    </button>
                     <button
                       type="button"
                       role="menuitem"
@@ -879,8 +864,42 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
           <div className="print:hidden lg:grid lg:grid-cols-5 lg:items-start lg:gap-8">
           <div className="lg:col-span-3">
           {view === "summary" ? (
+            /* Review mode. Summary and Timeline used to be two tabs a
+               traveller had to know to visit; they are two readings of the
+               same finished plan, so they are stacked here — the shape of the
+               trip first, then the hour-by-hour detail underneath. */
             <div className="mt-8">
-              <SummaryView days={resolvedDays} />
+              <p className="max-w-2xl text-muted-foreground text-pretty">{dict.planner.reviewIntro}</p>
+              <div className="mt-6">
+                <SummaryView days={resolvedDays} />
+              </div>
+              <div className="mt-12">
+                <h2 className="font-serif-display text-2xl">{dict.planner.timelineView}</h2>
+                <div className="mt-4">
+                  <BaseLocationPicker className="max-w-xs" onRequestMapPin={handleStartMapPin} />
+                </div>
+                <div
+                  className={cn(
+                    "mt-6",
+                    resolvedDays.length > 1 ? "flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4" : ""
+                  )}
+                >
+                  {resolvedDays.map((day) => {
+                    const forecast = dayForecasts.find((d) => d.dayId === day.id);
+                    return (
+                      <DayTimeline
+                        key={day.id}
+                        dayId={day.id}
+                        dayNumber={day.dayNumber}
+                        date={forecast?.date ?? null}
+                        places={day.places}
+                        forecastEntry={forecast?.entry}
+                        fullWidth={resolvedDays.length === 1}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           ) : view === "map" ? (
             <div className="mt-8">
@@ -958,6 +977,8 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
                       hoveredPlaceSlug={hoveredPlaceSlug}
                       onHoverPlace={setHoveredPlaceSlug}
                       focusedItemId={focusedItemId}
+                      relocations={relocationsByDay.get(day.id)}
+                      onApplyRelocations={() => handleApplyDayRelocations(day.id)}
                     />
                   );
                 })}

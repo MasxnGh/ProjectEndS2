@@ -7,6 +7,7 @@ import { toSerializedTrip, type SerializedTrip } from "@/lib/db/types";
 import { getPlaceBySlug } from "@/data/places";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { CopySharedTripButton } from "@/components/trips/copy-shared-trip-button";
+import { Reveal } from "@/components/reveal";
 
 /**
  * A share link is a capability: holding the token is what grants access. So
@@ -61,6 +62,7 @@ export default async function SharedTripPage({
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16 lg:px-10 lg:py-20">
+      <Reveal as="div">
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent-text">{t.kicker}</p>
       <h1 className="mt-3 font-serif-display text-4xl leading-tight sm:text-5xl">
         {trip.title || dict.myTrips.untitled}
@@ -89,10 +91,14 @@ export default async function SharedTripPage({
       <div className="mt-8">
         <CopySharedTripButton token={token} locale={loc} />
       </div>
+      </Reveal>
 
       <ol className="mt-12 space-y-10">
         {trip.days.map((day, index) => (
+          // Reveal sits inside the <li>, not around it: an <ol> may only have
+          // <li> children, and a wrapper div there is invalid markup.
           <li key={index}>
+          <Reveal as="div" delay={Math.min(index, 6) * 0.06}>
             <h2 className="font-serif-display text-2xl">
               {t.dayLabel.replace("{day}", String(index + 1))}
             </h2>
@@ -133,6 +139,7 @@ export default async function SharedTripPage({
                 );
               })}
             </ol>
+          </Reveal>
           </li>
         ))}
       </ol>

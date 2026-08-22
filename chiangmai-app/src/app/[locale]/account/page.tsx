@@ -5,6 +5,7 @@ import { collectUserData } from "@/lib/db/account-data";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { AccountActions } from "@/components/account/account-actions";
+import { Reveal } from "@/components/reveal";
 
 export async function generateMetadata({
   params,
@@ -57,12 +58,12 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-16 lg:px-10 lg:py-20">
-      <header>
+      <Reveal as="div">
         <h1 className="font-serif-display text-4xl leading-tight sm:text-5xl">{t.title}</h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">{t.intro}</p>
-      </header>
+      </Reveal>
 
-      <section className="mt-12">
+      <Reveal as="div" delay={0.08} className="mt-12">
         <h2 className="font-serif-display text-2xl">{t.storedTitle}</h2>
         <p className="mt-2 text-sm text-muted-foreground text-pretty">{t.storedIntro}</p>
         <dl className="mt-6 divide-y divide-border rounded-lg border border-border">
@@ -74,7 +75,7 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
           ))}
         </dl>
         <p className="mt-3 text-xs text-muted-foreground text-pretty">{t.tokenNote}</p>
-      </section>
+      </Reveal>
 
       <AccountActions locale={loc} />
     </div>

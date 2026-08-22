@@ -11,6 +11,8 @@ import { useFavorites } from "@/lib/favorites/favorites-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { useToast } from "@/components/toast/toast-provider";
 import { useLocale } from "@/components/providers/locale-provider";
+import { AnimatePresence, motion } from "motion/react";
+import { useMotionTokens } from "@/lib/motion";
 import type { Locale } from "@/i18n";
 
 export function FavoritesGallery({
@@ -26,6 +28,7 @@ export function FavoritesGallery({
   const t = dict.favorites;
   const { slugs } = useFavorites();
   const { showToast } = useToast();
+  const m = useMotionTokens();
   const addPlace = useTripStore((s) => s.addPlace);
   const containers = useTripStore((s) => s.containers);
 
@@ -144,12 +147,24 @@ export function FavoritesGallery({
         </div>
       ) : null}
 
+      {/* Un-hearting a place removes its card from this grid, so the exit
+          animation is what tells the traveller which one left — otherwise the
+          grid just reflows and it is easy to think you removed the wrong one. */}
       <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((place) => (
-          <li key={place.slug}>
+        <AnimatePresence initial={false}>
+        {visible.map((place, index) => (
+          <motion.li
+            key={place.slug}
+            layout={m.reduced ? false : "position"}
+            initial={{ opacity: 0, y: m.reduced ? 0 : 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: m.reduced ? 1 : 0.96 }}
+            transition={{ ...m.tween("base"), delay: Math.min(index, 8) * m.stagger(0.05) }}
+          >
             <PlaceCard place={place} className="h-full pb-14" />
-          </li>
+          </motion.li>
         ))}
+        </AnimatePresence>
       </ul>
     </>
   );

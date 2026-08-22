@@ -5,6 +5,7 @@ import { Check, Clock, MapPin, Plus, Route, Star } from "lucide-react";
 import type { Place } from "@/data/types";
 import { PlaceImage } from "@/components/place-image";
 import { FavoriteButton } from "@/components/favorite-button";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore, useTripStoreHydrated, UNSCHEDULED } from "@/lib/trip-store";
@@ -109,11 +110,17 @@ export function PlaceCard({
       // top of that remount fights it.
       whileHover={m.reduced ? undefined : { y: -4 }}
       transition={m.spring("soft")}
-      className={cn(
-        "group relative flex flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow duration-300 hover:shadow-elevated",
-        className
-      )}
+      className={cn("group h-full", className)}
     >
+      {/* The spotlight has to be the element that carries `bg-surface`, not a
+          wrapper around it. Its glow layer sits at `-z-10`, which CSS paints
+          above that element's own background but below any descendant — put an
+          opaque child in between and the glow disappears entirely. The hover
+          lift stays on the motion wrapper outside, so the two effects do not
+          compete for the same transform. */}
+      <SpotlightCard
+        className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow duration-300 hover:shadow-elevated"
+      >
       <div className="relative aspect-[4/3] overflow-hidden">
         <PlaceImage
           category={place.category}
@@ -210,6 +217,7 @@ export function PlaceCard({
         className="absolute inset-0 z-0"
         aria-label={`${dict.common.viewDetails}: ${place.name[locale]}`}
       />
+      </SpotlightCard>
     </motion.div>
   );
 }

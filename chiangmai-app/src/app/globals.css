@@ -223,3 +223,40 @@ body {
     color: black;
   }
 }
+
+/* Route-change entrance — see app/[locale]/template.tsx for why this is CSS
+   rather than a JS animation. The resting state is opaque; the keyframe only
+   dips opacity at the start, so a page that never animates is still visible. */
+@keyframes route-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.route-enter {
+  animation: route-enter 450ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Sign-in backdrop: two ridgelines drifting at different speeds, so the
+   parallax reads as depth rather than as a moving picture. Slow on purpose —
+   this sits behind a form, and anything faster competes with it for attention.
+   The reduced-motion block above clamps both to a standstill. */
+@keyframes ridge-drift {
+  from {
+    transform: translate3d(-1.5%, 0, 0);
+  }
+  to {
+    transform: translate3d(1.5%, 0, 0);
+  }
+}
+
+.login-backdrop-ridge {
+  animation: ridge-drift 38s ease-in-out infinite alternate;
+}
+
+.login-backdrop-ridge-far {
+  animation: ridge-drift 26s ease-in-out infinite alternate-reverse;
+}
