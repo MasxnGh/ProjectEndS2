@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Place } from "@/data/types";
+import { minutesToClock } from "@/lib/opening-hours";
 import type { DailyForecastEntry } from "@/lib/weather/types";
 import {
   buildDayTimeline,
+  earliestFeasibleArrival,
   pickAnchorWindow,
   resolveSunTimes,
   resolveWindowMinutes,
@@ -312,5 +314,53 @@ describe("buildDayTimeline", () => {
       expect(timeline.stops[0].arrivalMinutes).toBe(5 * 60 + 30);
       expect(timeline.stops[1].outsideOpeningHours).toBe(false);
     });
+  });
+});
+
+describe("earliestFeasibleArrival", () => {
+  const A = makePlace({ slug: "a", coordinates: { lat: 18.79, lng: 98.99 }, durationMinutes: 300 });
+  const B = makePlace({ slug: "b", coordinates: { lat: 18.8, lng: 99.0 }, durationMinutes: 30 });
+
+  it("returns null for the first stop, which sets the day's own start", () => {
+    const timeline = buildDayTimeline({ order: [A, B], sun: SUN, baseLocation: null, lockedArrivals: { a: "09:00" } });
+    expect(earliestFeasibleArrival(timeline.stops, 0)).toBeNull();
+  });
+
+  it("returns null while nothing earlier is pinned, since the morning shifts back to accommodate", () => {
+    // No lock and no ideal window anywhere, so `b` is free: pulling it earlier
+    // drags `a` along with it rather than colliding.
+    const timeline = buildDayTimeline({ order: [A, B], sun: SUN, baseLocation: null });
+    expect(timeline.stops.some((s) => s.isAnchor || s.userLocked)).toBe(false);
+    expect(earliestFeasibleArrival(timeline.stops, 1)).toBeNull();
+  });
+
+  it("is the previous stop's departure plus the drive once an earlier stop is locked", () => {
+    const timeline = buildDayTimeline({ order: [A, B], sun: SUN, baseLocation: null, lockedArrivals: { a: "09:00" } });
+    const [first, second] = timeline.stops;
+    expect(earliestFeasibleArrival(timeline.stops, 1)).toBe(first.departureMinutes + second.travelMinutesFromPrevious);
+  });
+
+  it("is exactly the time that clears the conflict the screenshot showed", () => {
+    // Two locked stops whose times overlap: `b` is honored verbatim and
+    // flagged, and the earliest feasible arrival is what the UI holds it to.
+    const timeline = buildDayTimeline({
+      order: [A, B],
+      sun: SUN,
+      baseLocation: null,
+      lockedArrivals: { a: "09:00", b: "09:30" },
+    });
+    expect(timeline.stops[1].conflict).toBe(true);
+
+    const earliest = earliestFeasibleArrival(timeline.stops, 1)!;
+    expect(earliest).toBeGreaterThan(timeline.stops[1].arrivalMinutes);
+
+    const fixed = buildDayTimeline({
+      order: [A, B],
+      sun: SUN,
+      baseLocation: null,
+      lockedArrivals: { a: "09:00", b: minutesToClock(earliest) },
+    });
+    expect(fixed.stops[1].conflict).toBe(false);
+    expect(fixed.stops[1].arrivalMinutes).toBeGreaterThanOrEqual(fixed.stops[0].departureMinutes);
   });
 });

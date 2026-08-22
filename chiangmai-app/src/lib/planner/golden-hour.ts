@@ -306,3 +306,25 @@ export function buildDayTimeline(params: {
 
   return { stops, leaveByMinutes, sun, hasAnchor: anchorIndex !== -1 };
 }
+
+/**
+ * The earliest a stop can be reached, or `null` when it is free to move.
+ *
+ * A day is only pinned in place once something earlier in it is pinned. With
+ * no earlier anchor, `chainFromAnchor` walks *backward* from this stop, so
+ * pulling it earlier simply drags the morning along with it and nothing
+ * overlaps. But once an earlier stop is anchored — user-locked, or holding an
+ * ideal golden-hour window — later stops are chained forward and honored
+ * verbatim, so a time earlier than the previous stop's departure plus the
+ * drive is not a preference, it is a physical impossibility.
+ *
+ * Reads `travelMinutesFromPrevious` off the built chain rather than
+ * recomputing the drive, so this can never disagree with the schedule it is
+ * meant to constrain.
+ */
+export function earliestFeasibleArrival(stops: TimelineStop[], index: number): number | null {
+  if (index <= 0 || index >= stops.length) return null;
+  const pinnedEarlier = stops.slice(0, index).some((s) => s.isAnchor || s.userLocked);
+  if (!pinnedEarlier) return null;
+  return stops[index - 1].departureMinutes + stops[index].travelMinutesFromPrevious;
+}

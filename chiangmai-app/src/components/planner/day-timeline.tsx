@@ -1,118 +1,79 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
-import { AlertTriangle, GripVertical, Lock, LocateFixed, Route, Sun, Sunset } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp, Lock, LocateFixed, Route, Sun, Sunset } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { CHIANGMAI_CENTER } from "@/lib/geo";
 import type { Place } from "@/data/types";
 import type { DailyForecastEntry } from "@/lib/weather/types";
 import { minutesToClock } from "@/lib/opening-hours";
-import { buildDayTimeline, resolveSunTimes, type SunTimes, type TimelineStop } from "@/lib/planner/golden-hour";
+import {
+  buildDayTimeline,
+  earliestFeasibleArrival,
+  resolveSunTimes,
+  type SunTimes,
+  type TimelineStop,
+} from "@/lib/planner/golden-hour";
 import { cn } from "@/lib/utils";
 
 /**
- * How much vertical room a minute earns.
+ * How tall a stop's rail bar grows per minute.
  *
- * Raised from 1.1. At that scale a 40-minute stop owned 44px while its
- * heading alone needs 46px, so short stops were structurally unable to fit
- * and landed on top of whatever came next — a locked stop with a warning
- * overlapped the following block by 17px. Giving a minute more room fixes
- * that at the source, and keeps every block exactly where its time says it
- * belongs, which pushing blocks around to avoid collisions would not.
- *
- * A twelve-hour day is ~1,150px of track. That is a long column, but the
- * timeline is already a scrolling card, and a readable long column beats a
- * compact one where the blocks cover each other.
+ * This is the only place a duration touches pixels now, and it sizes a bar
+ * *inside* a row rather than the row itself. The previous design made a
+ * block's height its duration, which forced one element to be both a
+ * faithful scale (a 20-minute stop must be tiny) and a content box (it must
+ * hold a name, a time and a warning). Those demands contradict, `MIN_BLOCK_
+ * HEIGHT` had already broken the scale to paper over it, and short stops
+ * still ended up covering the next stop's name. Sizing rows by their content
+ * and proportion by a bar retires that whole class of bug.
  */
-const PX_PER_MINUTE = 1.6;
-/**
- * The shortest a block may be: just its heading. Kept deliberately tight.
- *
- * A very short stop can never own enough track to be readable — a 20-minute
- * visit is 32px and its name and time need ~46px — so some overlap between
- * back-to-back short stops is unavoidable. What matters is *what* gets
- * covered: content sits at the top of a block and later blocks paint over
- * earlier ones, so a tight floor means the overlap eats trailing padding
- * rather than the next stop's name.
- */
-const MIN_BLOCK_HEIGHT = 50;
-/**
- * A block's height is its duration, so it cannot grow to fit its contents —
- * growing one drops it on top of the next stop. Instead the extras (golden
- * hour, a time lock, a warning) collapse into a single compact row of
- * markers, so the most any block ever needs is its heading plus one line.
- */
-const BLOCK_HEADING_PX = 44;
-const BLOCK_MARKER_ROW_PX = 20;
-const SNAP_MINUTES = 5;
-const KEYBOARD_STEP_MINUTES = 15;
-const MAX_MINUTES = 23 * 60 + 55;
+const RAIL_PX_PER_MINUTE = 0.5;
+const RAIL_MIN_PX = 10;
+const STEP_MINUTES = 15;
+/** Times are a clock, not a duration: nothing may be set before midnight or after the last five-minute slot of the day. */
+const DAY_END_MINUTES = 23 * 60 + 55;
 /** Free time before a stop past this is flagged as worth double-checking, not just quietly noted as buffer. */
 const LONG_GAP_WARNING_MINUTES = 120;
 
-interface HourMark {
-  minutes: number;
-  top: number;
-}
-
-function hourMarks(startMinutes: number, endMinutes: number): HourMark[] {
-  const marks: HourMark[] = [];
-  const first = Math.ceil(startMinutes / 60) * 60;
-  for (let m = first; m <= endMinutes; m += 60) {
-    marks.push({ minutes: m, top: (m - startMinutes) * PX_PER_MINUTE });
-  }
-  return marks;
-}
-
-/** Whether this stop shows the marker row at all. */
-function hasMarkers(stop: TimelineStop): boolean {
-  return Boolean(
-    (stop.isGoldenHour && stop.goldenHourType) ||
-      stop.userLocked ||
-      stop.outsideOpeningHours ||
-      stop.conflict ||
-      stop.waitMinutes > LONG_GAP_WARNING_MINUTES
-  );
-}
-
+/** Shared column template, so times, rail and content line up across every kind of row. */
+const ROW_GRID = "grid grid-cols-[2.75rem_0.75rem_minmax(0,1fr)] gap-x-2";
 /**
- * The height a block needs: its duration, floored so the heading — and the
- * marker row when there is one — always fits. Deliberately only one row's
- * worth of slack: any more and short stops start covering the next one.
+ * The one vertical rhythm every row keeps, so the gap between any two rows is
+ * the same 8px whichever kinds they are. Rows had drifted to three different
+ * values — `py-1` on travel and sun rows, `my-0.5` on a warning, and nothing
+ * at all on a stop card — which left a warning sitting 2px off the card it
+ * was about while everything else had 8px.
+ *
+ * It has to be margin on every row, not padding on some of them: padding sits
+ * *inside* a row's own box, so a padded text row and a margined card were
+ * still only 4px apart while two cards were 8px. One value, applied one way.
  */
-function blockHeightFor(stop: TimelineStop, durationMinutes: number): number {
-  const floor = hasMarkers(stop) ? BLOCK_HEADING_PX + BLOCK_MARKER_ROW_PX : MIN_BLOCK_HEIGHT;
-  return Math.max(durationMinutes * PX_PER_MINUTE, MIN_BLOCK_HEIGHT, floor);
-}
+const ROW_SPACING = "my-1";
 
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function clampMinutes(m: number): number {
-  return Math.max(0, Math.min(MAX_MINUTES, m));
+function clampToDay(minutes: number): number {
+  return Math.max(0, Math.min(DAY_END_MINUTES, minutes));
 }
 
-/** Decorative time-of-day wash behind the timeline track — built from the app's own accent gold (golden hour) and foreground (night) colors, not new hues. */
-function buildTimeOfDayGradient(startMinutes: number, endMinutes: number, sun: SunTimes): string {
-  const span = Math.max(1, endMinutes - startMinutes);
-  const pct = (m: number) => Math.max(0, Math.min(100, ((m - startMinutes) / span) * 100));
-  const night = "color-mix(in srgb, var(--color-foreground) 16%, transparent)";
-  const golden = "color-mix(in srgb, var(--color-accent) 28%, transparent)";
-  const clear = "transparent";
-  const stops = [
-    { pct: 0, color: night },
-    { pct: pct(sun.sunriseMinutes - 45), color: night },
-    { pct: pct(sun.sunriseMinutes), color: golden },
-    { pct: pct(sun.sunriseMinutes + 45), color: clear },
-    { pct: pct(sun.sunsetMinutes - 45), color: clear },
-    { pct: pct(sun.sunsetMinutes), color: golden },
-    { pct: pct(sun.sunsetMinutes + 45), color: night },
-    { pct: 100, color: night },
-  ].sort((a, b) => a.pct - b.pct);
-  return `linear-gradient(to bottom, ${stops.map((s) => `${s.color} ${s.pct}%`).join(", ")})`;
+/**
+ * The rail bar's colour, from the app's own accent (golden hour) and
+ * foreground (night) tokens — the same two the old background wash was built
+ * from. That wash mapped position to time, which only worked while the track
+ * was proportional; reading each stop's own colour from its own clock keeps
+ * the day/night identity and is accurate in a list.
+ */
+function railTint(stop: TimelineStop, sun: SunTimes): string {
+  if (stop.isGoldenHour) return "var(--color-accent)";
+  const middle = (stop.arrivalMinutes + stop.departureMinutes) / 2;
+  const afterDark = middle < sun.sunriseMinutes || middle > sun.sunsetMinutes;
+  return afterDark
+    ? "color-mix(in srgb, var(--color-foreground) 45%, transparent)"
+    : "color-mix(in srgb, var(--color-accent) 55%, transparent)";
 }
 
 export function DayTimeline({
@@ -136,7 +97,8 @@ export function DayTimeline({
   const baseLocation = useTripStore((s) => s.baseLocation);
   const allLockedTimes = useTripStore((s) => s.lockedTimes);
   const setLockedTime = useTripStore((s) => s.setLockedTime);
-  const [dragState, setDragState] = useState<{ slug: string; previewMinutes: number } | null>(null);
+  /** The stop whose last time change was held back, and the time it was held to. */
+  const [heldBack, setHeldBack] = useState<{ slug: string; earliest: number } | null>(null);
 
   const lockedArrivals = useMemo(() => {
     const prefix = `${dayId}::`;
@@ -157,36 +119,31 @@ export function DayTimeline({
     [places, sun, baseLocation, lockedArrivals]
   );
 
-  function commitTime(slug: string, minutes: number) {
-    setLockedTime(dayId, slug, minutesToClock(clampMinutes(minutes)));
+  const stops = timeline.stops;
+
+  /**
+   * Sets a stop's time, refusing to put it somewhere the traveller cannot
+   * physically be. Rather than accept the time and flag it — which is what
+   * produced a day where two locked stops sat in the same minutes — the time
+   * is held at the earliest reachable one and the row explains why.
+   */
+  function commitTime(index: number, minutes: number) {
+    const stop = stops[index];
+    if (!stop) return;
+    const earliest = earliestFeasibleArrival(stops, index);
+    const wanted = clampToDay(minutes);
+    if (earliest !== null && wanted < earliest) {
+      setHeldBack({ slug: stop.place.slug, earliest });
+      setLockedTime(dayId, stop.place.slug, minutesToClock(clampToDay(earliest)));
+      return;
+    }
+    setHeldBack(null);
+    setLockedTime(dayId, stop.place.slug, minutesToClock(wanted));
   }
 
-  function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>, slug: string, arrivalMinutes: number) {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    const startClientY = event.clientY;
-    setDragState({ slug, previewMinutes: arrivalMinutes });
-
-    function toDelta(clientY: number): number {
-      return Math.round((clientY - startClientY) / PX_PER_MINUTE / SNAP_MINUTES) * SNAP_MINUTES;
-    }
-    function handleMove(moveEvent: PointerEvent) {
-      setDragState({ slug, previewMinutes: clampMinutes(arrivalMinutes + toDelta(moveEvent.clientY)) });
-    }
-    function handleUp(upEvent: PointerEvent) {
-      commitTime(slug, arrivalMinutes + toDelta(upEvent.clientY));
-      setDragState(null);
-      window.removeEventListener("pointermove", handleMove);
-      window.removeEventListener("pointerup", handleUp);
-    }
-    window.addEventListener("pointermove", handleMove);
-    window.addEventListener("pointerup", handleUp);
-  }
-
-  function handleKeyDown(event: ReactKeyboardEvent<HTMLButtonElement>, slug: string, arrivalMinutes: number) {
-    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
-    event.preventDefault();
-    const delta = event.key === "ArrowUp" ? -KEYBOARD_STEP_MINUTES : KEYBOARD_STEP_MINUTES;
-    commitTime(slug, arrivalMinutes + delta);
+  function resetTime(slug: string) {
+    setHeldBack((current) => (current?.slug === slug ? null : current));
+    setLockedTime(dayId, slug, null);
   }
 
   if (places.length === 0) {
@@ -202,43 +159,222 @@ export function DayTimeline({
     );
   }
 
-  const stops = timeline.stops;
-  const startMinutes = Math.min(timeline.leaveByMinutes ?? stops[0].arrivalMinutes, stops[0].arrivalMinutes) - 30;
-  const endMinutes = stops[stops.length - 1].departureMinutes + 30;
-
-  // The track is `overflow-hidden`, so it has to be at least as tall as the
-  // lowest block reaches. A block that grew to fit a warning used to run past
-  // the bottom edge and get cut off there.
-  const lowestBlockBottom = stops.reduce((lowest, stop) => {
-    const top = (stop.arrivalMinutes - startMinutes) * PX_PER_MINUTE;
-    return Math.max(lowest, top + blockHeightFor(stop, stop.departureMinutes - stop.arrivalMinutes));
-  }, 0);
-  const trackHeight = Math.max(
-    Math.max(endMinutes - startMinutes, 60) * PX_PER_MINUTE,
-    lowestBlockBottom + BLOCK_MARKER_ROW_PX
-  );
-
   const goldenHourLabel = (type: NonNullable<Place["goldenHourType"]>) =>
     type === "sunrise" ? t.sunrise : type === "sunset" ? t.sunset : type === "blue_hour" ? t.blueHour : t.night;
 
-  const marks = hourMarks(startMinutes, endMinutes);
-  const sunMarks = [
+  const dayStart = Math.min(timeline.leaveByMinutes ?? stops[0].arrivalMinutes, stops[0].arrivalMinutes) - 30;
+  const dayEnd = stops[stops.length - 1].departureMinutes + 30;
+
+  // Sun events sit between the stops they fall between. An event inside a
+  // stop's own span is already shown on that stop as its golden-hour marker.
+  const sunEvents = [
     { minutes: sun.sunriseMinutes, label: t.axisSunrise, Icon: Sun },
     { minutes: sun.sunsetMinutes, label: t.axisSunset, Icon: Sunset },
-  ].filter((m) => m.minutes >= startMinutes && m.minutes <= endMinutes);
+  ]
+    .filter((event) => event.minutes >= dayStart && event.minutes <= dayEnd)
+    .map((event) => {
+      const before = stops.findIndex((stop) => stop.arrivalMinutes >= event.minutes);
+      return { ...event, beforeIndex: before === -1 ? stops.length : before };
+    });
 
-  const stopPositions = stops.map((stop) => {
-    const isDragging = dragState?.slug === stop.place.slug;
-    const displayArrival = isDragging ? dragState!.previewMinutes : stop.arrivalMinutes;
-    const displayDeparture = displayArrival + (stop.departureMinutes - stop.arrivalMinutes);
-    return {
-      stop,
-      isDragging,
-      displayArrival,
-      displayDeparture,
-      top: (displayArrival - startMinutes) * PX_PER_MINUTE,
-      height: blockHeightFor(stop, stop.departureMinutes - stop.arrivalMinutes),
-    };
+  const rows: React.ReactNode[] = [];
+
+  stops.forEach((stop, index) => {
+    const duration = stop.departureMinutes - stop.arrivalMinutes;
+    const previous = index > 0 ? stops[index - 1] : null;
+    const earliest = earliestFeasibleArrival(stops, index);
+
+    for (const event of sunEvents) {
+      if (event.beforeIndex !== index) continue;
+      rows.push(
+        <li key={`sun-${event.label}`} className={cn(ROW_GRID, "items-center")}>
+          <span className="text-right text-[11px] tabular-nums text-accent-text">{minutesToClock(event.minutes)}</span>
+          <RailLine dashed />
+          <p className={cn(ROW_SPACING, "flex items-center gap-1.5 text-[11px] font-medium text-accent-text")}>
+            <event.Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
+            {event.label}
+          </p>
+        </li>
+      );
+    }
+
+    if (previous && stop.travelMinutesFromPrevious > 0) {
+      const longGap = stop.waitMinutes > LONG_GAP_WARNING_MINUTES;
+      rows.push(
+        <li key={`travel-${stop.place.slug}`} className={cn(ROW_GRID, "items-center")}>
+          <span aria-hidden="true" />
+          <RailLine dashed />
+          <p className={cn(ROW_SPACING, "flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground")}>
+            <span className="flex items-center gap-1">
+              <Route className="h-3 w-3 shrink-0" aria-hidden="true" />
+              {t.travelMinutes.replace("{minutes}", String(stop.travelMinutesFromPrevious))}
+            </span>
+            {stop.waitMinutes > 0 ? (
+              <span className={longGap ? "flex items-center gap-1 text-destructive" : undefined}>
+                {longGap ? <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" /> : null}
+                {longGap
+                  ? t.longGap.replace("{minutes}", String(stop.waitMinutes))
+                  : t.wait.replace("{minutes}", String(stop.waitMinutes))}
+              </span>
+            ) : null}
+          </p>
+        </li>
+      );
+    }
+
+    // A day loaded from an older saved trip, or reordered after its times
+    // were locked, can still hold an unreachable stop — `buildDayTimeline`
+    // keeps its promise never to move a lock on its own. It gets a row of its
+    // own with a way out, instead of an icon underneath the block covering it.
+    if (stop.conflict && previous && earliest !== null) {
+      const shortBy = earliest - stop.arrivalMinutes;
+      rows.push(
+        <li key={`conflict-${stop.place.slug}`} className={cn(ROW_GRID, "items-center")}>
+          <span aria-hidden="true" />
+          <RailLine />
+          <p className={cn(ROW_SPACING, "flex flex-wrap items-center justify-between gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-[11px] text-destructive")}>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
+              {t.shortfallRow.replace("{minutes}", String(shortBy))}
+            </span>
+            <button
+              type="button"
+              onClick={() => commitTime(index, earliest)}
+              className="shrink-0 rounded border border-destructive/50 px-2 py-0.5 font-medium hover:bg-destructive/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              {t.fixOverlap}
+            </button>
+          </p>
+        </li>
+      );
+    }
+
+    const wasHeldBack = heldBack?.slug === stop.place.slug;
+
+    rows.push(
+      <li key={stop.place.slug} className={cn(ROW_GRID, "items-stretch")}>
+        {/* Rows follow the order the day was arranged in, not the clock, so an
+            unreachable stop shows a time earlier than the row above it. That
+            is the truth about the itinerary rather than a glitch — colouring
+            it says so, and the row above offers the fix. */}
+        <span
+          className={cn(
+            "pt-3 text-right text-[11px] font-medium tabular-nums",
+            stop.conflict ? "text-destructive" : "text-muted-foreground"
+          )}
+        >
+          {minutesToClock(stop.arrivalMinutes)}
+        </span>
+
+        <span className="relative" aria-hidden="true">
+          <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border" />
+          <span
+            className="absolute left-1/2 top-1/2 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{
+              // Proportional up to the row it lives in: past that the bar
+              // stops growing, so a six-hour stop reads as "the longest" but
+              // never dictates how tall the row is.
+              height: `min(${Math.max(duration * RAIL_PX_PER_MINUTE, RAIL_MIN_PX)}px, calc(100% - 0.5rem))`,
+              background: railTint(stop, sun),
+            }}
+          />
+        </span>
+
+        <div
+          className={cn(
+            ROW_SPACING,
+            "min-w-0 rounded-md border bg-surface px-3 py-2 text-xs shadow-sm",
+            stop.isGoldenHour ? "border-accent" : "border-border-strong",
+            stop.conflict || stop.outsideOpeningHours ? "ring-1 ring-destructive" : ""
+          )}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="font-medium text-foreground">{stop.place.name[locale]}</p>
+              <p className="tabular-nums text-[11px] text-muted-foreground">
+                {minutesToClock(stop.arrivalMinutes)}–{minutesToClock(stop.departureMinutes)}
+                {" · "}
+                {t.durationMinutes.replace("{minutes}", String(duration))}
+              </p>
+            </div>
+
+            {/* Two explicit steps, not a vertical drag. Pixels stopped meaning
+                minutes when rows became content-sized — and in this planner a
+                vertical drag on a row is already dnd-kit's gesture for
+                reordering the day, so keeping it here would collide. */}
+            <div
+              role="group"
+              aria-label={t.adjustTime.replace("{place}", stop.place.name[locale])}
+              className="flex shrink-0 flex-col overflow-hidden rounded border border-border-strong"
+            >
+              <button
+                type="button"
+                aria-label={t.stepEarlier}
+                title={t.stepEarlier}
+                onClick={() => commitTime(index, stop.arrivalMinutes - STEP_MINUTES)}
+                className="flex h-5 w-6 items-center justify-center text-muted-foreground hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                <ChevronUp className="h-3 w-3" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                aria-label={t.stepLater}
+                title={t.stepLater}
+                onClick={() => commitTime(index, stop.arrivalMinutes + STEP_MINUTES)}
+                className="flex h-5 w-6 items-center justify-center border-t border-border-strong text-muted-foreground hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                <ChevronDown className="h-3 w-3" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          {/* Rows are sized by what they hold now, so these say what they mean
+              instead of shrinking to bare icons. */}
+          {stop.isGoldenHour && stop.goldenHourType ? (
+            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-accent-text">
+              {stop.goldenHourType === "sunset" || stop.goldenHourType === "blue_hour" ? (
+                <Sunset className="h-3 w-3 shrink-0" aria-hidden="true" />
+              ) : (
+                <Sun className="h-3 w-3 shrink-0" aria-hidden="true" />
+              )}
+              {goldenHourLabel(stop.goldenHourType)}
+            </p>
+          ) : null}
+
+          {stop.outsideOpeningHours ? (
+            <p className="mt-1.5 flex items-start gap-1.5 text-[11px] text-destructive">
+              <AlertTriangle className="mt-px h-3 w-3 shrink-0" aria-hidden="true" />
+              {t.closedAtThisTime.replace("{opens}", stop.place.openingHours?.opens ?? "")}
+            </p>
+          ) : null}
+
+          {wasHeldBack && previous ? (
+            <p className="mt-1.5 rounded bg-surface-muted px-2 py-1 text-[11px] text-muted-foreground">
+              <span className="font-medium text-foreground">
+                {t.earliestFeasible.replace("{time}", minutesToClock(heldBack!.earliest))}
+              </span>
+              <br />
+              {t.earliestFeasibleWhy
+                .replace("{place}", previous.place.name[locale])
+                .replace("{time}", minutesToClock(previous.departureMinutes))
+                .replace("{minutes}", String(stop.travelMinutesFromPrevious))}
+            </p>
+          ) : null}
+
+          {stop.userLocked ? (
+            <button
+              type="button"
+              onClick={() => resetTime(stop.place.slug)}
+              title={t.lockedHint}
+              className="mt-1.5 flex items-center gap-1.5 rounded py-0.5 text-[11px] text-accent-text underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
+              {t.reset}
+            </button>
+          ) : null}
+        </div>
+      </li>
+    );
   });
 
   return (
@@ -270,155 +406,21 @@ export function DayTimeline({
         <p className="mb-3 text-[11px] text-muted-foreground">{t.estimateNotice}</p>
       ) : null}
 
-      <div
-        className="relative overflow-hidden rounded-md border border-border"
-        style={{ height: trackHeight, background: buildTimeOfDayGradient(startMinutes, endMinutes, sun) }}
-      >
-        {marks.map((mark) => (
-          <div key={mark.minutes} className="pointer-events-none absolute inset-x-0 border-t border-border/40" style={{ top: mark.top }}>
-            <span className="absolute left-1.5 top-0.5 rounded bg-surface/70 px-1 text-[9px] tabular-nums text-muted-foreground">
-              {minutesToClock(mark.minutes)}
-            </span>
-          </div>
-        ))}
-
-        {sunMarks.map(({ minutes, label, Icon }) => (
-          <div
-            key={label}
-            className="pointer-events-none absolute inset-x-0 border-t border-dashed border-accent/70"
-            style={{ top: (minutes - startMinutes) * PX_PER_MINUTE }}
-          >
-            <span className="absolute right-1.5 top-0.5 flex items-center gap-1 rounded bg-surface/80 px-1 text-[9px] font-medium text-accent-text">
-              <Icon className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
-              {label} · {minutesToClock(minutes)}
-            </span>
-          </div>
-        ))}
-
-        {stopPositions.slice(1).map(({ stop, top }, i) => {
-          const prev = stopPositions[i];
-          const gapTop = prev.top + prev.height;
-          const gapHeight = Math.max(top - gapTop, 0);
-          if (!stop.travelMinutesFromPrevious) return null;
-          return (
-            <div
-              key={`connector-${stop.place.slug}`}
-              className="pointer-events-none absolute inset-x-0 z-0"
-              style={{ top: gapTop, height: gapHeight }}
-            >
-              <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 border-l border-dashed border-border-strong" />
-              <span className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap rounded-full border border-border-strong bg-surface px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm">
-                <Route className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />
-                {t.travelMinutes.replace("{minutes}", String(stop.travelMinutesFromPrevious))}
-              </span>
-            </div>
-          );
-        })}
-
-        {stopPositions.map(({ stop, isDragging, displayArrival, displayDeparture, top, height }) => {
-          // Short form for the strip, full sentence for `title` and the label.
-          const markerWarning = stop.outsideOpeningHours
-            ? {
-                short: stop.place.openingHours?.opens ?? "",
-                full: t.closedAtThisTime.replace("{opens}", stop.place.openingHours?.opens ?? ""),
-              }
-            : stop.conflict
-              ? { short: "", full: t.conflict }
-              : stop.waitMinutes > LONG_GAP_WARNING_MINUTES
-                ? {
-                    short: `+${stop.waitMinutes}`,
-                    full: t.longGap.replace("{minutes}", String(stop.waitMinutes)),
-                  }
-                : null;
-
-          return (
-            <div
-              key={stop.place.slug}
-              role="group"
-              aria-label={[
-                stop.place.name[locale],
-                `${minutesToClock(displayArrival)}–${minutesToClock(displayDeparture)}`,
-                stop.userLocked ? t.reset : null,
-                markerWarning?.full ?? null,
-              ]
-                .filter(Boolean)
-                .join(", ")}
-              className={cn(
-                "absolute left-2 right-2 z-10 rounded-md border bg-surface/95 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm",
-                stop.isGoldenHour ? "border-accent shadow-[0_0_0_2px_var(--color-accent)]" : "border-border-strong",
-                stop.conflict || stop.outsideOpeningHours ? "ring-2 ring-destructive" : "",
-                isDragging ? "z-20 opacity-90" : ""
-              )}
-              style={{ top, height }}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="truncate font-medium text-foreground">{stop.place.name[locale]}</p>
-                  <p className="tabular-nums text-[11px] text-muted-foreground">
-                    {minutesToClock(displayArrival)}–{minutesToClock(displayDeparture)}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  aria-label={t.dragHint}
-                  title={t.dragHint}
-                  onPointerDown={(e) => handlePointerDown(e, stop.place.slug, stop.arrivalMinutes)}
-                  onKeyDown={(e) => handleKeyDown(e, stop.place.slug, stop.arrivalMinutes)}
-                  className="shrink-0 touch-none rounded p-1 text-muted-foreground hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent active:cursor-grabbing"
-                >
-                  <GripVertical className="h-3.5 w-3.5" aria-hidden="true" />
-                </button>
-              </div>
-
-              {/* One line, never more. Each marker carries its full sentence in
-                  `title`, and the block's aria-label repeats it for screen
-                  readers, so compacting the display costs no information. */}
-              {hasMarkers(stop) ? (
-                <div className="mt-1 flex items-center gap-2 overflow-hidden text-[11px]">
-                  {stop.isGoldenHour && stop.goldenHourType ? (
-                    <span
-                      className="flex shrink-0 items-center gap-1 text-accent-text"
-                      title={goldenHourLabel(stop.goldenHourType)}
-                    >
-                      {stop.goldenHourType === "sunset" || stop.goldenHourType === "blue_hour" ? (
-                        <Sunset className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      ) : (
-                        <Sun className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      )}
-                    </span>
-                  ) : null}
-
-                  {stop.userLocked ? (
-                    <button
-                      type="button"
-                      onClick={() => setLockedTime(dayId, stop.place.slug, null)}
-                      aria-label={t.reset}
-                      title={t.reset}
-                      // Padded out to a 24px target with a matching negative
-                      // margin: as an icon-only control it was 12px square,
-                      // which is not tappable, and the padding must not push
-                      // the marker row taller.
-                      className="-m-1.5 flex h-6 w-6 shrink-0 items-center justify-center rounded p-1.5 text-accent-text hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
-                    >
-                      <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
-                    </button>
-                  ) : null}
-
-                  {markerWarning ? (
-                    <span
-                      className="flex min-w-0 items-center gap-1 text-destructive"
-                      title={markerWarning.full}
-                    >
-                      <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
-                      <span className="truncate">{markerWarning.short}</span>
-                    </span>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
+      <ol className="rounded-md border border-border p-2">{rows}</ol>
     </div>
+  );
+}
+
+/** The thread running down the day, behind every row. */
+function RailLine({ dashed }: { dashed?: boolean }) {
+  return (
+    <span className="relative" aria-hidden="true">
+      <span
+        className={cn(
+          "absolute left-1/2 top-0 h-full -translate-x-1/2",
+          dashed ? "border-l border-dashed border-border-strong" : "w-px bg-border"
+        )}
+      />
+    </span>
   );
 }
