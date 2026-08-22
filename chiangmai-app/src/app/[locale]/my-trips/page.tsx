@@ -6,6 +6,7 @@ import { toSerializedTrip, type SerializedTrip } from "@/lib/db/types";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { MyTripsList } from "@/components/trips/my-trips-list";
+import { Reveal } from "@/components/reveal";
 
 export async function generateMetadata({
   params,
@@ -70,12 +71,12 @@ export default async function MyTripsPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 lg:px-10 lg:py-20">
-      <header className="max-w-2xl">
+      <Reveal as="div" className="max-w-2xl">
         <h1 className="font-serif-display text-4xl leading-tight sm:text-5xl">{dict.myTrips.title}</h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">
           {dict.myTrips.intro}
         </p>
-      </header>
+      </Reveal>
 
       <MyTripsList initialTrips={trips} loadFailed={loadFailed} locale={loc} />
     </div>

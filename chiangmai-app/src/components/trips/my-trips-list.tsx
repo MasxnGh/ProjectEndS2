@@ -10,6 +10,8 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import type { SerializedTrip } from "@/lib/db/types";
 import type { Locale } from "@/i18n";
+import { AnimatePresence, motion } from "motion/react";
+import { useMotionTokens } from "@/lib/motion";
 import { ConfirmDialog } from "@/components/trips/confirm-dialog";
 import { RenameDialog } from "@/components/trips/rename-dialog";
 import { ShareDialog } from "@/components/trips/share-dialog";
@@ -45,6 +47,7 @@ export function MyTripsList({
   const { dict } = useLocale();
   const t = dict.myTrips;
   const { showToast } = useToast();
+  const m = useMotionTokens();
 
   const [trips, setTrips] = useState(initialTrips);
   const [renaming, setRenaming] = useState<SerializedTrip | null>(null);
@@ -155,16 +158,26 @@ export function MyTripsList({
 
   return (
     <>
+      {/* Cards arrive in sequence rather than as one block, and a deleted card
+          shrinks out instead of the grid snapping shut under the cursor —
+          which matters here because deletion is undoable and the eye needs to
+          see which card left. */}
       <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {trips.map((trip) => {
+        <AnimatePresence initial={false}>
+        {trips.map((trip, index) => {
           const slug = firstPlaceSlug(trip);
           const place = slug ? getPlaceBySlug(slug) : null;
           const places = countPlaces(trip);
           const title = trip.title || t.untitled;
 
           return (
-            <li
+            <motion.li
               key={trip.id}
+              layout={m.reduced ? false : "position"}
+              initial={{ opacity: 0, y: m.reduced ? 0 : 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: m.reduced ? 1 : 0.96 }}
+              transition={{ ...m.tween("base"), delay: Math.min(index, 8) * m.stagger(0.05) }}
               className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface"
             >
               <Link
@@ -227,9 +240,10 @@ export function MyTripsList({
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </IconAction>
               </div>
-            </li>
+            </motion.li>
           );
         })}
+        </AnimatePresence>
       </ul>
 
       {renaming ? (

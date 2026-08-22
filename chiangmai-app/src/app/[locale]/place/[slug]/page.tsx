@@ -15,6 +15,8 @@ import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
 import { AddToPlanButton } from "@/components/add-to-plan-button";
 import { FavoriteButton } from "@/components/favorite-button";
+import { SplitText } from "@/components/split-text";
+import { MagneticButton } from "@/components/magnetic-button";
 import { PlaceStickyActions } from "@/components/place-sticky-actions";
 import { Reveal } from "@/components/reveal";
 import { Suspense } from "react";
@@ -147,9 +149,15 @@ export default async function PlaceDetailPage({
           <span className="mb-3 inline-block w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
             {dict.common.categories[place.category]}
           </span>
-          <h1 className="font-serif-display text-4xl leading-[1.02] text-[#f3efe4] sm:text-5xl md:text-6xl">
-            {place.name[locale]}
-          </h1>
+          {/* The same treatment the home hero gets, on the other title people
+              actually land on. SplitText splits on spaces, so a Thai name —
+              which has none — rises as a single block rather than word by
+              word; verified that the clip mask still clears Thai tone marks. */}
+          <SplitText
+            as="h1"
+            text={place.name[locale]}
+            className="font-serif-display text-4xl leading-[1.02] text-[#f3efe4] sm:text-5xl md:text-6xl"
+          />
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[#f3efe4]/85">
             <span className="flex items-center gap-1.5">
               <Star className="h-4 w-4 fill-accent text-accent-text" />
@@ -297,7 +305,12 @@ export default async function PlaceDetailPage({
               </dl>
               <PlaceStickyActions slug={place.slug} placeName={place.name[locale]} />
               <div className="mt-6 flex items-center gap-2">
-                <AddToPlanButton slug={place.slug} className="flex-1 justify-center" />
+                {/* MagneticButton renders an inline-block wrapper, so it needs
+                    the flex sizing that used to sit on the button itself —
+                    otherwise the CTA collapses to its content width. */}
+                <MagneticButton className="flex-1">
+                  <AddToPlanButton slug={place.slug} className="w-full justify-center" />
+                </MagneticButton>
                 <FavoriteButton
                   slug={place.slug}
                   placeName={place.name[locale]}

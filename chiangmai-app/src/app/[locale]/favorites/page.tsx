@@ -5,6 +5,7 @@ import { getFavoritesCollection } from "@/lib/db/collections";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { FavoritesGallery } from "@/components/favorites/favorites-gallery";
+import { Reveal } from "@/components/reveal";
 
 export async function generateMetadata({
   params,
@@ -52,12 +53,12 @@ export default async function FavoritesPage({ params }: { params: Promise<{ loca
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16 lg:px-10 lg:py-20">
-      <header className="max-w-2xl">
+      <Reveal as="div" className="max-w-2xl">
         <h1 className="font-serif-display text-4xl leading-tight sm:text-5xl">{dict.favorites.title}</h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">
           {dict.favorites.intro}
         </p>
-      </header>
+      </Reveal>
 
       <FavoritesGallery initialSlugs={slugs} loadFailed={loadFailed} locale={loc} />
     </div>

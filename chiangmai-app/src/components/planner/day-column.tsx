@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { EASE } from "@/lib/motion";
+
+import ClickSpark from "@/components/reactbits/ClickSpark";
 import { AlertTriangle, ChevronDown, Plus, Sparkles, Trash2 } from "lucide-react";
 import type { Place } from "@/data/types";
 import type { AirQualityResponse, DailyForecastEntry } from "@/lib/weather/types";
@@ -51,6 +55,8 @@ export function DayColumn({
   hoveredPlaceSlug,
   onHoverPlace,
   focusedItemId,
+  relocations,
+  onApplyRelocations,
 }: {
   dayId: string;
   dayNumber: number;
@@ -67,6 +73,13 @@ export function DayColumn({
   hoveredPlaceSlug?: string | null;
   onHoverPlace?: (slug: string | null) => void;
   focusedItemId?: string | null;
+  /**
+   * Places on this day that another day would suit better. The day *number*
+   * comes pre-resolved rather than the day id, because the sentence shown to
+   * the traveller says "day 2" and the column has no map from id to number.
+   */
+  relocations?: { placeSlug: string; toDayNumber: number }[];
+  onApplyRelocations?: () => void;
 }) {
   const { locale, dict } = useLocale();
   const { showToast } = useToast();
@@ -77,6 +90,7 @@ export function DayColumn({
   const travelers = useTripStore((s) => s.travelers);
   const { setNodeRef, isOver } = useDroppable({ id: dayId });
   const t = dict.planner.toast;
+  const reduced = useReducedMotion();
   const rt = dict.planner.route;
 
   const [comparison, setComparison] = useState<OptimizationComparison | null>(null);
@@ -163,6 +177,13 @@ export function DayColumn({
           {date ? <p className="text-xs text-muted-foreground">{formatDayDate(date, locale)}</p> : null}
         </div>
         <div className="flex items-center gap-1">
+          {/* A spark on the button that opens the place picker: confirmation
+              that the tap landed, at the moment the panel is still opening.
+              Deliberately not a toast — adding a place already shows the place
+              itself, and a second confirmation for the same act is noise.
+              Sparks are canvas-drawn, so the colour is a literal rather than a
+              CSS variable; this is the accent gold used by the day routes. */}
+          <ClickSpark sparkColor="#c9a24b" sparkCount={6} sparkRadius={12} duration={350}>
           <button
             type="button"
             onClick={(event) => onAddPlace(event.currentTarget)}
@@ -171,6 +192,7 @@ export function DayColumn({
           >
             <Plus className="h-4 w-4" />
           </button>
+          </ClickSpark>
           {canRemove ? (
             <button
               type="button"
@@ -198,11 +220,24 @@ export function DayColumn({
         }`}
       >
         <SortableContext items={places.map((p) => p.slug)} strategy={verticalListSortingStrategy}>
+          {/* Enter/exit only — deliberately no `layout` prop. dnd-kit drives
+              each item's transform while dragging, and a layout animation
+              would fight it for control of the same property, which reads as
+              the card lagging behind the cursor. Reordering stays dnd-kit's
+              job; this just stops places from blinking in and out of
+              existence when they are added or removed. */}
+          <AnimatePresence initial={false}>
           {places.map((place, i) => {
             const stop = schedule.stops[i];
             return (
-              <SortablePlaceItem
+              <motion.div
                 key={place.slug}
+                initial={reduced ? false : { opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduced ? { opacity: 0 } : { opacity: 0, x: -10 }}
+                transition={{ duration: reduced ? 0 : 0.22, ease: EASE }}
+              >
+              <SortablePlaceItem
                 itemId={`${dayId}-${place.slug}`}
                 place={place}
                 index={i}
@@ -226,8 +261,10 @@ export function DayColumn({
                   });
                 }}
               />
+              </motion.div>
             );
           })}
+          </AnimatePresence>
         </SortableContext>
         {places.length === 0 ? (
           <p className="p-4 text-center text-xs text-muted-foreground">
@@ -310,6 +347,36 @@ export function DayColumn({
             </p>
           );
         })}
+
+        {/* The fix lives beside the problem it fixes. This used to be a single
+            button in the page toolbar that rearranged every day at once, which
+            meant the traveller had to accept changes to days they had not
+            looked at. Here it moves only this day's places, and says which. */}
+        {relocations && relocations.length > 0 && onApplyRelocations ? (
+          <div className="rounded-md border border-accent/50 bg-surface-muted/60 p-2.5">
+            <p className="text-xs text-foreground/80">
+              {relocations.length === 1
+                ? dict.planner.feasibility.fixThisDayOne
+                    .replace(
+                      "{place}",
+                      places.find((p) => p.slug === relocations[0].placeSlug)?.name[locale] ??
+                        relocations[0].placeSlug
+                    )
+                    .replace("{toDay}", String(relocations[0].toDayNumber))
+                : dict.planner.feasibility.fixThisDayMany.replace(
+                    "{count}",
+                    String(relocations.length)
+                  )}
+            </p>
+            <button
+              type="button"
+              onClick={onApplyRelocations}
+              className="no-print mt-2 w-full rounded-full border border-accent px-3 py-1.5 text-xs font-medium text-accent-text hover:bg-accent hover:text-accent-foreground"
+            >
+              {dict.planner.feasibility.fixThisDay}
+            </button>
+          </div>
+        ) : null}
 
         <PaceMeter pace={pace} easeLabel={paceEaseLabel} onEase={onEasePace} />
 
