@@ -108,6 +108,41 @@ export default async function LocaleLayout({
       className={`${fraunces.variable} ${inter.variable} ${plexThai.variable} ${notoSerifThai.variable}`}
     >
       <body className="min-h-dvh bg-background text-foreground antialiased">
+        {/*
+          A raw <script>, on purpose.
+
+          React logs "Encountered a script tag while rendering React component"
+          for this in development. Two things are worth knowing before anyone
+          tries to silence it.
+
+          **When it actually fires.** Not on page load, and not on in-app
+          navigation within one locale — only when switching language, because
+          `router.push()` in LocaleToggle re-renders this `[locale]` layout on
+          the client and re-creates the element. (ThemeProvider already
+          compensates for the same re-render by re-applying the theme class in
+          a layout effect.) The warning is also development-only: the string
+          lives in react-dom-client.development.js and is absent from the
+          production build, so it never reaches a user.
+
+          **What does not work.** `next/script` with
+          `strategy="beforeInteractive"` looks like the answer and is worse:
+          Next serialises an inline script of that strategy into a queue —
+
+            <script>(self.__next_s=self.__next_s||[]).push([0,{"children":"…"}])</script>
+
+          — drained by its runtime after boot, i.e. after first paint, so every
+          dark-theme visitor would see a white flash. Moving this into <head>
+          does not help either; React reconciles the element wherever it sits.
+          Giving it a non-JavaScript `type` silences React (see
+          isScriptDataBlock in react-dom) but stops the browser executing it.
+
+          The narrow fix, if the warning ever becomes worth removing, is to let
+          LocaleToggle do a full navigation instead of a client-side push.
+
+          `suppressHydrationWarning` is separate: the script mutates
+          documentElement before React hydrates, so the class it adds would
+          otherwise be reported as a server/client mismatch.
+        */}
         <script
           id="theme-init"
           suppressHydrationWarning

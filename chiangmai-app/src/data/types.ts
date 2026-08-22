@@ -131,6 +131,23 @@ export interface Award {
   current: boolean;
   /** Where this was verified — kept in the data so a future check knows what to re-check. */
   source: string;
+  /**
+   * A page the reader can open to check the claim, and the name of whoever
+   * published it — shown together as a credit, because citing someone's work
+   * without naming them is not a citation.
+   *
+   * These deliberately do **not** point at guide.michelin.com. Michelin is the
+   * authority for these awards, but its site is unreachable to us: it answers
+   * automated requests with an empty `202` (identically for a real slug and an
+   * invented one) or a CloudFront `403`, so a Michelin URL cannot be checked
+   * before shipping it. One was shipped on an inferred URL pattern and turned
+   * out to 404 — hence this rule. Every URL here was opened and confirmed to
+   * load and to name both the restaurant and its award. See
+   * docs/places-sources.md.
+   */
+  sourceUrl?: string;
+  /** Publisher of `sourceUrl`, for the visible credit line. */
+  sourceName?: string;
 }
 
 export interface Place {

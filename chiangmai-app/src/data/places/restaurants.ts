@@ -213,6 +213,8 @@ export const restaurants: Place[] = [
         lastYear: null,
         current: true,
         source: "guide.michelin.com, checked 2026-08-13 (2025 and 2026 MICHELIN Guide Thailand)",
+        sourceUrl: "https://thailandaddict.com/michelin-khao-soi-mae-sai",
+        sourceName: "ThailandAddict",
       },
     ],
     insiderNotes: [
@@ -433,6 +435,8 @@ export const restaurants: Place[] = [
         lastYear: null,
         current: true,
         source: "guide.michelin.com, checked 2026-08-13 (2026 MICHELIN Guide Thailand)",
+        sourceUrl: "https://thailandaddict.com/michelin-huen-muan-jai",
+        sourceName: "ThailandAddict",
       },
     ],
     insiderNotes: [
@@ -752,6 +756,8 @@ export const restaurants: Place[] = [
         lastYear: null,
         current: true,
         source: "guide.michelin.com, checked 2026-08-13 (current MICHELIN Guide Thailand)",
+        sourceUrl: "https://restaurantguru.com/Rote-Yiam-Beef-Noodle-Chiang-Mai",
+        sourceName: "Restaurant Guru",
       },
     ],
     insiderNotes: [
@@ -828,6 +834,8 @@ export const restaurants: Place[] = [
         lastYear: null,
         current: true,
         source: "guide.michelin.com, checked 2026-08-13 (current MICHELIN Guide Thailand)",
+        sourceUrl: "https://www.wongnai.com/restaurants/130076cC-blackitch-artisan-kitchen",
+        sourceName: "Wongnai",
       },
     ],
     insiderNotes: [
@@ -902,6 +910,8 @@ export const restaurants: Place[] = [
         lastYear: null,
         current: true,
         source: "guide.michelin.com, checked 2026-08-13 (current MICHELIN Guide Thailand)",
+        sourceUrl: "https://thailandaddict.com/michelin-meena",
+        sourceName: "ThailandAddict",
       },
     ],
     insiderNotes: [

@@ -110,16 +110,25 @@ export function PlaceCard({
       // top of that remount fights it.
       whileHover={m.reduced ? undefined : { y: -4 }}
       transition={m.spring("soft")}
-      className={cn("group h-full", className)}
+      className="group h-full"
     >
       {/* The spotlight has to be the element that carries `bg-surface`, not a
           wrapper around it. Its glow layer sits at `-z-10`, which CSS paints
           above that element's own background but below any descendant — put an
           opaque child in between and the glow disappears entirely. The hover
           lift stays on the motion wrapper outside, so the two effects do not
-          compete for the same transform. */}
+          compete for the same transform.
+
+          `className` belongs here, not on the wrapper. Callers pass spacing
+          that has to be *inside* the card's border — Explore sends `pb-14` to
+          reserve the band its Compare pill sits in, and when that padding
+          landed on the outer wrapper instead, the card stopped 56px short of
+          its grid cell and the pill floated below it on bare page background. */}
       <SpotlightCard
-        className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow duration-300 hover:shadow-elevated"
+        className={cn(
+          "flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow duration-300 hover:shadow-elevated",
+          className
+        )}
       >
       <div className="relative aspect-[4/3] overflow-hidden">
         <PlaceImage
