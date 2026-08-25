@@ -589,7 +589,7 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
         onSaveAsNew={cloudSync.resolveMigrationSaveAsNew}
         onReplaceExisting={cloudSync.resolveMigrationReplaceExisting}
       />
-      <SectionHeading kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
+      <SectionHeading as="h1" kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
 
       {isEmpty ? null : (
         <div className="mt-8">

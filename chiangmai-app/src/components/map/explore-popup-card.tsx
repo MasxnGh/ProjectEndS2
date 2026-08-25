@@ -70,7 +70,7 @@ export function ExplorePopupCard({
       </button>
       <Link
         href={`/${locale}/place/${place.slug}`}
-        className="mt-1.5 block text-center text-[11px] font-medium text-accent-text hover:underline"
+        className="mt-1.5 block text-center text-xs font-medium text-accent-text hover:underline"
       >
         {dict.common.viewDetails}
       </Link>

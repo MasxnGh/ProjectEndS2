@@ -38,7 +38,7 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
         )}
       />
       <Reveal>
-        <SectionHeading title={dict.legal.terms.title} />
+        <SectionHeading as="h1" title={dict.legal.terms.title} />
         <p className="mt-2 text-sm text-muted-foreground">
           {dict.legal.updated}: {dict.legal.updatedDate}
         </p>

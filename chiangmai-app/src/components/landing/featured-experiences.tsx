@@ -77,7 +77,7 @@ export function FeaturedExperiences() {
                   className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
                 />
                 <div className="absolute inset-0 flex flex-col justify-end gap-2 bg-gradient-to-t from-black/70 via-black/10 to-transparent p-6">
-                  <span className="w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
+                  <span className="w-fit rounded-full bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground">
                     {dict.common.categories[place.category]}
                   </span>
                   <h3 className="font-serif-display text-2xl text-band-foreground lg:text-3xl">

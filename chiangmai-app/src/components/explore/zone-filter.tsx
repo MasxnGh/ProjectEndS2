@@ -142,7 +142,7 @@ export function ZoneFilter({
         {/* Compass letters, matching the landing-page map. */}
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-0 font-mono text-[10px] text-muted-foreground"
+          className="pointer-events-none absolute inset-0 font-mono text-xs text-muted-foreground"
         >
           <span className="absolute left-1/2 top-0.5 -translate-x-1/2">N</span>
           <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2">S</span>

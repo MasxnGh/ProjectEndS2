@@ -435,7 +435,7 @@ export function ExploreClient({
       ) : null}
 
       <Reveal>
-        <SectionHeading kicker={dict.nav.explore} title={dict.explore.title} subtitle={dict.explore.subtitle} />
+        <SectionHeading as="h1" kicker={dict.nav.explore} title={dict.explore.title} subtitle={dict.explore.subtitle} />
       </Reveal>
 
       {/*
@@ -491,7 +491,7 @@ export function ExploreClient({
             <LocateFixed className="h-3.5 w-3.5" />
             {dict.explore.nearMe.button}
             {reference ? (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-background/30 px-1 text-[10px] font-semibold">
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-background/30 px-1 text-xs font-semibold">
                 {proximityResults?.length ?? 0}
               </span>
             ) : null}
@@ -532,7 +532,7 @@ export function ExploreClient({
             <SlidersHorizontal className="h-3.5 w-3.5" />
             {dict.explore.filters.moreFilters}
             {secondaryActiveCount > 0 ? (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-semibold text-accent-foreground">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
                 {secondaryActiveCount}
               </span>
             ) : null}
@@ -630,7 +630,7 @@ export function ExploreClient({
                   aria-valuetext={`${radiusKm} km`}
                   className="w-full accent-accent"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground">
+                <div className="flex justify-between text-xs text-muted-foreground">
                   {RADIUS_STEPS_KM.map((km) => (
                     <span key={km}>{km} km</span>
                   ))}
@@ -739,7 +739,7 @@ export function ExploreClient({
             {!aqiLayer.isLoading && aqiLayer.dataBySlug.size === 0 ? (
               <p className="text-xs text-muted-foreground">{dict.explore.airQuality.unavailable}</p>
             ) : null}
-            <p className="text-[11px] text-muted-foreground/70">{dict.weather.attribution}</p>
+            <p className="text-xs text-muted-foreground/70">{dict.weather.attribution}</p>
           </div>
         ) : null}
       </div>
@@ -785,6 +785,13 @@ export function ExploreClient({
         <p className="py-24 text-center text-muted-foreground">{dict.explore.filters.noResults}</p>
       ) : view === "grid" ? (
         <>
+        {/* The results are a section of the page, so they get a name. Without
+            one the outline jumped straight from the page title to the h3 on
+            each card, and a screen-reader user moving by heading arrived in a
+            list of places with nothing saying what the list was. */}
+        <h2 className="sr-only">
+          {dict.explore.filters.results} ({sorted.length})
+        </h2>
         <motion.div
           // Re-keyed on the filters only, never on the query: keying on the
           // search text too would restart this animation on every keystroke

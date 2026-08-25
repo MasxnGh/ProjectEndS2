@@ -156,7 +156,7 @@ export function DaySuggestions({
         </div>
       ) : null}
 
-      <p className="text-[11px] leading-snug text-muted-foreground">{t.estimateNote}</p>
+      <p className="text-xs leading-snug text-muted-foreground">{t.estimateNote}</p>
     </div>
   );
 }

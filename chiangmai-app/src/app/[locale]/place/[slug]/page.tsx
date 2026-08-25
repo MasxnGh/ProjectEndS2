@@ -156,7 +156,7 @@ export default async function PlaceDetailPage({
             Quiet, but not hidden: at 10px and 55% white it was effectively
             unreadable, and a licence condition nobody can read is not met. */}
         {photoCredit ? (
-          <p className="absolute bottom-2 right-3 z-10 text-[11px] leading-tight text-white/80 [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]">
+          <p className="absolute bottom-2 right-3 z-10 text-xs leading-tight text-white/80 [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]">
             <a
               href={photoCredit.sourceUrl}
               target="_blank"
@@ -170,7 +170,7 @@ export default async function PlaceDetailPage({
           </p>
         ) : null}
         <Container width="wide" className="relative z-10 pb-12">
-          <span className="mb-3 inline-block w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
+          <span className="mb-3 inline-block w-fit rounded-full bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground">
             {dict.common.categories[place.category]}
           </span>
           {/* The same treatment the home hero gets, on the other title people

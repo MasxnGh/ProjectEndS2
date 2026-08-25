@@ -38,7 +38,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         )}
       />
       <Reveal>
-        <SectionHeading title={dict.legal.privacy.title} />
+        <SectionHeading as="h1" title={dict.legal.privacy.title} />
         <p className="mt-2 text-sm text-muted-foreground">
           {dict.legal.updated}: {dict.legal.updatedDate}
         </p>

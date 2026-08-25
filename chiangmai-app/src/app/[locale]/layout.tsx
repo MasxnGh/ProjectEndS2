@@ -5,6 +5,7 @@ import "@/app/globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
@@ -154,6 +155,7 @@ export default async function LocaleLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme")||"system";var r=t==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;document.documentElement.classList.add(r);document.documentElement.style.colorScheme=r;}catch(e){}})();`,
           }}
         />
+        <MotionProvider>
         <AuthSessionProvider>
           <ThemeProvider>
             <LocaleProvider locale={locale} dict={dict}>
@@ -178,6 +180,7 @@ export default async function LocaleLayout({
             </LocaleProvider>
           </ThemeProvider>
         </AuthSessionProvider>
+        </MotionProvider>
       </body>
     </html>
   );

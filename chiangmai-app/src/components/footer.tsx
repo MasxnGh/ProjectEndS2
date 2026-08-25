@@ -69,9 +69,12 @@ export function Footer() {
 
           {columns.map((column) => (
             <nav key={column.heading} aria-label={column.heading}>
-              <h3 className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              {/* h2, not h3: in a page's heading outline these link groups are
+                  top-level sections beside the page's own content, and at h3
+                  they left a 1-to-3 gap on every short page. */}
+              <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {column.heading}
-              </h3>
+              </h2>
               <ul className="mt-5 space-y-3 text-sm">
                 {column.links.map((link) => (
                   <li key={link.href}>
