@@ -50,7 +50,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Phra That Doi Suthep Chiang Mai golden temple",
   },
   {
     slug: "wat-chedi-luang",
@@ -100,7 +99,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Chedi Luang Chiang Mai ruined temple",
   },
   {
     slug: "wat-phra-singh",
@@ -142,7 +140,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Phra Singh Chiang Mai temple",
   },
   {
     slug: "wat-umong",
@@ -184,7 +181,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Umong Chiang Mai forest temple tunnel",
   },
   {
     slug: "wat-sri-suphan",
@@ -242,7 +238,6 @@ export const temples: Place[] = [
     },
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "silver temple Chiang Mai Wua Lai",
   },
   {
     slug: "wat-suan-dok",
@@ -292,7 +287,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Suan Dok Chiang Mai white chedi sunset",
   },
   {
     slug: "wat-chiang-man",
@@ -342,7 +336,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Wat Chiang Man Chiang Mai elephant chedi",
   },
   {
     slug: "wat-phan-tao",
@@ -392,7 +385,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Phan Tao Chiang Mai teak temple",
   },
   {
     slug: "wat-lok-molee",
@@ -434,7 +426,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Lok Molee Chiang Mai brick chedi",
   },
   {
     slug: "wat-chet-yot",
@@ -476,7 +467,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Chet Yot Chiang Mai seven spires",
   },
   {
     slug: "wat-ket-karam",
@@ -518,7 +508,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Ket Karam Chiang Mai riverside temple",
   },
   {
     slug: "wat-pha-lat",
@@ -568,7 +557,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Wat Pha Lat Chiang Mai forest temple",
   },
   {
     slug: "wat-phra-that-doi-kham",
@@ -618,7 +606,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Phra That Doi Kham Chiang Mai big Buddha",
   },
   {
     slug: "wat-inthrawat-ton-kwen",
@@ -660,7 +647,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Lanna wooden temple northern Thailand",
   },
   {
     slug: "wat-phra-that-si-chom-thong",
@@ -702,7 +688,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Phra That Si Chom Thong temple northern Thailand",
   },
   {
     slug: "wat-ban-den",
@@ -752,7 +737,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Ban Den Mae Taeng golden Lanna temple",
   },
   {
     slug: "wat-tha-ton",
@@ -802,7 +786,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Tha Ton hilltop temple northern Thailand",
   },
   {
     slug: "wat-phra-that-doi-saket",
@@ -852,7 +835,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Doi Saket hilltop temple chedi Chiang Mai",
   },
   {
     slug: "wat-pa-dara-phirom",
@@ -894,7 +876,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Pa Dara Phirom Mae Rim white temple",
   },
   {
     slug: "wat-rampoeng",
@@ -985,7 +966,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Buppharam Chiang Mai teak temple",
   },
   {
     slug: "wat-saen-fang",
@@ -1027,7 +1007,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Saen Fang Chiang Mai Burmese chedi",
   },
   {
     slug: "wat-mahawan",
@@ -1069,7 +1048,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Mahawan Chiang Mai stucco guardian chedi",
   },
   {
     slug: "wat-phan-on",
@@ -1119,7 +1097,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Phan On Chiang Mai golden chedi",
   },
   {
     slug: "wat-chiang-yuen",
@@ -1161,7 +1138,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Chiang Yuen Chiang Mai Lanna temple",
   },
   {
     slug: "wat-jed-lin",
@@ -1211,7 +1187,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Jed Lin Chiang Mai lotus pond temple",
   },
   {
     slug: "wat-phuak-hong",
@@ -1253,7 +1228,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Phuak Hong Chiang Mai round chedi",
   },
   {
     slug: "wat-duang-di",
@@ -1295,7 +1269,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Duang Di Chiang Mai carved wooden temple",
   },
   {
     slug: "wat-inthakhin-sadue-muang",
@@ -1337,7 +1310,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Inthakhin Sadue Muang Chiang Mai",
   },
   {
     slug: "wat-si-koet",
@@ -1379,7 +1351,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "small Lanna temple courtyard Chiang Mai old city",
   },
   {
     slug: "wat-pan-whaen",
@@ -1503,7 +1474,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "forest temple foothills Doi Suthep Chiang Mai",
   },
   {
     slug: "wat-buak-khrok-luang",
@@ -1545,7 +1515,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Lanna temple mural painting northern Thailand",
   },
   {
     slug: "wat-phra-non-khon-muang",
@@ -1587,7 +1556,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "reclining Buddha temple northern Thailand",
   },
   {
     slug: "wat-tham-pha-plong",
@@ -1637,7 +1605,6 @@ export const temples: Place[] = [
     dressCode: TEMPLE_DRESS_CODE,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wat Tham Pha Plong Chiang Dao staircase temple",
   },
   {
     slug: "wat-luang-khun-win",
@@ -1687,6 +1654,5 @@ export const temples: Place[] = [
     },
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "forest monastery teak northern Thailand",
   },
 ];

@@ -49,7 +49,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai walking street night market",
   },
   {
     slug: "saturday-walking-street-wualai",
@@ -91,7 +90,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai night market street food",
   },
   {
     slug: "warorot-market",
@@ -141,7 +139,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Warorot market Chiang Mai",
   },
   {
     slug: "night-bazaar",
@@ -183,7 +180,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai night bazaar",
   },
   {
     slug: "jing-jai-market",
@@ -236,7 +232,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai farmers market organic produce",
   },
   {
     slug: "chang-phueak-night-market",
@@ -278,7 +273,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai street food night market",
   },
   {
     slug: "muang-mai-market",
@@ -328,7 +322,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Thai wholesale fruit market crates",
   },
   {
     slug: "ton-payom-market",
@@ -370,7 +363,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Thai fresh market curry stalls",
   },
   {
     slug: "ploen-ruedee-night-market",
@@ -412,7 +404,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai night market food stalls",
   },
   {
     slug: "one-nimman",
@@ -552,7 +543,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-20",
-    photoQuery: "Chiang Mai flower market marigold garlands",
   },
   {
     slug: "chiang-mai-gate-market",
@@ -602,7 +592,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai Gate market street food evening",
   },
   {
     slug: "kad-na-mor",
@@ -644,7 +633,6 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Thai student night market food stalls",
   },
   {
     slug: "maya-lifestyle-shopping-center",
@@ -866,6 +854,5 @@ export const markets: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-20",
-    photoQuery: "Thai walking street night market crafts",
   },
 ];

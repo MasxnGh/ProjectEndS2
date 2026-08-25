@@ -49,7 +49,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mae Kampong village Chiang Mai mountain",
   },
   {
     slug: "baan-tawai",
@@ -91,7 +90,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "wood carving village Thailand craft",
   },
   {
     slug: "wua-lai-silver-village",
@@ -141,7 +139,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wua Lai silversmith Chiang Mai",
   },
   {
     slug: "bo-sang-umbrella-village",
@@ -183,7 +180,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Bo Sang umbrella village Chiang Mai paper parasol",
   },
   {
     slug: "wiang-kum-kam",
@@ -233,7 +229,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wiang Kum Kam ancient ruins Chiang Mai",
   },
   {
     slug: "tha-phae-gate",
@@ -283,7 +278,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Tha Phae Gate Chiang Mai old city wall",
   },
   {
     slug: "three-kings-monument",
@@ -325,7 +319,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Three Kings Monument Chiang Mai",
   },
   {
     slug: "san-kamphaeng-hot-springs",
@@ -367,7 +360,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "San Kamphaeng hot springs Chiang Mai geyser",
   },
   {
     slug: "ban-mae-klang-luang",
@@ -417,7 +409,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mae Klang Luang rice terraces Doi Inthanon",
   },
   {
     slug: "khun-chang-khian",
@@ -467,7 +458,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Khun Chang Khian cherry blossom Hmong village Chiang Mai",
   },
   {
     slug: "muang-kung-pottery-village",
@@ -509,7 +499,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Thai pottery village earthenware water jars",
   },
   {
     slug: "ban-tha-ton",
@@ -551,7 +540,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Tha Ton Kok river longtail boat northern Thailand",
   },
   {
     slug: "ban-piang-luang",
@@ -601,7 +589,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Shan border village northern Thailand temple",
   },
   {
     slug: "ban-wat-chan-pine-forest",
@@ -651,7 +638,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "Ban Wat Chan pine forest northern Thailand",
   },
   {
     slug: "wiang-tha-kan",
@@ -693,7 +679,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "ancient brick chedi ruins northern Thailand",
   },
   {
     slug: "chang-phueak-gate",
@@ -743,7 +728,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chang Phueak Gate Chiang Mai old city wall",
   },
   {
     slug: "suan-dok-gate",
@@ -793,7 +777,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Suan Dok Gate Chiang Mai moat evening",
   },
   {
     slug: "jaeng-si-phum",
@@ -843,7 +826,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Jaeng Si Phum corner bastion Chiang Mai moat night",
   },
   {
     slug: "kruba-srivichai-monument",
@@ -885,7 +867,6 @@ export const villages: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Kruba Srivichai monument Chiang Mai Doi Suthep road",
   },
   {
     slug: "ban-haw-mosque",

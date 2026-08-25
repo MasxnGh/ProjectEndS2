@@ -36,6 +36,10 @@ export function Footer() {
               <li className="text-muted-foreground">{dict.footer.madeIn}</li>
               <li><Link href={`/${locale}/privacy`} className="hover:text-accent-text">{dict.footer.privacy}</Link></li>
               <li><Link href={`/${locale}/terms`} className="hover:text-accent-text">{dict.footer.terms}</Link></li>
+              {/* Photo licences live here. CC BY-SA requires the credit to be
+                  reachable, so it needs a permanent home in the footer rather
+                  than only appearing under the photos themselves. */}
+              <li><Link href={`/${locale}/credits`} className="hover:text-accent-text">{dict.credits.navLabel}</Link></li>
             </ul>
           </div>
         </div>

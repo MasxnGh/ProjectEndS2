@@ -425,6 +425,21 @@ const en = {
     },
     dayLabel: "Day {day}",
   },
+  credits: {
+    navLabel: "Credits",
+    title: "Credits",
+    intro: "Where the photography and the underlying data on this site come from.",
+    photosTitle: "Photographs",
+    photosBody:
+      "Place photography comes from Wikimedia Commons. A photo is used only when three things agree: Wikidata attaches the image to that place's own entry, that entry's coordinates are within 400m of ours, and it is the same kind of thing — a temple standing next to a cave is neither the cave nor a reason to illustrate it. Places that fail any of the three keep an illustration instead, which is why many here have no photograph. Most images are licensed CC BY or CC BY-SA, where naming the photographer is a condition of use rather than a courtesy.",
+    photosEmpty: "No photographs are in use yet.",
+    dataTitle: "Place data",
+    dataBody:
+      "Coordinates come from OpenStreetMap, © OpenStreetMap contributors, ODbL 1.0. Weather and air quality come from Open-Meteo, map tiles from MapTiler, and routing from OpenRouteService. Opening hours are partly from OpenStreetMap and partly editorial estimates — each place says which.",
+    illustratedTitle: "Illustrated placeholders",
+    illustratedBody:
+      "Places without a photograph show a generated illustration instead of a stock image. Cafés and restaurants are deliberately left this way: there is no free licensed photograph of a specific noodle shop, and a generic interior captioned with a real business's name would be a small lie told a hundred times over.",
+  },
   place: {
     localTip: "A local's tip",
     overview: "Overview",
@@ -435,6 +450,8 @@ const en = {
     awardPast: "Previously held",
     awardSince: "Since {year}",
     awardSourceLink: "Check this on {source}",
+    photoBy: "Photo: {artist} ({licence})",
+    photoCreditsLink: "Photo credits",
     awardSourcePlain: "Source: {source}",
     awardSourceNote: "Every award links to a page we opened and checked. These are third-party write-ups, not the awarding body's own site — credit is shown on each link.",
     awardYears: "{from}–{to}",

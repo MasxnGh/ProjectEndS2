@@ -10,6 +10,7 @@ import type { Place } from "@/data/types";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
+import { getPhotoCredit } from "@/data/photo-credits";
 import { getPlaceBlurDataURL } from "@/data/blur-manifest";
 import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
@@ -97,6 +98,7 @@ export default async function PlaceDetailPage({
     (p) => p.slug === place.slug
   ).slice(0, NEARBY_LIMIT);
   const photoPath = getPlacePhoto(place.slug);
+  const photoCredit = getPhotoCredit(place.slug);
   const openingHoursSpecification = toJsonLdOpeningHoursSpecification(place.openingHours, place.closedOnDays);
 
   const jsonLd = {
@@ -145,6 +147,26 @@ export default async function PlaceDetailPage({
           className="absolute inset-0 h-full w-full"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+
+        {/* Naming the photographer is a licence condition for the CC BY-SA
+            images this site uses, not a courtesy — so it rides with the photo
+            rather than living only on a credits page someone has to find.
+            Quiet, but not hidden: at 10px and 55% white it was effectively
+            unreadable, and a licence condition nobody can read is not met. */}
+        {photoCredit ? (
+          <p className="absolute bottom-2 right-3 z-10 text-[11px] leading-tight text-white/80 [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]">
+            <a
+              href={photoCredit.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white hover:underline"
+            >
+              {dict.place.photoBy
+                .replace("{artist}", photoCredit.artist)
+                .replace("{licence}", photoCredit.licence)}
+            </a>
+          </p>
+        ) : null}
         <div className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-12 lg:px-10">
           <span className="mb-3 inline-block w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
             {dict.common.categories[place.category]}

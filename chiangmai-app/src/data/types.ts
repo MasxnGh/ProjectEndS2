@@ -203,15 +203,6 @@ export interface Place {
   /** ISO date this place's practical details (hours, dress code, etc.) were last checked against a live source. null = not yet verified — see PHASE0-TODO.md. */
   dataLastVerified: string | null;
 
-  /**
-   * Stock-photo search term for `npm run fetch:photos`. Set ONLY for public
-   * landmarks a generic photo can honestly represent (a temple, a waterfall, a
-   * market). Deliberately absent for named businesses — a stock photo of "Thai
-   * coffee shop" captioned as a specific café misleads the visitor, so those
-   * fall back to <PlaceImage>'s illustrated gradient instead.
-   */
-  photoQuery?: string;
-
   // ── Depth: who this place is, beyond what it sells ──────────────
   // All four are optional and researched per place rather than filled in
   // wholesale. A place with no verifiable history is left without one; an

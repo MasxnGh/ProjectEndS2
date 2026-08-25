@@ -9,7 +9,6 @@ times) when its key is missing. Set them to unlock the real versions.
 | Variable | Required? | What it's for | Get a key |
 |---|---|---|---|
 | `SITE_URL` | No | Canonical URL for `metadataBase`, `sitemap.xml`, `robots.txt`, OG tags. Falls back to Vercel's own production URL if unset. | — (your production domain) |
-| `PEXELS_API_KEY` | No | Only used by `npm run fetch:photos` to download place photography. | https://www.pexels.com/api/ |
 | `MAPTILER_API_KEY` | No | Vector map tiles for Place Detail / Explore / Trip Planner. Server-only, proxied through `/api/map/*`. | https://cloud.maptiler.com/ |
 | `OPENROUTESERVICE_API_KEY` | No | Real driving/cycling/walking directions, travel-time matrices, and isochrones for the Trip Planner. Server-only, proxied through `/api/routing/*`. Without it, routing uses a Haversine + terrain-detour-factor estimate instead (labeled as an estimate in the UI). | https://openrouteservice.org/dev/#/signup (free tier) |
 | `GEMINI_API_KEY` | No² | Powers **Plan with AI** in the Trip Planner — turns a plain-language request ("temples and a Michelin restaurant, ฿1,000, one day") into a day plan built from this site's places. The default provider, and free. Server-only, proxied through `/api/ai/plan-trip`. | https://aistudio.google.com/apikey (free, no card) |
@@ -117,8 +116,12 @@ terminals and Git Bash on Windows).
   no `~`; the fallback estimate is prefixed with `~` everywhere it's shown
   (Map tab, day cards, Timeline, Summary → Transport). If you don't see the
   startup warning in the server log and figures are unprefixed, it's wired up.
-- **Pexels**: run `npm run fetch:photos` — it should download real images into
-  `public/images/` instead of failing with a 401.
+- **Place photos**: run `npm run fetch:photos` — it pulls freely-licensed images
+  from Wikimedia Commons via Wikidata. No key is needed. It accepts a photo only
+  when the entity's name, coordinates and type all match the place, so most
+  entries are skipped and keep their illustrated placeholder; that is the
+  intended result, not a failure. Every accepted photo is recorded in
+  `scripts/commons-results.json` and credited on `/credits`.
 - **Accounts**: open any page — the nav should show a **Sign in** link. Click it,
   then **Continue with Google**. If `MONGODB_URI`/`AUTH_SECRET`/`AUTH_GOOGLE_ID`/
   `AUTH_GOOGLE_SECRET` are all set correctly, you land on Google's consent screen,

@@ -57,7 +57,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "Thai cooking class market herbs",
   },
   {
     slug: "thai-massage-spa",
@@ -99,7 +98,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Thai massage spa herbal",
   },
   {
     slug: "ethical-elephant-sanctuary",
@@ -141,7 +139,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "elephant sanctuary Thailand river",
   },
   {
     slug: "mae-ping-river-cruise",
@@ -191,7 +188,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "Ping river boat Chiang Mai teak barge",
   },
   {
     slug: "chiang-mai-zoo",
@@ -233,7 +229,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai zoo Thailand",
   },
   {
     slug: "chiang-mai-night-safari",
@@ -283,7 +278,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "night safari Thailand tram animals",
   },
   {
     slug: "kalare-boxing-stadium",
@@ -325,7 +319,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Muay Thai ring fight Thailand",
   },
   {
     slug: "crazy-horse-buttress",
@@ -375,7 +368,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "rock climbing limestone crag Thailand",
   },
   {
     slug: "monks-trail-doi-suthep",
@@ -433,7 +425,6 @@ export const activities: Place[] = [
     },
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Monks Trail forest path Doi Suthep Chiang Mai",
   },
   {
     slug: "doi-saket-hot-spring",
@@ -475,7 +466,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-20",
-    photoQuery: "Thai hot spring pools steam northern Thailand",
   },
   {
     slug: "huai-hong-khrai-study-centre",
@@ -517,7 +507,6 @@ export const activities: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "reforestation watershed study centre northern Thailand",
   },
   {
     slug: "chiang-mai-x-centre",

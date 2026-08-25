@@ -42,7 +42,6 @@ export const cafes: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Nimman Chiang Mai cafe street",
   },
   {
     slug: "riverside-ping",
@@ -92,7 +91,6 @@ export const cafes: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "Ping river Chiang Mai restaurant evening",
   },
   {
     slug: "old-city-coffee-trail",
@@ -134,7 +132,6 @@ export const cafes: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "specialty coffee shop Thailand",
   },
   {
     slug: "ban-kang-wat",
@@ -184,7 +181,6 @@ export const cafes: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "artisan village Chiang Mai ceramics",
   },
   {
     slug: "ristr8to",
