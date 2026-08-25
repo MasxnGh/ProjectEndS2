@@ -6,16 +6,25 @@ import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
+import { Section } from "@/components/ui/section";
 import { useLocale } from "@/components/providers/locale-provider";
 import { getPlaceBySlug } from "@/data/places";
 import { cn } from "@/lib/utils";
 
+/**
+ * Every one of these has a photograph that has been verified to depict it.
+ *
+ * Four of the previous five did not: Mon Cham, Nimmanhaemin, Mae Kampong and
+ * the coffee trail all lost their images in the photo audit, so the page led
+ * with four gradient placeholders under the heading "Editors' selections". A
+ * showcase of photography should be built from the photographs that exist.
+ */
 const featuredSlugs = [
   "wat-phra-that-doi-suthep",
-  "mon-cham",
-  "nimmanhaemin",
-  "mae-kampong",
-  "old-city-coffee-trail",
+  "wat-pha-lat",
+  "mae-sa-waterfall",
+  "wat-ban-den",
+  "tha-phae-gate",
 ];
 
 const spans = [
@@ -40,7 +49,7 @@ export function FeaturedExperiences() {
   const items = featuredSlugs.map((slug) => getPlaceBySlug(slug)).filter(Boolean);
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+    <Section width="wide" rhythm="tight">
       <Reveal>
         <SectionHeading
           kicker={dict.home.featured.kicker}
@@ -87,6 +96,6 @@ export function FeaturedExperiences() {
           );
         })}
       </div>
-    </section>
+    </Section>
   );
 }

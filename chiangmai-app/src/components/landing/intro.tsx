@@ -1,6 +1,7 @@
 "use client";
 
 import { Reveal } from "@/components/reveal";
+import { Section } from "@/components/ui/section";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 import { useLocale } from "@/components/providers/locale-provider";
 
@@ -8,7 +9,7 @@ export function Intro() {
   const { dict } = useLocale();
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+    <Section width="default" rhythm="loose">
       <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         <Reveal>
           <p className="mb-3 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-accent-text">
@@ -30,6 +31,6 @@ export function Intro() {
           />
         </Reveal>
       </div>
-    </section>
+    </Section>
   );
 }

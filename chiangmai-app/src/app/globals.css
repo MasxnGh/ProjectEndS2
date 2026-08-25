@@ -41,6 +41,25 @@
   --color-tertiary-foreground: #f4f5f2;
   --color-tertiary-text: #6e4e32;
 
+  /*
+   * The inverted band.
+   *
+   * One full-bleed section on a page is allowed to be a different plane from
+   * the rest, and it is what stops a long page reading as one flat sheet. It is
+   * always a dark plane with light type, in both themes — like a photograph,
+   * which does not invert when the theme does. In the light theme that is a
+   * dramatic indigo interruption; in the dark theme the only direction left is
+   * up, so the band lifts off the page instead of sinking into it.
+   */
+  --color-band: #243447;
+  --color-band-foreground: #e8eae6;
+  --color-band-muted: #a9b6c0;
+  /* Identical in both themes: the band is one plane, so the accent that sits
+     on it is one colour. The page accent flips with the theme and would go
+     muddy here in the light one. */
+  --color-band-accent: #8fbfa8;
+  --color-band-accent-foreground: #10171e;
+
   --color-muted-foreground: #54626c;
   /* Red lacquer. */
   --color-destructive: #a63a2b;
@@ -74,6 +93,13 @@
   --color-tertiary-foreground: #10171e;
   --color-tertiary-text: #c09a72;
 
+  /* Lifted rather than sunk — see the light theme's note above. */
+  --color-band: #22303d;
+  --color-band-foreground: #e6eae7;
+  --color-band-muted: #93a1a9;
+  --color-band-accent: #8fbfa8;
+  --color-band-accent-foreground: #10171e;
+
   --color-muted-foreground: #93a1a9;
   --color-destructive: #e08a78;
   --color-destructive-foreground: #10171e;
@@ -99,6 +125,11 @@
   --color-tertiary: var(--color-tertiary);
   --color-tertiary-foreground: var(--color-tertiary-foreground);
   --color-tertiary-text: var(--color-tertiary-text);
+  --color-band: var(--color-band);
+  --color-band-foreground: var(--color-band-foreground);
+  --color-band-muted: var(--color-band-muted);
+  --color-band-accent: var(--color-band-accent);
+  --color-band-accent-foreground: var(--color-band-accent-foreground);
   --color-muted-foreground: var(--color-muted-foreground);
   --color-destructive: var(--color-destructive);
   --color-destructive-foreground: var(--color-destructive-foreground);

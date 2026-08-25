@@ -5,7 +5,7 @@ export function HeroBackground() {
         className="absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--color-accent) 35%, transparent), transparent 60%), radial-gradient(80% 60% at 85% 15%, color-mix(in srgb, var(--color-tertiary) 30%, transparent), transparent 60%), linear-gradient(180deg, #14140f 0%, #1a1a17 55%, #0f100d 100%)",
+            "radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--color-band-accent) 30%, transparent), transparent 60%), radial-gradient(80% 60% at 85% 15%, color-mix(in srgb, #c09a72 26%, transparent), transparent 60%), linear-gradient(180deg, #16212c 0%, #111a23 55%, #0b1117 100%)",
         }}
       />
       <div
@@ -33,7 +33,7 @@ export function HeroBackground() {
           opacity="0.8"
         />
       </svg>
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0f100d] via-transparent to-black/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0b1117] via-transparent to-black/30" />
     </div>
   );
 }

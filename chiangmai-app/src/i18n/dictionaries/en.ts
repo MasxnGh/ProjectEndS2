@@ -180,7 +180,6 @@ const en = {
     },
     categories: {
       kicker: "Wander By Mood",
-      title: "Five ways into the city",
       viewAll: "View all",
     },
     featured: {
@@ -204,6 +203,22 @@ const en = {
       kicker: "From the Journal",
       title: "Stories to read before you go",
     },
+  },
+  square: {
+    kicker: "Orientation",
+    title: "The city is a square",
+    body: "The old city is a walled square, 1.6km on each side, with a gate in the middle of every wall and a bastion at every corner. It is how people here give directions: Nimman is west of the moat, the Ping is east of it. Every place in this guide is plotted below by its own coordinates.",
+    legend: "One dot, one place",
+    zones: {
+      inside: "Inside the walls",
+      wall: "On the moat",
+      north: "North of the moat",
+      east: "East, toward the Ping",
+      south: "South of the moat",
+      west: "West, toward Doi Suthep",
+      beyond: "Farther afield",
+    },
+    beyondNote: "Too far out to plot on a map of the old city.",
   },
   explore: {
     title: "Explore Chiang Mai",
