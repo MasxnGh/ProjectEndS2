@@ -4,7 +4,7 @@ import { useId } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { EASE } from "@/lib/motion";
 import type { SquarePoint } from "@/lib/city-square-summary";
-import type { SquareBucket } from "@/lib/city-square";
+import { compressOutside, type SquareBucket } from "@/lib/city-square";
 import { cn } from "@/lib/utils";
 
 /**
@@ -43,9 +43,9 @@ export function CitySquareMap({
   const moat = { x: WALL.x - MOAT_GAP, size: WALL.size + MOAT_GAP * 2 };
 
   // Drawn in wall-relative space, so a place west of the moat lands left of the
-  // wall instead of being clamped onto it.
-  const px = (x: number) => WALL.x + x * WALL.size;
-  const py = (y: number) => WALL.x + y * WALL.size;
+  // wall instead of on it.
+  const px = (x: number) => WALL.x + compressOutside(x) * WALL.size;
+  const py = (y: number) => WALL.x + compressOutside(y) * WALL.size;
 
   const isInner = (bucket: SquareBucket) => bucket === "inside" || bucket === "wall";
 

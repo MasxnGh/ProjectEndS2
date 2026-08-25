@@ -65,35 +65,36 @@ export function Orientation({
           </h3>
           <ul className="mt-4 border-t border-border">
             {zones.map((zone) => (
-              <li
-                key={zone.bucket}
-                tabIndex={0}
-                onMouseEnter={() => setActive(zone.bucket)}
-                onMouseLeave={() => setActive(null)}
-                onFocus={() => setActive(zone.bucket)}
-                onBlur={() => setActive(null)}
-                className={cn(
-                  "flex items-baseline justify-between gap-4 border-b border-border px-1 py-3 transition-colors",
-                  active === zone.bucket && "bg-surface-muted"
-                )}
-              >
-                <span className="flex items-center gap-3 text-sm">
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "h-1.5 w-1.5 shrink-0 rounded-full",
-                      zone.bucket === "inside" || zone.bucket === "wall"
-                        ? "bg-accent"
-                        : zone.bucket === "beyond"
-                          ? "bg-border-strong"
-                          : "bg-tertiary"
-                    )}
-                  />
-                  {t.zones[zone.bucket]}
-                </span>
-                <span className="font-mono text-sm tabular-nums text-muted-foreground">
-                  {zone.count}
-                </span>
+              <li key={zone.bucket} className="border-b border-border">
+                <Link
+                  href={`/${locale}/explore?zone=${zone.bucket}`}
+                  onMouseEnter={() => setActive(zone.bucket)}
+                  onMouseLeave={() => setActive(null)}
+                  onFocus={() => setActive(zone.bucket)}
+                  onBlur={() => setActive(null)}
+                  className={cn(
+                    "group flex items-baseline justify-between gap-4 px-1 py-3 transition-colors",
+                    active === zone.bucket ? "bg-surface-muted" : "hover:bg-surface-muted"
+                  )}
+                >
+                  <span className="flex items-center gap-3 text-sm group-hover:text-accent-text">
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "h-1.5 w-1.5 shrink-0 rounded-full",
+                        zone.bucket === "inside" || zone.bucket === "wall"
+                          ? "bg-accent"
+                          : zone.bucket === "beyond"
+                            ? "bg-border-strong"
+                            : "bg-tertiary"
+                      )}
+                    />
+                    {t.zones[zone.bucket]}
+                  </span>
+                  <span className="font-mono text-sm tabular-nums text-muted-foreground">
+                    {zone.count}
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>

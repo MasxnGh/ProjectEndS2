@@ -14,6 +14,8 @@ import { getPhotoCredit } from "@/data/photo-credits";
 import { getPlaceBlurDataURL } from "@/data/blur-manifest";
 import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
+import { PlaceLocationCard } from "@/components/place-location-card";
+import { Section } from "@/components/ui/section";
 import { AddToPlanButton } from "@/components/add-to-plan-button";
 import { FavoriteButton } from "@/components/favorite-button";
 import { SplitText } from "@/components/split-text";
@@ -197,7 +199,7 @@ export default async function PlaceDetailPage({
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+      <Section as="div" width="default" rhythm="tight" className="lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr]">
           <div>
             <Reveal>
@@ -350,6 +352,8 @@ export default async function PlaceDetailPage({
           </div>
 
           <Reveal delay={0.1} className="space-y-6">
+            <PlaceLocationCard place={place} locale={locale} />
+
             <div className="rounded-lg border border-border p-6">
               <h3 className="font-serif-display text-lg">{dict.place.practicalInfo}</h3>
               <dl className="mt-4 space-y-4 text-sm">
@@ -428,7 +432,7 @@ export default async function PlaceDetailPage({
             </div>
           </div>
         ) : null}
-      </div>
+      </Section>
     </div>
   );
 }

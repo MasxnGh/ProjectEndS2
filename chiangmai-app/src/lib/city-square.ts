@@ -149,6 +149,29 @@ export function locateInSquare(coordinates: LatLng): SquarePlacement {
   return { zone: side, bucket: side, km, point };
 }
 
+/** How far past the wall a plotted dot may sit, in wall-widths. */
+export const OUTSIDE_REACH = 0.4;
+
+/**
+ * Squashes how far outside the walls a place is drawn, leaving direction exact.
+ *
+ * Wall-relative coordinates run from about -3.3 to 5.0 across the catalogue —
+ * places up to 9km out — while a drawing of the square has under half a
+ * wall-width of margin. Plotted raw, 60 of 124 dots landed outside the frame and
+ * were silently clipped, so the map showed half the guide while appearing to
+ * show all of it.
+ *
+ * Monotonic, so nearer places still plot nearer and the ordering along each axis
+ * survives; only the scale outside the moat is non-linear. Inside the walls
+ * nothing is touched, which is where exact position actually matters.
+ */
+export function compressOutside(t: number): number {
+  if (t >= 0 && t <= 1) return t;
+  const overshoot = t < 0 ? -t : t - 1;
+  const squashed = OUTSIDE_REACH * (1 - Math.exp(-overshoot));
+  return t < 0 ? -squashed : 1 + squashed;
+}
+
 /** True when a place is within the walls, on any of the four quarters. */
 export function isInsideWalls(coordinates: LatLng): boolean {
   return locateInSquare(coordinates).bucket === "inside";

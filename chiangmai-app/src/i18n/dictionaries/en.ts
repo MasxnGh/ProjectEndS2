@@ -209,6 +209,9 @@ const en = {
     title: "The city is a square",
     body: "The old city is a walled square, 1.6km on each side, with a gate in the middle of every wall and a bastion at every corner. It is how people here give directions: Nimman is west of the moat, the Ping is east of it. Every place in this guide is plotted below by its own coordinates.",
     legend: "One dot, one place",
+    placeTitle: "Where this is",
+    fromCentre: "{km} km from the old city",
+    seeAll: "All {count} places here",
     zones: {
       inside: "Inside the walls",
       wall: "On the moat",
@@ -218,7 +221,8 @@ const en = {
       west: "West, toward Doi Suthep",
       beyond: "Farther afield",
     },
-    beyondNote: "Too far out to plot on a map of the old city.",
+    beyondNote:
+      "Outside the walls, direction is exact and distance is compressed to fit. The farthest places are left off entirely.",
   },
   explore: {
     title: "Explore Chiang Mai",
@@ -243,6 +247,7 @@ const en = {
       price: "Budget",
       time: "Best time",
       distance: "Distance",
+      zone: "Where in the city",
       moreFilters: "Filters",
       clear: "Clear filters",
       results: "places",

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { locateInSquare, isInsideWalls, CITY_SQUARE, BEYOND_KM } from "./city-square";
+import {
+  locateInSquare,
+  isInsideWalls,
+  compressOutside,
+  CITY_SQUARE,
+  BEYOND_KM,
+} from "./city-square";
+import { buildSquareSummary } from "./city-square-summary";
 import { getPlaceBySlug } from "@/data/places";
 
 /**
@@ -72,6 +79,39 @@ describe("locateInSquare", () => {
     expect(locateInSquare({ lat: CITY_SQUARE.north + 0.0005, lng: CITY_SQUARE.east + 0.01 }).bucket).toBe(
       "east"
     );
+  });
+});
+
+describe("compressOutside", () => {
+  it("leaves everything inside the walls exactly where it is", () => {
+    for (const t of [0, 0.25, 0.5, 0.75, 1]) {
+      expect(compressOutside(t)).toBe(t);
+    }
+  });
+
+  it("keeps every place in the catalogue inside the drawing", () => {
+    // The map's own geometry: a 200-unit viewBox with the wall from 46 to 154.
+    const WALL_X = 46;
+    const WALL_SIZE = 108;
+    const VIEW = 200;
+    const DOT_R = 2;
+    const { points } = buildSquareSummary();
+    expect(points.length).toBeGreaterThan(100);
+
+    for (const point of points) {
+      for (const t of [point.x, point.y]) {
+        const drawn = WALL_X + compressOutside(t) * WALL_SIZE;
+        expect(drawn - DOT_R, `t=${t}`).toBeGreaterThan(0);
+        expect(drawn + DOT_R, `t=${t}`).toBeLessThan(VIEW);
+      }
+    }
+  });
+
+  it("still puts a nearer place nearer than a farther one", () => {
+    // Ordering has to survive the squash, or the map would be lying about
+    // which of two neighbourhoods is closer to the moat.
+    expect(compressOutside(-0.5)).toBeGreaterThan(compressOutside(-2));
+    expect(compressOutside(1.5)).toBeLessThan(compressOutside(3));
   });
 });
 
