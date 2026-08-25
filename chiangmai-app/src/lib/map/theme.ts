@@ -3,12 +3,25 @@ import type { Map as MapLibreMapInstance } from "maplibre-gl";
 export type MapThemeMode = "light" | "dark";
 
 const PALETTE = {
-  light: { land: "#f7f4ef", water: "#e3dcc8", road: "#cbbfa4" },
-  dark: { land: "#171613", water: "#2a2721", road: "#4a4438" },
+  light: { land: "#e8eae6", water: "#c6d3d6", road: "#b2bab1", accent: "#2e6b57" },
+  dark: { land: "#10171e", water: "#18262f", road: "#354550", accent: "#8fbfa8" },
 };
 
 /**
- * Recolours a MapTiler "dataviz" base style toward the site's cream/gold
+ * The accent to draw over the map — routes, pins, radius rings.
+ *
+ * MapLibre paint properties are evaluated inside the canvas and cannot read a
+ * CSS custom property, so the colour has to be handed in. It was hardcoded as
+ * #C9A24B in four places, which left gold routes and rings drawn over the new
+ * palette; taking it from the same table as the base colours means the map's
+ * overlay and its ground can no longer disagree.
+ */
+export function mapAccent(mode: MapThemeMode): string {
+  return PALETTE[mode].accent;
+}
+
+/**
+ * Recolours a MapTiler "dataviz" base style toward the site's indigo/celadon
  * palette and hides POI clutter, without depending on knowing the style's
  * exact layer ids ahead of time — it pattern-matches on id/type instead, so
  * it degrades gracefully (silently skipping) if MapTiler renames a layer.

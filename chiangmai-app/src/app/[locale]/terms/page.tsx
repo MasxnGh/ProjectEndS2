@@ -1,3 +1,4 @@
+import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import { isLocale, getDictionary } from "@/i18n";
 import { SectionHeading } from "@/components/section-heading";
@@ -27,7 +28,7 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
   const dict = getDictionary(loc);
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 lg:px-10 lg:py-20">
+    <Section as="div" width="prose" rhythm="tight" className="lg:py-20">
       <script
         {...jsonLdScriptProps(
           breadcrumbJsonLd(loc, [
@@ -54,6 +55,6 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
           </Reveal>
         ))}
       </div>
-    </div>
+    </Section>
   );
 }

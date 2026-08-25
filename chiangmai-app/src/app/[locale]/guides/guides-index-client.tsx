@@ -1,5 +1,6 @@
 "use client";
 
+import { Section } from "@/components/ui/section";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { guides } from "@/data/guides";
@@ -15,7 +16,7 @@ export function GuidesIndexClient() {
   const { locale, dict } = useLocale();
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+    <Section as="div" width="default" rhythm="tight" className="lg:py-20">
       <Reveal>
         <SectionHeading kicker={dict.nav.guides} title={dict.guides.title} subtitle={dict.guides.subtitle} />
       </Reveal>
@@ -88,6 +89,6 @@ export function GuidesIndexClient() {
           </article>
         ))}
       </ScrollStack>
-    </div>
+    </Section>
   );
 }

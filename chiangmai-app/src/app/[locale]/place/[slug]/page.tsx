@@ -15,7 +15,7 @@ import { getPlaceBlurDataURL } from "@/data/blur-manifest";
 import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
 import { PlaceLocationCard } from "@/components/place-location-card";
-import { Section } from "@/components/ui/section";
+import { Section, Container } from "@/components/ui/section";
 import { AddToPlanButton } from "@/components/add-to-plan-button";
 import { FavoriteButton } from "@/components/favorite-button";
 import { SplitText } from "@/components/split-text";
@@ -169,7 +169,7 @@ export default async function PlaceDetailPage({
             </a>
           </p>
         ) : null}
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-12 lg:px-10">
+        <Container width="wide" className="relative z-10 pb-12">
           <span className="mb-3 inline-block w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
             {dict.common.categories[place.category]}
           </span>
@@ -180,11 +180,11 @@ export default async function PlaceDetailPage({
           <SplitText
             as="h1"
             text={place.name[locale]}
-            className="font-serif-display text-4xl leading-[1.02] text-[#f3efe4] sm:text-5xl md:text-6xl"
+            className="font-serif-display text-4xl leading-[1.02] text-band-foreground sm:text-5xl md:text-6xl"
           />
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[#f3efe4]/85">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-band-muted">
             <span className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 fill-accent text-accent-text" />
+              <Star className="h-4 w-4 fill-band-accent text-band-accent" />
               {place.rating}
             </span>
             <span className="flex items-center gap-1.5">
@@ -196,7 +196,7 @@ export default async function PlaceDetailPage({
               {formatDuration(place.durationMinutes, dict.common)}
             </span>
           </div>
-        </div>
+        </Container>
       </section>
 
       <Section as="div" width="default" rhythm="tight" className="lg:py-20">

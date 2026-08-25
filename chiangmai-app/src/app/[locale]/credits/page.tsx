@@ -1,3 +1,4 @@
+import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,7 +43,7 @@ export default async function CreditsPage({ params }: { params: Promise<{ locale
   const credits = allPhotoCredits();
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-16 lg:px-10 lg:py-20">
+    <Section as="div" width="prose" rhythm="tight" className="lg:py-20">
       <Reveal as="div">
         <h1 className="font-serif-display text-4xl leading-tight sm:text-5xl">{t.title}</h1>
         <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">{t.intro}</p>
@@ -97,6 +98,6 @@ export default async function CreditsPage({ params }: { params: Promise<{ locale
         <h2 className="font-serif-display text-2xl">{t.illustratedTitle}</h2>
         <p className="mt-2 leading-relaxed text-muted-foreground text-pretty">{t.illustratedBody}</p>
       </Reveal>
-    </div>
+    </Section>
   );
 }

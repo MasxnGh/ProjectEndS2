@@ -9,7 +9,7 @@ import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTheme } from "@/components/providers/theme-provider";
 import { computeBoundingBox, boundingBoxToLngLatBounds } from "@/lib/geo/bbox";
-import { applyBrandMapTheme } from "@/lib/map/theme";
+import { applyBrandMapTheme, mapAccent } from "@/lib/map/theme";
 import { MapPinIcon } from "@/components/map/map-pin-icon";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ interface PlaceMapProps {
 export function PlaceMap({ mainPlace, nearbyPlaces = [], comparePlace = null, className }: PlaceMapProps) {
   const { locale, dict } = useLocale();
   const { resolvedTheme } = useTheme();
+  const accent = mapAccent(resolvedTheme === "dark" ? "dark" : "light");
   const mapRef = useRef<MapRef>(null);
   const [popupPlace, setPopupPlace] = useState<Place | null>(null);
   const [mapError, setMapError] = useState(false);
@@ -103,7 +104,7 @@ export function PlaceMap({ mainPlace, nearbyPlaces = [], comparePlace = null, cl
               type="line"
               layout={{ "line-cap": "round" }}
               paint={{
-                "line-color": "#C9A24B",
+                "line-color": accent,
                 "line-width": 2,
                 "line-dasharray": [0.2, 1.6],
                 "line-opacity": 0.85,

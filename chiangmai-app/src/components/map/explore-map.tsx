@@ -11,7 +11,7 @@ import { useTheme } from "@/components/providers/theme-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { computeBoundingBox, boundingBoxToLngLatBounds } from "@/lib/geo/bbox";
 import type { LatLng } from "@/lib/geo/distance";
-import { applyBrandMapTheme } from "@/lib/map/theme";
+import { applyBrandMapTheme, mapAccent } from "@/lib/map/theme";
 import { MapPinIcon } from "@/components/map/map-pin-icon";
 import { ExplorePopupCard } from "@/components/map/explore-popup-card";
 import { AQI_COLORS } from "@/lib/weather/aqi";
@@ -68,6 +68,7 @@ export function ExploreMap({
   const removeFromPlan = useTripStore((s) => s.removeFromPlan);
 
   const styleUrl = `/api/map/style${resolvedTheme === "dark" ? "?theme=dark" : ""}`;
+  const accent = mapAccent(resolvedTheme === "dark" ? "dark" : "light");
 
   const placeBySlug = useMemo(() => new Map(places.map((p) => [p.slug, p])), [places]);
 
@@ -209,12 +210,12 @@ export function ExploreMap({
             <Layer
               id="proximity-radius-fill"
               type="fill"
-              paint={{ "fill-color": "#C9A24B", "fill-opacity": 0.12 }}
+              paint={{ "fill-color": accent, "fill-opacity": 0.12 }}
             />
             <Layer
               id="proximity-radius-outline"
               type="line"
-              paint={{ "line-color": "#C9A24B", "line-width": 1.5, "line-opacity": 0.6 }}
+              paint={{ "line-color": accent, "line-width": 1.5, "line-opacity": 0.6 }}
             />
           </Source>
         ) : null}
@@ -236,7 +237,7 @@ export function ExploreMap({
               type="line"
               layout={{ "line-cap": "round" }}
               paint={{
-                "line-color": "#C9A24B",
+                "line-color": accent,
                 "line-width": 2,
                 "line-dasharray": [0.2, 1.6],
                 "line-opacity": 0.85,
