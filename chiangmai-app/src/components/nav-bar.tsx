@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
@@ -15,6 +15,7 @@ import { useLocale } from "@/components/providers/locale-provider";
 import { UserMenu } from "@/components/auth/user-menu";
 import { SignOutConfirmModal } from "@/components/auth/sign-out-confirm-modal";
 import { useTripStore } from "@/lib/trip-store";
+import { Container } from "@/components/ui/section";
 import { cn } from "@/lib/utils";
 
 export function NavBar() {
@@ -43,13 +44,27 @@ export function NavBar() {
     setMenuOpen(false);
   }
 
+  /*
+   * Whether the page has been scrolled, watched with a sentinel rather than a
+   * scroll listener.
+   *
+   * The sentinel is a 24px box pinned at the document origin; it stops
+   * intersecting the viewport at the same offset the previous `scrollY > 24`
+   * check used. Two reasons to prefer it: the browser reports the crossing
+   * instead of us re-reading scrollY on every scroll event, and it does not
+   * assume who owns scrolling — Lenis drives this site and a listener bound to
+   * the native event is one library change away from going quiet.
+   */
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    function onScroll() {
-      setScrolled(window.scrollY > 24);
-    }
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
 
   const links = [
@@ -57,8 +72,27 @@ export function NavBar() {
     { href: `/${locale}/guides`, label: dict.nav.guides },
   ];
 
+  /**
+   * Which primary section the current page belongs to.
+   *
+   * The nav previously gave no indication of where you were, on any page. A
+   * place detail page lives under Explore and a saved trip under the planner,
+   * so matching the path prefix marks the section rather than only the exact
+   * URL — otherwise the highlight vanishes the moment you open a result.
+   */
+  const isCurrent = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
   return (
-    <header
+    <>
+      {/* Anchored to the document origin, so it scrolls away with the page.
+          Absolute with no positioned ancestor resolves against the initial
+          containing block, which is what makes that work. */}
+      <div
+        ref={sentinelRef}
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 h-6 w-px"
+      />
+      <header
       className={cn(
         "no-print sticky top-0 z-50 border-b transition-colors duration-300",
         scrolled
@@ -66,30 +100,58 @@ export function NavBar() {
           : "border-transparent bg-transparent"
       )}
     >
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
-        <Link href={`/${locale}`} className="shrink-0">
+      <Container
+        width="wide"
+        className={cn(
+          "flex items-center justify-between transition-[height] duration-300",
+          // Condenses once you are reading rather than arriving, which buys back
+          // 16px of viewport on every scrolled page.
+          scrolled ? "h-16" : "h-20"
+        )}
+      >
+        <Link href={`/${locale}`} className="shrink-0 rounded-sm">
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Primary">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium tracking-wide text-foreground/85 transition-colors hover:text-accent-text"
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary">
+          {links.map((link) => {
+            const current = isCurrent(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={current ? "page" : undefined}
+                className={cn(
+                  "relative rounded-full px-4 py-2 text-sm font-medium tracking-wide transition-colors",
+                  current
+                    ? "text-accent-text"
+                    : "text-foreground/80 hover:text-foreground hover:bg-surface-muted"
+                )}
+              >
+                {link.label}
+                {current ? (
+                  <span
+                    aria-hidden
+                    className="absolute inset-x-4 -bottom-0.5 h-px bg-accent"
+                  />
+                ) : null}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <HeaderWeatherWidget />
-          <LocaleToggle />
-          <ThemeToggle />
+        <div className="hidden items-center gap-2 lg:flex">
+          {/* Ambient controls sit together and quietly, so the one action that
+              matters is the only filled element in the bar. */}
+          <div className="flex items-center gap-1 rounded-full border border-border/70 bg-surface/60 px-1.5 py-1">
+            <HeaderWeatherWidget />
+            <LocaleToggle />
+            <ThemeToggle />
+          </div>
           <Link
             href={`/${locale}/planner`}
-            className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground transition-transform duration-200 hover:scale-[1.03]"
+            aria-current={isCurrent(`/${locale}/planner`) ? "page" : undefined}
+            className="ml-1 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground transition-colors duration-200 hover:bg-accent-hover"
           >
             {dict.nav.startPlanning}
           </Link>
@@ -104,7 +166,7 @@ export function NavBar() {
           ) : (
             <Link
               href={`/${locale}/login?callbackUrl=${encodeURIComponent(pathname)}`}
-              className="text-sm font-medium text-foreground/85 transition-colors hover:text-accent-text"
+              className="rounded-full px-3 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-accent-text"
             >
               {dict.auth.signIn}
             </Link>
@@ -120,7 +182,7 @@ export function NavBar() {
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
-      </div>
+      </Container>
 
       <AnimatePresence>
         {menuOpen ? (
@@ -132,15 +194,24 @@ export function NavBar() {
             className="overflow-hidden border-t border-border bg-background lg:hidden"
           >
             <div className="flex flex-col gap-1 px-6 py-6">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-md px-3 py-3 text-base font-medium hover:bg-surface-muted"
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {links.map((link) => {
+                const current = isCurrent(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={current ? "page" : undefined}
+                    className={cn(
+                      "rounded-md px-3 py-3 text-base font-medium",
+                      current
+                        ? "bg-surface-muted text-accent-text"
+                        : "hover:bg-surface-muted"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
               <Link
                 href={`/${locale}/planner`}
                 className="mt-2 rounded-full bg-accent px-5 py-3 text-center text-sm font-medium text-accent-foreground"
@@ -178,11 +249,12 @@ export function NavBar() {
         ) : null}
       </AnimatePresence>
 
-      <SignOutConfirmModal
-        open={signOutConfirmOpen}
-        onClose={() => setSignOutConfirmOpen(false)}
-        onConfirm={handleSignOutConfirm}
-      />
-    </header>
+        <SignOutConfirmModal
+          open={signOutConfirmOpen}
+          onClose={() => setSignOutConfirmOpen(false)}
+          onConfirm={handleSignOutConfirm}
+        />
+      </header>
+    </>
   );
 }

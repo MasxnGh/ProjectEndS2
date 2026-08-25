@@ -2,60 +2,85 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Palette: indigo, celadon, teak.
+ *
+ * Drawn from what Chiang Mai is actually made of — หม้อห้อม indigo-dyed cotton,
+ * Sankampaeng celadon, teak, and the red lacquer used on temple doors. It
+ * replaces a cream-and-gold scheme whose real problem was measurable: the gold
+ * accent scored 2.19 against the cream background, so it disappeared in the
+ * light theme while scoring 9.2 in the dark one. The light theme was not a
+ * weaker execution of the same design, it was a different and worse design.
+ *
+ * Every pair below was measured. Text is at or above 4.5, the accent now reads
+ * on both grounds (5.17 light / 8.76 dark), and borders land within 0.2 of each
+ * other across themes so structure is equally visible in both.
+ */
 :root {
-  --color-background: #f7f4ef;
-  --color-foreground: #1a1a17;
-  --color-surface: #fffdf9;
-  --color-surface-muted: #efe9dc;
-  --color-border: #e0d8c7;
-  --color-border-strong: #cbbfa4;
+  /* Cool grey-green paper. Deliberately not the warm #F4F1EA cream that shows
+     up in every generated "premium" layout regardless of subject. */
+  --color-background: #e8eae6;
+  --color-foreground: #16222e;
+  --color-surface: #f4f5f2;
+  --color-surface-muted: #dde1dc;
+  --color-border: #b2bab1;
+  --color-border-strong: #8c978d;
 
-  --color-accent: #c9a24b;
-  --color-accent-hover: #b48f3d;
-  --color-accent-foreground: #1a1a17;
-  --color-accent-text: #8a6a2f;
+  /* Celadon. Deep in the light theme so it carries against paper. */
+  --color-accent: #2e6b57;
+  --color-accent-hover: #24563f;
+  --color-accent-foreground: #f4f5f2;
+  --color-accent-text: #2a6350;
 
-  --color-secondary: #2f4a3c;
-  --color-secondary-foreground: #f7f4ef;
+  /* Indigo — the ink of the palette, used as a filled surface. */
+  --color-secondary: #243447;
+  --color-secondary-foreground: #f4f5f2;
 
-  --color-tertiary: #a6553b;
-  --color-tertiary-foreground: #f7f4ef;
+  /* Teak. */
+  --color-tertiary: #8a6340;
+  --color-tertiary-foreground: #f4f5f2;
+  --color-tertiary-text: #6e4e32;
 
-  --color-muted-foreground: #6c6555;
-  --color-destructive: #a3372c;
-  --color-destructive-foreground: #f7f4ef;
-  --color-ring: #8a6a2f;
+  --color-muted-foreground: #54626c;
+  /* Red lacquer. */
+  --color-destructive: #a63a2b;
+  --color-destructive-foreground: #f4f5f2;
+  --color-ring: #2e6b57;
 
-  --shadow-card: 0 1px 2px rgba(26, 26, 23, 0.04), 0 12px 32px -16px rgba(26, 26, 23, 0.18);
-  --shadow-elevated: 0 4px 8px rgba(26, 26, 23, 0.06), 0 24px 48px -20px rgba(26, 26, 23, 0.28);
+  --shadow-card: 0 1px 2px rgba(22, 34, 46, 0.05), 0 12px 32px -16px rgba(22, 34, 46, 0.2);
+  --shadow-elevated: 0 4px 8px rgba(22, 34, 46, 0.07), 0 24px 48px -20px rgba(22, 34, 46, 0.3);
 }
 
 .dark {
-  --color-background: #171613;
-  --color-foreground: #f3efe4;
-  --color-surface: #201e1a;
-  --color-surface-muted: #2a2721;
-  --color-border: #38342b;
-  --color-border-strong: #4a4438;
+  /* Indigo-black rather than a neutral one: the dark theme is the same dye at
+     full strength, not an absence of colour. */
+  --color-background: #10171e;
+  --color-foreground: #e6eae7;
+  --color-surface: #17212b;
+  --color-surface-muted: #1e2a35;
+  --color-border: #354550;
+  --color-border-strong: #516470;
 
-  --color-accent: #d9b467;
-  --color-accent-hover: #e6c47c;
-  --color-accent-foreground: #171613;
-  --color-accent-text: #d9b467;
+  /* Celadon again, pale — the glaze colour rather than the fired body. */
+  --color-accent: #8fbfa8;
+  --color-accent-hover: #a8d2bd;
+  --color-accent-foreground: #10171e;
+  --color-accent-text: #8fbfa8;
 
-  --color-secondary: #5a7c68;
-  --color-secondary-foreground: #171613;
+  --color-secondary: #7ca0be;
+  --color-secondary-foreground: #10171e;
 
-  --color-tertiary: #cb8064;
-  --color-tertiary-foreground: #171613;
+  --color-tertiary: #c09a72;
+  --color-tertiary-foreground: #10171e;
+  --color-tertiary-text: #c09a72;
 
-  --color-muted-foreground: #ada494;
-  --color-destructive: #d97462;
-  --color-destructive-foreground: #171613;
-  --color-ring: #d9b467;
+  --color-muted-foreground: #93a1a9;
+  --color-destructive: #e08a78;
+  --color-destructive-foreground: #10171e;
+  --color-ring: #8fbfa8;
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -16px rgba(0, 0, 0, 0.5);
-  --shadow-elevated: 0 4px 8px rgba(0, 0, 0, 0.35), 0 24px 48px -20px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -16px rgba(0, 0, 0, 0.55);
+  --shadow-elevated: 0 4px 8px rgba(0, 0, 0, 0.4), 0 24px 48px -20px rgba(0, 0, 0, 0.65);
 }
 
 @theme inline {
@@ -73,13 +98,57 @@
   --color-secondary-foreground: var(--color-secondary-foreground);
   --color-tertiary: var(--color-tertiary);
   --color-tertiary-foreground: var(--color-tertiary-foreground);
+  --color-tertiary-text: var(--color-tertiary-text);
   --color-muted-foreground: var(--color-muted-foreground);
   --color-destructive: var(--color-destructive);
   --color-destructive-foreground: var(--color-destructive-foreground);
   --color-ring: var(--color-ring);
 
-  --font-serif: var(--font-fraunces), var(--font-noto-serif-thai), serif;
-  --font-sans: var(--font-inter), var(--font-plex-thai), sans-serif;
+  /*
+   * One foundry for both scripts.
+   *
+   * The site previously set Latin in Inter and Thai in IBM Plex Sans Thai —
+   * two unrelated designs whose weights and x-heights do not agree, which is
+   * visible on every page that mixes a Thai name with a Latin label. Trirong
+   * and Anuphan are both Cadson Demak faces drawn with Thai and Latin together,
+   * so a bilingual line sets as one voice instead of two.
+   */
+  --font-serif: var(--font-trirong), serif;
+  --font-sans: var(--font-anuphan), sans-serif;
+  /* Reserved for figures that are instruments: distances, ฿, opening hours. */
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /*
+   * Type scale, shifted up one notch.
+   *
+   * The site used text-sm or text-xs in 349 places against text-base in 6, so
+   * in practice everything was set at 12–14px. Raising the ramp lifts all of
+   * those at once: the de-facto body size becomes 15px and real body copy 17px,
+   * without editing every call site. Line heights are set explicitly because
+   * Tailwind's defaults are tuned to its own sizes.
+   */
+  --text-xs: 0.8125rem; /* 13 */
+  --text-xs--line-height: calc(1.15 / 0.8125);
+  --text-sm: 0.9375rem; /* 15 */
+  --text-sm--line-height: calc(1.4 / 0.9375);
+  --text-base: 1.0625rem; /* 17 */
+  --text-base--line-height: calc(1.65 / 1.0625);
+  --text-lg: 1.1875rem; /* 19 */
+  --text-lg--line-height: calc(1.75 / 1.1875);
+  --text-xl: 1.3125rem; /* 21 */
+  --text-xl--line-height: calc(1.75 / 1.3125);
+  --text-2xl: 1.5625rem; /* 25 */
+  --text-2xl--line-height: calc(2 / 1.5625);
+  --text-3xl: 1.9375rem; /* 31 */
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 2.375rem; /* 38 */
+  --text-4xl--line-height: 1.15;
+  --text-5xl: 3.125rem; /* 50 */
+  --text-5xl--line-height: 1.08;
+  --text-6xl: 4rem; /* 64 */
+  --text-6xl--line-height: 1.04;
+  --text-7xl: 5rem; /* 80 */
+  --text-7xl--line-height: 1;
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -148,25 +217,41 @@
   animation: shiny-sweep var(--shiny-duration, 6s) linear infinite;
 }
 
-* {
-  border-color: var(--color-border);
-}
+/*
+ * These belong in @layer base, and leaving them out of it broke 156 utilities.
+ *
+ * Tailwind v4 emits every utility inside @layer utilities. Unlayered CSS beats
+ * layered CSS outright in the cascade — specificity never gets consulted — so an
+ * unlayered `* { border-color }` silently won against every border-colour class
+ * in the app: 97 uses of border-accent, 38 of border-border-strong, and the
+ * border-destructive on error states all rendered as the neutral border colour.
+ * Selected filters, focused fields and invalid inputs were drawing the same
+ * hairline as everything else, which is a large part of why the interface read
+ * as flat.
+ *
+ * Inside @layer base the rule still supplies the default that Tailwind's own
+ * preflight would, and any utility now overrides it as intended.
+ */
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
 
-html {
-  color-scheme: light;
-}
+  html {
+    color-scheme: light;
+  }
 
-html.dark {
-  color-scheme: dark;
-}
+  html.dark {
+    color-scheme: dark;
+  }
 
-body {
-  background: var(--color-background);
-  color: var(--color-foreground);
-  font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
 }
 
 ::selection {

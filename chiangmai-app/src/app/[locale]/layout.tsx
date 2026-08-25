@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, IBM_Plex_Sans_Thai, Noto_Serif_Thai } from "next/font/google";
+import { Trirong, Anuphan, IBM_Plex_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import "@/app/globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -14,29 +14,33 @@ import { SITE_URL } from "@/lib/site";
 import { AuthSessionProvider } from "@/components/providers/auth-session-provider";
 import { FavoritesProvider } from "@/lib/favorites/favorites-provider";
 
-const fraunces = Fraunces({
+/*
+ * Both scripts come from one foundry.
+ *
+ * This replaces four faces — Fraunces and Inter for Latin, Noto Serif Thai and
+ * IBM Plex Sans Thai for Thai — which meant every bilingual line was set in two
+ * unrelated designs. Trirong and Anuphan are drawn by Cadson Demak with Thai
+ * and Latin together, so each loads one file covering both and the pairing is
+ * the designers' own rather than ours. It also drops two font downloads.
+ */
+const trirong = Trirong({
+  subsets: ["latin", "thai"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-trirong",
+  display: "swap",
+});
+
+const anuphan = Anuphan({
+  subsets: ["latin", "thai"],
+  variable: "--font-anuphan",
+  display: "swap",
+});
+
+/** Figures only — distances, prices, opening hours, coordinates. */
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const plexThai = IBM_Plex_Sans_Thai({
-  subsets: ["thai", "latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-plex-thai",
-  display: "swap",
-});
-
-const notoSerifThai = Noto_Serif_Thai({
-  subsets: ["thai"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-noto-serif-thai",
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 
@@ -105,7 +109,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${fraunces.variable} ${inter.variable} ${plexThai.variable} ${notoSerifThai.variable}`}
+      className={`${trirong.variable} ${anuphan.variable} ${plexMono.variable}`}
     >
       <body className="min-h-dvh bg-background text-foreground antialiased">
         {/*

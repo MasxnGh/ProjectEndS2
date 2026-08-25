@@ -913,6 +913,7 @@ const en = {
     about:
       "Chiangmai Journey is an independent, editorial guide to Chiang Mai — built for travellers who prefer fewer, finer places.",
     explore: "Explore",
+    yours: "Your trips",
     company: "About",
     privacy: "Privacy Policy",
     terms: "Terms of Use",
