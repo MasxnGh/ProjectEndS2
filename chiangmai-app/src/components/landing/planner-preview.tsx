@@ -48,7 +48,7 @@ export function PlannerPreview() {
       rhythm="none"
       className="bg-band text-band-foreground"
     >
-      <Container width="wide" className="grid gap-16 py-24 lg:grid-cols-2 lg:items-center lg:py-32">
+      <Container width="wide" className="grid gap-10 py-14 sm:gap-16 sm:py-24 lg:grid-cols-2 lg:items-center lg:py-32">
         <Reveal>
           <p className="mb-3 flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-band-accent">
             <span className="h-px w-8 bg-band-accent" aria-hidden />

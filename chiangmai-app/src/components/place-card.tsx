@@ -124,13 +124,25 @@ export function PlaceCard({
           reserve the band its Compare pill sits in, and when that padding
           landed on the outer wrapper instead, the card stopped 56px short of
           its grid cell and the pill floated below it on bare page background. */}
+      {/*
+        * A row on a phone, a card from `sm` up — one markup tree, not two.
+        *
+        * At 375px the two-column grid gave each card 156px, which left the
+        * place name 65px of measure: "วัดพระธาตุดอยสุเทพ" broke across four
+        * lines at 21px. A row hands the name about 200px and reads in one
+        * pass, and 24 results come to roughly 3,100px of page instead of
+        * 5,200px. `--card-media-w` is published so anything positioned against
+        * this card — Explore's Compare pill — can clear the image without
+        * hardcoding its width twice.
+        */}
       <SpotlightCard
+        style={{ "--card-media-w": "7rem" } as React.CSSProperties}
         className={cn(
-          "flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow duration-300 hover:shadow-elevated",
+          "flex h-full flex-row overflow-hidden rounded-lg border border-border bg-surface shadow-card transition-shadow duration-300 hover:shadow-elevated sm:flex-col",
           className
         )}
       >
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative w-(--card-media-w) shrink-0 self-stretch overflow-hidden sm:aspect-[4/3] sm:w-auto">
         <PlaceImage
           category={place.category}
           paletteSeed={place.paletteSeed}
@@ -139,25 +151,42 @@ export function PlaceCard({
           quality={70}
           className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
         />
-        <span className="absolute left-3 top-3 rounded-full bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground backdrop-blur-sm">
+        {/* Over a 112px image this pill covers most of the picture, so on a
+            phone the category is a plain label in the text column instead. */}
+        <span className="absolute left-3 top-3 hidden rounded-full bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground backdrop-blur-sm sm:inline-block">
           {dict.common.categories[place.category]}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      {/* On a row the two controls sit side by side along the bottom, so the
+          text needs clearance underneath rather than to the right — which hands
+          the place name the full width of the column instead of losing 48px of
+          it to a stack of buttons. */}
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 py-3 pl-3.5 pr-3 pb-13 sm:gap-3 sm:p-5 sm:pb-5 sm:pr-5">
+        <span className="text-xs uppercase tracking-wide text-muted-foreground sm:hidden">
+          {dict.common.categories[place.category]}
+        </span>
+
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-serif-display text-xl leading-snug">{place.name[locale]}</h3>
-          <span className="flex shrink-0 items-center gap-1 pt-1 text-sm text-muted-foreground">
+          <h3 className="font-serif-display text-lg leading-snug sm:text-xl">{place.name[locale]}</h3>
+          <span className="hidden shrink-0 items-center gap-1 pt-1 text-sm text-muted-foreground sm:flex">
             <Star className="h-3.5 w-3.5 fill-accent text-accent-text" />
             {place.rating}
           </span>
         </div>
 
-        <p className="line-clamp-2 flex-1 text-sm text-muted-foreground">
+        {/* The description is the first thing to go on a row: the name, the
+            rating and where it is answer "should I tap this", and the detail
+            page is one tap away. */}
+        <p className="hidden line-clamp-2 flex-1 text-sm text-muted-foreground sm:block">
           {place.shortDescription[locale]}
         </p>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground sm:gap-x-4">
+          <span className="flex items-center gap-1 sm:hidden">
+            <Star className="h-3.5 w-3.5 fill-accent text-accent-text" />
+            {place.rating}
+          </span>
           <span className="flex items-center gap-1">
             <MapPin className="h-3.5 w-3.5" />
             {dict.common.districts[place.district]}
@@ -185,8 +214,10 @@ export function PlaceCard({
           inPlannerMode ? handlePlannerClick : () => (isPlanned ? removeFromPlan(place.slug) : addPlace(place.slug))
         }
         className={cn(
-          "absolute right-3 top-3 z-10 flex items-center justify-center gap-1.5 rounded-full border backdrop-blur-sm transition-colors duration-200",
-          inPlannerMode ? "px-3.5 py-2 text-xs font-medium" : "h-9 w-9",
+          // 44px on a phone, where this is the most-tapped control on the
+          // browse list; the smaller desktop size returns from `sm`.
+          "absolute bottom-2 right-2 z-10 flex items-center justify-center gap-1.5 rounded-full border backdrop-blur-sm transition-colors duration-200 sm:bottom-auto sm:right-3 sm:top-3",
+          inPlannerMode ? "min-h-11 px-3.5 text-xs font-medium sm:min-h-0 sm:py-2" : "h-11 w-11 sm:h-9 sm:w-9",
           isActive
             ? "border-accent bg-accent text-accent-foreground"
             : "border-border-strong bg-background/85 text-foreground hover:bg-accent hover:text-accent-foreground"
@@ -218,7 +249,7 @@ export function PlaceCard({
       <FavoriteButton
         slug={place.slug}
         placeName={place.name[locale]}
-        className="absolute right-3 top-14 z-10 h-9 w-9"
+        className="absolute bottom-2 right-14 z-10 h-11 w-11 sm:bottom-auto sm:right-3 sm:top-14 sm:h-9 sm:w-9"
       />
 
       <Link

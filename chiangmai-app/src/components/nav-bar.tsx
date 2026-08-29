@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
-import { EASE } from "@/lib/motion";
 import { Menu, X } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Logo } from "@/components/logo";
@@ -175,24 +173,40 @@ export function NavBar() {
 
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-border lg:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border lg:hidden"
           onClick={() => setMenuOpen((v) => !v)}
           aria-label={menuOpen ? dict.nav.close : dict.nav.menu}
           aria-expanded={menuOpen}
+          aria-controls="mobile-menu"
         >
           {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </Container>
 
-      <AnimatePresence>
-        {menuOpen ? (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: EASE }}
-            className="overflow-hidden border-t border-border bg-background lg:hidden"
-          >
+      {/*
+        * Opened by CSS, not by JavaScript.
+        *
+        * This is the only navigation on a phone, and it used a motion
+        * `height: 0 → auto` animation — so whether it was visible at all
+        * depended on an animation frame arriving. Measured with the tab
+        * throttled: `aria-expanded` flipped to true and the panel stayed at
+        * zero height, leaving the site with no way to move between pages. The
+        * same trap has been hit twice before here, on the route fade and on the
+        * Explore card entrance, and the rule that came out of it holds again:
+        * the resting state has to be the visible one.
+        *
+        * A 0fr → 1fr grid row animates to content height in CSS, and if the
+        * transition never runs the panel is simply open.
+        */}
+      <div
+        id="mobile-menu"
+        hidden={!menuOpen}
+        className={cn(
+          "grid overflow-hidden border-t border-border bg-background transition-[grid-template-rows] duration-300 lg:hidden",
+          menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr] border-transparent"
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
             <div className="flex flex-col gap-1 px-6 py-6">
               {links.map((link) => {
                 const current = isCurrent(link.href);
@@ -245,9 +259,8 @@ export function NavBar() {
                 <ThemeToggle />
               </div>
             </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+        </div>
+      </div>
 
         <SignOutConfirmModal
           open={signOutConfirmOpen}

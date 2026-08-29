@@ -75,12 +75,15 @@ export function Footer() {
               <h2 className="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
                 {column.heading}
               </h2>
-              <ul className="mt-5 space-y-3 text-sm">
+              {/* Each link is its own 44px row rather than a 19px line of
+                  text in a list: on a phone this column is the site map, and
+                  three of these stacked at line height are a coin toss. */}
+              <ul className="mt-3 text-sm sm:mt-4">
                 {column.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-foreground/85 transition-colors hover:text-accent-text"
+                      className="flex min-h-11 items-center text-foreground/85 transition-colors hover:text-accent-text"
                     >
                       {link.label}
                     </Link>
