@@ -117,7 +117,7 @@ export function ExploreResultsBar({
 
         {chips.length > 0 ? (
           <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+            <span className="text-xs uppercase tracking-wide text-muted-foreground">
               {t.activeFilters}
             </span>
             <AnimatePresence initial={false} mode="popLayout">

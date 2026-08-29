@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, IBM_Plex_Sans_Thai, Noto_Serif_Thai } from "next/font/google";
+import { Trirong, Anuphan, IBM_Plex_Mono } from "next/font/google";
 import { notFound } from "next/navigation";
 import "@/app/globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { LocaleProvider } from "@/components/providers/locale-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { NavBar } from "@/components/nav-bar";
 import { Footer } from "@/components/footer";
@@ -14,29 +15,33 @@ import { SITE_URL } from "@/lib/site";
 import { AuthSessionProvider } from "@/components/providers/auth-session-provider";
 import { FavoritesProvider } from "@/lib/favorites/favorites-provider";
 
-const fraunces = Fraunces({
+/*
+ * Both scripts come from one foundry.
+ *
+ * This replaces four faces — Fraunces and Inter for Latin, Noto Serif Thai and
+ * IBM Plex Sans Thai for Thai — which meant every bilingual line was set in two
+ * unrelated designs. Trirong and Anuphan are drawn by Cadson Demak with Thai
+ * and Latin together, so each loads one file covering both and the pairing is
+ * the designers' own rather than ours. It also drops two font downloads.
+ */
+const trirong = Trirong({
+  subsets: ["latin", "thai"],
+  weight: ["300", "400", "500", "600"],
+  variable: "--font-trirong",
+  display: "swap",
+});
+
+const anuphan = Anuphan({
+  subsets: ["latin", "thai"],
+  variable: "--font-anuphan",
+  display: "swap",
+});
+
+/** Figures only — distances, prices, opening hours, coordinates. */
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const plexThai = IBM_Plex_Sans_Thai({
-  subsets: ["thai", "latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-plex-thai",
-  display: "swap",
-});
-
-const notoSerifThai = Noto_Serif_Thai({
-  subsets: ["thai"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-noto-serif-thai",
+  weight: ["400", "500"],
+  variable: "--font-plex-mono",
   display: "swap",
 });
 
@@ -83,8 +88,8 @@ export async function generateMetadata({
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f4ef" },
-    { media: "(prefers-color-scheme: dark)", color: "#171613" },
+    { media: "(prefers-color-scheme: light)", color: "#e8eae6" },
+    { media: "(prefers-color-scheme: dark)", color: "#10171e" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -105,7 +110,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${fraunces.variable} ${inter.variable} ${plexThai.variable} ${notoSerifThai.variable}`}
+      className={`${trirong.variable} ${anuphan.variable} ${plexMono.variable}`}
     >
       <body className="min-h-dvh bg-background text-foreground antialiased">
         {/*
@@ -150,6 +155,7 @@ export default async function LocaleLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme")||"system";var r=t==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;document.documentElement.classList.add(r);document.documentElement.style.colorScheme=r;}catch(e){}})();`,
           }}
         />
+        <MotionProvider>
         <AuthSessionProvider>
           <ThemeProvider>
             <LocaleProvider locale={locale} dict={dict}>
@@ -174,6 +180,7 @@ export default async function LocaleLayout({
             </LocaleProvider>
           </ThemeProvider>
         </AuthSessionProvider>
+        </MotionProvider>
       </body>
     </html>
   );

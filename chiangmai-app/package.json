@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "fetch:photos": "node --env-file-if-exists=.env.local scripts/fetch-place-photos.mjs",
     "generate:blur": "node scripts/generate-blur-placeholders.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "fetch:photos": "node scripts/fetch-commons-photos.mjs && npm run generate:photos && npm run generate:blur",
+    "generate:photos": "node scripts/generate-photo-data.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",

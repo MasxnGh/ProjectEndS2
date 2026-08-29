@@ -49,7 +49,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Doi Inthanon Thailand mountain chedi",
   },
   {
     slug: "bua-tong-sticky-waterfall",
@@ -91,7 +90,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "sticky waterfall Chiang Mai Bua Tong",
   },
   {
     slug: "chiang-mai-grand-canyon",
@@ -141,7 +139,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Chiang Mai grand canyon water park",
   },
   {
     slug: "doi-pui",
@@ -183,7 +180,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Doi Pui Hmong village Chiang Mai",
   },
   {
     slug: "mon-cham",
@@ -233,7 +229,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mon Cham Chiang Mai mountain fog",
   },
   {
     slug: "huay-tung-tao",
@@ -283,7 +278,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Huay Tung Tao lake Chiang Mai",
   },
   {
     slug: "doi-luang-chiang-dao",
@@ -328,7 +322,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "Doi Luang Chiang Dao limestone mountain",
   },
   {
     slug: "chiang-dao-cave",
@@ -370,7 +363,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Chiang Dao cave Thailand stalactite",
   },
   {
     slug: "kew-mae-pan-nature-trail",
@@ -423,7 +415,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Kew Mae Pan Doi Inthanon nature trail",
   },
   {
     slug: "wachirathan-waterfall",
@@ -465,7 +456,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Wachirathan waterfall Doi Inthanon",
   },
   {
     slug: "mae-ya-waterfall",
@@ -507,7 +497,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mae Ya waterfall Chiang Mai",
   },
   {
     slug: "mae-sa-waterfall",
@@ -549,7 +538,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Mae Sa waterfall Chiang Mai",
   },
   {
     slug: "huay-kaew-waterfall",
@@ -591,7 +579,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Huay Kaew waterfall Chiang Mai forest",
   },
   {
     slug: "pha-chor",
@@ -641,7 +628,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Pha Chor canyon Chiang Mai earth pillars",
   },
   {
     slug: "ob-khan-national-park",
@@ -683,7 +669,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Ob Khan national park Chiang Mai gorge",
   },
   {
     slug: "queen-sirikit-botanic-garden",
@@ -725,7 +710,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Queen Sirikit botanic garden canopy walkway",
   },
   {
     slug: "royal-park-rajapruek",
@@ -767,7 +751,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Royal Park Rajapruek Chiang Mai pavilion",
   },
   {
     slug: "ang-kaew-cmu",
@@ -817,7 +800,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Ang Kaew reservoir Chiang Mai University Doi Suthep",
   },
   {
     slug: "doi-ang-khang",
@@ -867,7 +849,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Doi Ang Khang terraced farm northern Thailand",
   },
   {
     slug: "doi-pha-hom-pok",
@@ -909,7 +890,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "Doi Pha Hom Pok national park mountain Thailand",
   },
   {
     slug: "fang-hot-springs",
@@ -959,7 +939,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Fang hot springs geyser northern Thailand",
   },
   {
     slug: "ang-khang-royal-station",
@@ -1001,7 +980,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Ang Khang royal agricultural station garden Thailand",
   },
   {
     slug: "huai-nam-dang-national-park",
@@ -1051,7 +1029,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Huai Nam Dang sea of fog viewpoint Thailand",
   },
   {
     slug: "mork-fa-waterfall",
@@ -1093,7 +1070,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mork Fa waterfall Mae Taeng Thailand",
   },
   {
     slug: "pong-dueat-geyser",
@@ -1143,7 +1119,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Pong Dueat geyser forest hot spring Thailand",
   },
   {
     slug: "mae-ngat-dam",
@@ -1193,7 +1168,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mae Ngat dam reservoir raft house Thailand",
   },
   {
     slug: "tad-mork-waterfall",
@@ -1235,7 +1209,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "tiered waterfall forest northern Thailand",
   },
   {
     slug: "sri-lanna-national-park",
@@ -1277,7 +1250,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Sri Lanna national park forest river Thailand",
   },
   {
     slug: "doi-mon-lan",
@@ -1327,7 +1299,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "sea of fog ridge camping northern Thailand",
   },
   {
     slug: "ob-luang-national-park",
@@ -1369,7 +1340,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Ob Luang gorge river canyon Thailand",
   },
   {
     slug: "doi-tao-lake",
@@ -1419,7 +1389,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Doi Tao lake reservoir raft northern Thailand",
   },
   {
     slug: "doi-mon-jong",
@@ -1469,7 +1438,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: true,
     dataLastVerified: null,
-    photoQuery: "Doi Mon Jong grass ridge summit Thailand",
   },
   {
     slug: "mae-klang-waterfall",
@@ -1511,7 +1479,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mae Klang waterfall Doi Inthanon Thailand",
   },
   {
     slug: "siriphum-waterfall",
@@ -1553,7 +1520,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Siriphum waterfall Doi Inthanon Thailand",
   },
   {
     slug: "ang-ka-luang-nature-trail",
@@ -1603,7 +1569,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Ang Ka nature trail Doi Inthanon moss forest",
   },
   {
     slug: "twin-royal-pagodas-inthanon",
@@ -1645,7 +1610,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "twin royal pagodas Doi Inthanon Thailand",
   },
   {
     slug: "mae-tia-waterfall",
@@ -1687,7 +1651,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "forest waterfall Chom Thong northern Thailand",
   },
   {
     slug: "nong-buak-hard-park",
@@ -1737,7 +1700,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-20",
-    photoQuery: "Nong Buak Hard public park Chiang Mai",
   },
   {
     slug: "mae-kampong-waterfall",
@@ -1779,7 +1741,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Mae Kampong waterfall forest Thailand",
   },
   {
     slug: "huay-kaew-arboretum",
@@ -1821,7 +1782,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "arboretum shaded forest path Chiang Mai",
   },
   {
     slug: "bhubing-palace",
@@ -1871,7 +1831,6 @@ export const nature: Place[] = [
     },
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Bhubing Palace gardens Chiang Mai roses",
   },
   {
     slug: "muang-on-cave",
@@ -1913,7 +1872,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Muang On cave limestone stalactites Thailand",
   },
   {
     slug: "tham-tap-tao-forest-park",
@@ -1955,7 +1913,6 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "cave forest park northern Thailand",
   },
   {
     slug: "mae-takhrai-national-park",
@@ -1997,6 +1954,5 @@ export const nature: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "pine ridge national park northern Thailand",
   },
 ];

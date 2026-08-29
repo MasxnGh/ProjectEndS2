@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarDays, MapPinned, Share2, ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/reveal";
+import { Section, Container } from "@/components/ui/section";
 import { PlaceImage } from "@/components/place-image";
 import { useLocale } from "@/components/providers/locale-provider";
 import type { PlaceCategory } from "@/data/types";
@@ -35,29 +36,40 @@ export function PlannerPreview() {
   ];
 
   return (
-    <section className="bg-surface py-24 lg:py-32">
-      <div className="mx-auto grid max-w-7xl gap-16 px-6 lg:grid-cols-2 lg:items-center lg:px-10">
+    /*
+     * The one full-bleed section on the page, and the only one that inverts.
+     * A page of same-width sections on the same background reads as a single
+     * sheet however well each one is set; this is the break, and it lands on
+     * the planner because that is the page's actual purpose.
+     */
+    <Section
+      as="section"
+      width="full"
+      rhythm="none"
+      className="bg-band text-band-foreground"
+    >
+      <Container width="wide" className="grid gap-16 py-24 lg:grid-cols-2 lg:items-center lg:py-32">
         <Reveal>
-          <p className="mb-3 flex items-center gap-3 text-xs font-medium uppercase tracking-[0.2em] text-accent-text">
-            <span className="h-px w-8 bg-accent" aria-hidden />
+          <p className="mb-3 flex items-center gap-3 font-mono text-xs uppercase tracking-[0.2em] text-band-accent">
+            <span className="h-px w-8 bg-band-accent" aria-hidden />
             {dict.home.plannerPreview.kicker}
           </p>
           <h2 className="font-serif-display text-4xl leading-[1.05] tracking-tight sm:text-5xl">
             {dict.home.plannerPreview.title}
           </h2>
-          <p className="mt-5 max-w-lg text-lg text-muted-foreground text-pretty">
+          <p className="mt-5 max-w-lg text-lg leading-relaxed text-band-muted text-pretty">
             {dict.home.plannerPreview.body}
           </p>
 
           <ul className="mt-10 space-y-6">
             {features.map((f) => (
               <li key={f.title} className="flex gap-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent-text">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-band-accent/15 text-band-accent">
                   <f.icon className="h-5 w-5" />
                 </span>
                 <div>
                   <p className="font-medium">{f.title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-band-muted">{f.body}</p>
                 </div>
               </li>
             ))}
@@ -65,7 +77,7 @@ export function PlannerPreview() {
 
           <Link
             href={`/${locale}/planner`}
-            className="mt-10 inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3.5 text-sm font-medium text-accent-foreground transition-transform hover:scale-[1.03]"
+            className="mt-10 inline-flex items-center gap-2 rounded-full bg-band-accent px-7 py-3.5 text-sm font-medium text-band-accent-foreground transition-opacity hover:opacity-90"
           >
             {dict.home.plannerPreview.cta}
             <ArrowRight className="h-4 w-4" />
@@ -102,11 +114,11 @@ export function PlannerPreview() {
             </div>
           </div>
           <div
-            className="absolute -right-6 -top-6 -z-10 hidden h-full w-full rounded-xl border border-accent/30 lg:block"
+            className="absolute -right-6 -top-6 -z-10 hidden h-full w-full rounded-xl border border-band-accent/30 lg:block"
             aria-hidden
           />
         </Reveal>
-      </div>
-    </section>
+      </Container>
+    </Section>
   );
 }

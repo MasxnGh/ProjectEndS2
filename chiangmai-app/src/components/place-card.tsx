@@ -139,7 +139,7 @@ export function PlaceCard({
           quality={70}
           className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
         />
-        <span className="absolute left-3 top-3 rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground backdrop-blur-sm">
+        <span className="absolute left-3 top-3 rounded-full bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground backdrop-blur-sm">
           {dict.common.categories[place.category]}
         </span>
       </div>

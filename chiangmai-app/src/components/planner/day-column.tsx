@@ -6,7 +6,6 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { EASE } from "@/lib/motion";
 
-import ClickSpark from "@/components/reactbits/ClickSpark";
 import { AlertTriangle, ChevronDown, Plus, Sparkles, Trash2 } from "lucide-react";
 import type { Place } from "@/data/types";
 import type { AirQualityResponse, DailyForecastEntry } from "@/lib/weather/types";
@@ -177,22 +176,14 @@ export function DayColumn({
           {date ? <p className="text-xs text-muted-foreground">{formatDayDate(date, locale)}</p> : null}
         </div>
         <div className="flex items-center gap-1">
-          {/* A spark on the button that opens the place picker: confirmation
-              that the tap landed, at the moment the panel is still opening.
-              Deliberately not a toast — adding a place already shows the place
-              itself, and a second confirmation for the same act is noise.
-              Sparks are canvas-drawn, so the colour is a literal rather than a
-              CSS variable; this is the accent gold used by the day routes. */}
-          <ClickSpark sparkColor="#c9a24b" sparkCount={6} sparkRadius={12} duration={350}>
           <button
             type="button"
             onClick={(event) => onAddPlace(event.currentTarget)}
-            className="no-print rounded-full p-1.5 text-muted-foreground hover:bg-surface-muted hover:text-accent-text"
+            className="no-print rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-surface-muted hover:text-accent-text"
             aria-label={dict.planner.addPlace}
           >
             <Plus className="h-4 w-4" />
           </button>
-          </ClickSpark>
           {canRemove ? (
             <button
               type="button"
@@ -277,13 +268,13 @@ export function DayColumn({
           this day", side by side rather than stacked. */}
       <div className="grid grid-cols-2 gap-2 border-t border-border p-4 text-sm">
         <div>
-          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
             {dict.planner.estimatedTime}
           </p>
           <p className="mt-0.5 font-medium tabular-nums">{formatMinutes(stats.totalMinutes)}</p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
             {dict.planner.estimatedBudget}
           </p>
           <p className="mt-0.5 font-medium tabular-nums">{formatThb(stats.budgetThb * travelers)}</p>
@@ -301,12 +292,12 @@ export function DayColumn({
           <span className="flex min-w-0 flex-wrap items-center gap-1.5">
             <span className="text-xs font-medium">{dict.planner.dayCard.detailsToggle}</span>
             {warningCount > 0 ? (
-              <span className="flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+              <span className="flex items-center gap-1 rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
                 <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
                 {dict.planner.dayCard.warningsChip.replace("{count}", String(warningCount))}
               </span>
             ) : null}
-            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-muted-foreground">
               {dict.planner.pace.bands[pace.band]}
             </span>
           </span>

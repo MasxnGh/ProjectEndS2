@@ -188,9 +188,9 @@ export function DayTimeline({
       if (event.beforeIndex !== index) continue;
       rows.push(
         <li key={`sun-${event.label}`} className={cn(ROW_GRID, "items-center")}>
-          <span className="text-right text-[11px] tabular-nums text-accent-text">{minutesToClock(event.minutes)}</span>
+          <span className="text-right text-xs tabular-nums text-accent-text">{minutesToClock(event.minutes)}</span>
           <RailLine dashed />
-          <p className={cn(ROW_SPACING, "flex items-center gap-1.5 text-[11px] font-medium text-accent-text")}>
+          <p className={cn(ROW_SPACING, "flex items-center gap-1.5 text-xs font-medium text-accent-text")}>
             <event.Icon className="h-3 w-3 shrink-0" aria-hidden="true" />
             {event.label}
           </p>
@@ -204,7 +204,7 @@ export function DayTimeline({
         <li key={`travel-${stop.place.slug}`} className={cn(ROW_GRID, "items-center")}>
           <span aria-hidden="true" />
           <RailLine dashed />
-          <p className={cn(ROW_SPACING, "flex flex-wrap items-center gap-x-2 text-[11px] text-muted-foreground")}>
+          <p className={cn(ROW_SPACING, "flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground")}>
             <span className="flex items-center gap-1">
               <Route className="h-3 w-3 shrink-0" aria-hidden="true" />
               {t.travelMinutes.replace("{minutes}", String(stop.travelMinutesFromPrevious))}
@@ -232,7 +232,7 @@ export function DayTimeline({
         <li key={`conflict-${stop.place.slug}`} className={cn(ROW_GRID, "items-center")}>
           <span aria-hidden="true" />
           <RailLine />
-          <p className={cn(ROW_SPACING, "flex flex-wrap items-center justify-between gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-[11px] text-destructive")}>
+          <p className={cn(ROW_SPACING, "flex flex-wrap items-center justify-between gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1.5 text-xs text-destructive")}>
             <span className="flex min-w-0 items-center gap-1.5">
               <AlertTriangle className="h-3 w-3 shrink-0" aria-hidden="true" />
               {t.shortfallRow.replace("{minutes}", String(shortBy))}
@@ -259,7 +259,7 @@ export function DayTimeline({
             it says so, and the row above offers the fix. */}
         <span
           className={cn(
-            "pt-3 text-right text-[11px] font-medium tabular-nums",
+            "pt-3 text-right text-xs font-medium tabular-nums",
             stop.conflict ? "text-destructive" : "text-muted-foreground"
           )}
         >
@@ -291,7 +291,7 @@ export function DayTimeline({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <p className="font-medium text-foreground">{stop.place.name[locale]}</p>
-              <p className="tabular-nums text-[11px] text-muted-foreground">
+              <p className="tabular-nums text-xs text-muted-foreground">
                 {minutesToClock(stop.arrivalMinutes)}–{minutesToClock(stop.departureMinutes)}
                 {" · "}
                 {t.durationMinutes.replace("{minutes}", String(duration))}
@@ -331,7 +331,7 @@ export function DayTimeline({
           {/* Rows are sized by what they hold now, so these say what they mean
               instead of shrinking to bare icons. */}
           {stop.isGoldenHour && stop.goldenHourType ? (
-            <p className="mt-1.5 flex items-center gap-1.5 text-[11px] text-accent-text">
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-accent-text">
               {stop.goldenHourType === "sunset" || stop.goldenHourType === "blue_hour" ? (
                 <Sunset className="h-3 w-3 shrink-0" aria-hidden="true" />
               ) : (
@@ -342,14 +342,14 @@ export function DayTimeline({
           ) : null}
 
           {stop.outsideOpeningHours ? (
-            <p className="mt-1.5 flex items-start gap-1.5 text-[11px] text-destructive">
+            <p className="mt-1.5 flex items-start gap-1.5 text-xs text-destructive">
               <AlertTriangle className="mt-px h-3 w-3 shrink-0" aria-hidden="true" />
               {t.closedAtThisTime.replace("{opens}", stop.place.openingHours?.opens ?? "")}
             </p>
           ) : null}
 
           {wasHeldBack && previous ? (
-            <p className="mt-1.5 rounded bg-surface-muted px-2 py-1 text-[11px] text-muted-foreground">
+            <p className="mt-1.5 rounded bg-surface-muted px-2 py-1 text-xs text-muted-foreground">
               <span className="font-medium text-foreground">
                 {t.earliestFeasible.replace("{time}", minutesToClock(heldBack!.earliest))}
               </span>
@@ -366,7 +366,7 @@ export function DayTimeline({
               type="button"
               onClick={() => resetTime(stop.place.slug)}
               title={t.lockedHint}
-              className="mt-1.5 flex items-center gap-1.5 rounded py-0.5 text-[11px] text-accent-text underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+              className="mt-1.5 flex items-center gap-1.5 rounded py-0.5 text-xs text-accent-text underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
             >
               <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
               {t.reset}
@@ -401,9 +401,9 @@ export function DayTimeline({
         </div>
       )}
       {!date ? (
-        <p className="mb-3 text-[11px] text-accent-text">{t.noDateNotice}</p>
+        <p className="mb-3 text-xs text-accent-text">{t.noDateNotice}</p>
       ) : sun.isEstimate ? (
-        <p className="mb-3 text-[11px] text-muted-foreground">{t.estimateNotice}</p>
+        <p className="mb-3 text-xs text-muted-foreground">{t.estimateNotice}</p>
       ) : null}
 
       <ol className="rounded-md border border-border p-2">{rows}</ol>

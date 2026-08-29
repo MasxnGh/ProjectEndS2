@@ -245,7 +245,7 @@ export function PlannerMap({
                 <button
                   type="button"
                   onClick={onCancelPickLocation}
-                  className="rounded-full border border-border-strong px-2.5 py-1 text-[11px] hover:border-accent hover:text-accent-text"
+                  className="rounded-full border border-border-strong px-2.5 py-1 text-xs hover:border-accent hover:text-accent-text"
                 >
                   {dict.planner.route.cancel}
                 </button>
@@ -312,7 +312,7 @@ export function PlannerMap({
                 onClose={() => setPopup(null)}
               >
                 <div className="p-1 font-sans">
-                  <p className="text-[11px] font-medium uppercase tracking-wide" style={{ color: popupColor }}>
+                  <p className="text-xs font-medium uppercase tracking-wide" style={{ color: popupColor }}>
                     {dict.planner.day} {popupDay.dayNumber} · #
                     {popupDay.places.findIndex((p) => p.slug === popupPlace.slug) + 1}
                   </p>

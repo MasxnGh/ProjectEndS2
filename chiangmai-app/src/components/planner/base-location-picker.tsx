@@ -181,7 +181,7 @@ export function BaseLocationPicker({
           <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-background shadow-lg">
             <ul id={listboxId} role="listbox" aria-label={t.label}>
               {districtOptions.length > 0 ? (
-                <li role="presentation" className="px-3 pt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                <li role="presentation" className="px-3 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t.groupDistricts}
                 </li>
               ) : null}
@@ -208,7 +208,7 @@ export function BaseLocationPicker({
               })}
 
               {placeOptions.length > 0 ? (
-                <li role="presentation" className="px-3 pt-2 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                <li role="presentation" className="px-3 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {t.groupPlaces}
                 </li>
               ) : null}

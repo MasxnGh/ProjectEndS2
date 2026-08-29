@@ -87,7 +87,7 @@ export function PlanProgressBar({ progress }: { progress: PlanProgress }) {
               </span>
               <span
                 className={cn(
-                  "text-[11px] leading-tight sm:text-xs",
+                  "text-xs leading-tight sm:text-xs",
                   step.done || step.current ? "text-foreground" : "text-muted-foreground"
                 )}
               >

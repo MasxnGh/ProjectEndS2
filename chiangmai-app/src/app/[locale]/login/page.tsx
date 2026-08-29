@@ -48,7 +48,7 @@ export default async function LoginPage({
     <div className="relative isolate mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 py-16 lg:px-10">
       <LoginBackdrop />
       <Reveal>
-        <SectionHeading kicker={dict.auth.login.kicker} title={dict.auth.login.title} />
+        <SectionHeading as="h1" kicker={dict.auth.login.kicker} title={dict.auth.login.title} />
         <p className="mt-6 text-base leading-relaxed text-muted-foreground text-pretty">
           {dict.auth.login.intro}
         </p>

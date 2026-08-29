@@ -6,16 +6,25 @@ import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
+import { Section } from "@/components/ui/section";
 import { useLocale } from "@/components/providers/locale-provider";
 import { getPlaceBySlug } from "@/data/places";
 import { cn } from "@/lib/utils";
 
+/**
+ * Every one of these has a photograph that has been verified to depict it.
+ *
+ * Four of the previous five did not: Mon Cham, Nimmanhaemin, Mae Kampong and
+ * the coffee trail all lost their images in the photo audit, so the page led
+ * with four gradient placeholders under the heading "Editors' selections". A
+ * showcase of photography should be built from the photographs that exist.
+ */
 const featuredSlugs = [
   "wat-phra-that-doi-suthep",
-  "mon-cham",
-  "nimmanhaemin",
-  "mae-kampong",
-  "old-city-coffee-trail",
+  "wat-pha-lat",
+  "mae-sa-waterfall",
+  "wat-ban-den",
+  "tha-phae-gate",
 ];
 
 const spans = [
@@ -40,7 +49,7 @@ export function FeaturedExperiences() {
   const items = featuredSlugs.map((slug) => getPlaceBySlug(slug)).filter(Boolean);
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+    <Section width="wide" rhythm="tight">
       <Reveal>
         <SectionHeading
           kicker={dict.home.featured.kicker}
@@ -68,17 +77,17 @@ export function FeaturedExperiences() {
                   className="h-full w-full transition-transform duration-700 ease-out group-hover:scale-105"
                 />
                 <div className="absolute inset-0 flex flex-col justify-end gap-2 bg-gradient-to-t from-black/70 via-black/10 to-transparent p-6">
-                  <span className="w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
+                  <span className="w-fit rounded-full bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground">
                     {dict.common.categories[place.category]}
                   </span>
-                  <h3 className="font-serif-display text-2xl text-[#f3efe4] lg:text-3xl">
+                  <h3 className="font-serif-display text-2xl text-band-foreground lg:text-3xl">
                     {place.name[locale]}
                   </h3>
-                  <p className="line-clamp-2 max-w-md text-sm text-[#f3efe4]/80">
+                  <p className="line-clamp-2 max-w-md text-sm text-band-muted">
                     {place.shortDescription[locale]}
                   </p>
-                  <span className="flex items-center gap-1 text-xs text-[#f3efe4]/80">
-                    <Star className="h-3.5 w-3.5 fill-accent text-accent-text" />
+                  <span className="flex items-center gap-1 text-xs text-band-muted">
+                    <Star className="h-3.5 w-3.5 fill-band-accent text-band-accent" />
                     {place.rating} · {dict.common.districts[place.district]}
                   </span>
                 </div>
@@ -87,6 +96,6 @@ export function FeaturedExperiences() {
           );
         })}
       </div>
-    </section>
+    </Section>
   );
 }

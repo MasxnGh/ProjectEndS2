@@ -82,14 +82,14 @@ export function PlacePickerCard({ place, dayId, dayNumber }: { place: Place; day
 
       {elsewhereDayNumber ? (
         <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <p className="max-w-[9rem] text-right text-[11px] leading-snug text-muted-foreground">
+          <p className="max-w-[9rem] text-right text-xs leading-snug text-muted-foreground">
             {dict.planner.picker.duplicateWarning.replace("{day}", String(elsewhereDayNumber))}
           </p>
           <div className="flex gap-1.5">
             <button
               type="button"
               onClick={handleDuplicate}
-              className="flex items-center gap-1 rounded-full border border-border-strong px-2.5 py-1 text-[11px] font-medium hover:border-accent hover:text-accent-text"
+              className="flex items-center gap-1 rounded-full border border-border-strong px-2.5 py-1 text-xs font-medium hover:border-accent hover:text-accent-text"
             >
               <Copy className="h-3 w-3" />
               {dict.planner.picker.addDuplicate}
@@ -97,7 +97,7 @@ export function PlacePickerCard({ place, dayId, dayNumber }: { place: Place; day
             <button
               type="button"
               onClick={handleMove}
-              className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[11px] font-medium text-accent-foreground"
+              className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-xs font-medium text-accent-foreground"
             >
               <Repeat className="h-3 w-3" />
               {dict.planner.picker.moveHere}

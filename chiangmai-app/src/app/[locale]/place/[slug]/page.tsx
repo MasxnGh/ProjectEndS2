@@ -10,9 +10,12 @@ import type { Place } from "@/data/types";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
+import { getPhotoCredit } from "@/data/photo-credits";
 import { getPlaceBlurDataURL } from "@/data/blur-manifest";
 import { PlaceCard } from "@/components/place-card";
 import { CompareMap } from "@/components/map/compare-map";
+import { PlaceLocationCard } from "@/components/place-location-card";
+import { Section, Container } from "@/components/ui/section";
 import { AddToPlanButton } from "@/components/add-to-plan-button";
 import { FavoriteButton } from "@/components/favorite-button";
 import { SplitText } from "@/components/split-text";
@@ -97,6 +100,7 @@ export default async function PlaceDetailPage({
     (p) => p.slug === place.slug
   ).slice(0, NEARBY_LIMIT);
   const photoPath = getPlacePhoto(place.slug);
+  const photoCredit = getPhotoCredit(place.slug);
   const openingHoursSpecification = toJsonLdOpeningHoursSpecification(place.openingHours, place.closedOnDays);
 
   const jsonLd = {
@@ -145,8 +149,28 @@ export default async function PlaceDetailPage({
           className="absolute inset-0 h-full w-full"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-6 pb-12 lg:px-10">
-          <span className="mb-3 inline-block w-fit rounded-full bg-background/85 px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-foreground">
+
+        {/* Naming the photographer is a licence condition for the CC BY-SA
+            images this site uses, not a courtesy — so it rides with the photo
+            rather than living only on a credits page someone has to find.
+            Quiet, but not hidden: at 10px and 55% white it was effectively
+            unreadable, and a licence condition nobody can read is not met. */}
+        {photoCredit ? (
+          <p className="absolute bottom-2 right-3 z-10 text-xs leading-tight text-white/80 [text-shadow:0_1px_2px_rgb(0_0_0/0.6)]">
+            <a
+              href={photoCredit.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white hover:underline"
+            >
+              {dict.place.photoBy
+                .replace("{artist}", photoCredit.artist)
+                .replace("{licence}", photoCredit.licence)}
+            </a>
+          </p>
+        ) : null}
+        <Container width="wide" className="relative z-10 pb-12">
+          <span className="mb-3 inline-block w-fit rounded-full bg-background/85 px-3 py-1 text-xs font-medium uppercase tracking-wide text-foreground">
             {dict.common.categories[place.category]}
           </span>
           {/* The same treatment the home hero gets, on the other title people
@@ -156,11 +180,11 @@ export default async function PlaceDetailPage({
           <SplitText
             as="h1"
             text={place.name[locale]}
-            className="font-serif-display text-4xl leading-[1.02] text-[#f3efe4] sm:text-5xl md:text-6xl"
+            className="font-serif-display text-4xl leading-[1.02] text-band-foreground sm:text-5xl md:text-6xl"
           />
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[#f3efe4]/85">
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-band-muted">
             <span className="flex items-center gap-1.5">
-              <Star className="h-4 w-4 fill-accent text-accent-text" />
+              <Star className="h-4 w-4 fill-band-accent text-band-accent" />
               {place.rating}
             </span>
             <span className="flex items-center gap-1.5">
@@ -172,10 +196,10 @@ export default async function PlaceDetailPage({
               {formatDuration(place.durationMinutes, dict.common)}
             </span>
           </div>
-        </div>
+        </Container>
       </section>
 
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+      <Section as="div" width="default" rhythm="tight" className="lg:py-20">
         <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr]">
           <div>
             <Reveal>
@@ -328,6 +352,8 @@ export default async function PlaceDetailPage({
           </div>
 
           <Reveal delay={0.1} className="space-y-6">
+            <PlaceLocationCard place={place} locale={locale} />
+
             <div className="rounded-lg border border-border p-6">
               <h3 className="font-serif-display text-lg">{dict.place.practicalInfo}</h3>
               <dl className="mt-4 space-y-4 text-sm">
@@ -406,7 +432,7 @@ export default async function PlaceDetailPage({
             </div>
           </div>
         ) : null}
-      </div>
+      </Section>
     </div>
   );
 }

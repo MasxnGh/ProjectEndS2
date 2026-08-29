@@ -1,0 +1,737 @@
+{
+  "accepted": [
+    {
+      "slug": "kad-suan-kaew",
+      "entity": "Q13024177",
+      "distanceM": 147,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%94%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B9%81%E0%B8%81%E0%B9%89%E0%B8%A7.jpg/1920px-%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%94%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B9%81%E0%B8%81%E0%B9%89%E0%B8%A7.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 4.0",
+      "artist": "Vano111ru",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%94%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B9%81%E0%B8%81%E0%B9%89%E0%B8%A7.jpg"
+    },
+    {
+      "slug": "chiang-mai-city-arts-cultural-centre",
+      "entity": "Q18808485",
+      "distanceM": 10,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Chiang_Mai_-_Chiang_Mai_City_Art_and_Cultural_Center_-_0001.jpg/1920px-Chiang_Mai_-_Chiang_Mai_City_Art_and_Cultural_Center_-_0001.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Stefan Fussan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Chiang_Mai_City_Art_and_Cultural_Center_-_0001.jpg"
+    },
+    {
+      "slug": "doi-inthanon",
+      "entity": "Q1140075",
+      "distanceM": 292,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/7/78/InthanonChedi1.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Plenz",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:InthanonChedi1.jpg",
+      "artistRaw": "Plenz"
+    },
+    {
+      "slug": "mae-sa-waterfall",
+      "entity": "Q111449536",
+      "distanceM": 47,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/2014-Thailand-358_%2815990792649%29.jpg/1920px-2014-Thailand-358_%2815990792649%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 2.0",
+      "artist": "jon collier from waltham, ma, usa",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:2014-Thailand-358_(15990792649).jpg"
+    },
+    {
+      "slug": "nong-buak-hard-park",
+      "entity": "Q16255674",
+      "distanceM": 21,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Buak_Hard_Park.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Kawin Jungsakulrujirek",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Buak_Hard_Park.jpg"
+    },
+    {
+      "slug": "bhubing-palace",
+      "entity": "Q4902096",
+      "distanceM": 373,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Bhubing_Palace_%287981858020%29.jpg/1920px-Bhubing_Palace_%287981858020%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 2.0",
+      "artist": "whyyan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Bhubing_Palace_(7981858020).jpg"
+    },
+    {
+      "slug": "wat-phra-that-doi-suthep",
+      "entity": "Q1517698",
+      "distanceM": 57,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Phra_That_Doi_Suthep_01.jpg/1920px-Phra_That_Doi_Suthep_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 3.0",
+      "artist": "ผู้สร้างสรรค์ผลงาน/ส่งข้อมูลเก็บในคลังข้อมูลเสรีวิกิมีเดียคอมมอนส์ - เทวประภาส มากคล้าย",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Phra_That_Doi_Suthep_01.jpg"
+    },
+    {
+      "slug": "wat-chedi-luang",
+      "entity": "Q1454288",
+      "distanceM": 121,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Wat_Chedi_Luang%2C_Buddhist_temple%2C_Chiang_Mai%2C_Thailand.jpg/1920px-Wat_Chedi_Luang%2C_Buddhist_temple%2C_Chiang_Mai%2C_Thailand.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 4.0",
+      "artist": "Vyacheslav Argenberg",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Chedi_Luang,_Buddhist_temple,_Chiang_Mai,_Thailand.jpg"
+    },
+    {
+      "slug": "wat-phra-singh",
+      "entity": "Q1657130",
+      "distanceM": 127,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Chiang_Mai_-_Wat_Phra_Singh_-_0004.jpg/1920px-Chiang_Mai_-_Wat_Phra_Singh_-_0004.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Stefan Fussan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Phra_Singh_-_0004.jpg"
+    },
+    {
+      "slug": "wat-sri-suphan",
+      "entity": "Q59641379",
+      "distanceM": 90,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Silver_Temple_in_Chiang_Mai.jpg/1920px-Silver_Temple_in_Chiang_Mai.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 4.0",
+      "artist": "Justraveling.com",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Silver_Temple_in_Chiang_Mai.jpg"
+    },
+    {
+      "slug": "wat-chiang-man",
+      "entity": "Q1515582",
+      "distanceM": 26,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Wat_Chiang_Man_%28I%29.jpg/1920px-Wat_Chiang_Man_%28I%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 4.0",
+      "artist": "This Photo was taken by Supanut Arunoprayote.\n\nFeel free to use any of my images, but please mention me as the author and may send me a message.  (สามารถใช้ภาพได้อิสระ แต่กรุณาใส่เครดิตผู้ถ่ายและอาจส่งข้อความบอกกล่าวด้วย) \n\n\n\nPlease do not upload an updated image here without consultation with the Author. The author would like to make corrections only at his own source. This ensures that the changes are preserved.Please if you think that any changes should be required, please inform the author.Otherwise you can upload a new image with a new name. Please use one of the templates derivative or extract.",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Chiang_Man_(I).jpg"
+    },
+    {
+      "slug": "wat-phan-tao",
+      "entity": "Q20475796",
+      "distanceM": 17,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/%E0%B8%A7%E0%B8%B4%E0%B8%AB%E0%B8%B2%E0%B8%A3%E0%B9%84%E0%B8%A1%E0%B9%89%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%B2.JPG/1920px-%E0%B8%A7%E0%B8%B4%E0%B8%AB%E0%B8%B2%E0%B8%A3%E0%B9%84%E0%B8%A1%E0%B9%89%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%B2.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Vichitsilp",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:%E0%B8%A7%E0%B8%B4%E0%B8%AB%E0%B8%B2%E0%B8%A3%E0%B9%84%E0%B8%A1%E0%B9%89%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9E%E0%B8%B1%E0%B8%99%E0%B9%80%E0%B8%95%E0%B8%B2.JPG"
+    },
+    {
+      "slug": "wat-lok-molee",
+      "entity": "Q843027",
+      "distanceM": 12,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Wat_lok_molee_-_Vihara.jpg/1920px-Wat_lok_molee_-_Vihara.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 3.0",
+      "artist": "Flying Pharmacist",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_lok_molee_-_Vihara.jpg"
+    },
+    {
+      "slug": "wat-chet-yot",
+      "entity": "Q2552284",
+      "distanceM": 55,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/%E0%B9%80%E0%B8%88%E0%B8%94%E0%B8%B5%E0%B8%A2%E0%B9%8C%E0%B9%80%E0%B8%88%E0%B9%87%E0%B8%94%E0%B8%A2%E0%B8%AD%E0%B8%94.jpg/1920px-%E0%B9%80%E0%B8%88%E0%B8%94%E0%B8%B5%E0%B8%A2%E0%B9%8C%E0%B9%80%E0%B8%88%E0%B9%87%E0%B8%94%E0%B8%A2%E0%B8%AD%E0%B8%94.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 4.0",
+      "artist": "memorable",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:%E0%B9%80%E0%B8%88%E0%B8%94%E0%B8%B5%E0%B8%A2%E0%B9%8C%E0%B9%80%E0%B8%88%E0%B9%87%E0%B8%94%E0%B8%A2%E0%B8%AD%E0%B8%94.jpg"
+    },
+    {
+      "slug": "wat-ket-karam",
+      "entity": "Q13020896",
+      "distanceM": 21,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Watket.jpg/1920px-Watket.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 4.0",
+      "artist": "Vichitsilp",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Watket.jpg"
+    },
+    {
+      "slug": "wat-pha-lat",
+      "entity": "Q20642064",
+      "distanceM": 177,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Chiang_Mai_-_Wat_Pha_Lat_-_0001.jpg/1920px-Chiang_Mai_-_Wat_Pha_Lat_-_0001.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Stefan Fussan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Pha_Lat_-_0001.jpg"
+    },
+    {
+      "slug": "wat-phra-that-doi-kham",
+      "entity": "Q13020753",
+      "distanceM": 100,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Wat_Phra_That_Doi_Kham_chedi.jpg/1920px-Wat_Phra_That_Doi_Kham_chedi.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 4.0",
+      "artist": "ManoiCMU",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Phra_That_Doi_Kham_chedi.jpg"
+    },
+    {
+      "slug": "wat-inthrawat-ton-kwen",
+      "entity": "Q73152458",
+      "distanceM": 78,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/5/51/Wat_Ton_Kwaen_02.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Takeaway",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Ton_Kwaen_02.jpg"
+    },
+    {
+      "slug": "wat-ban-den",
+      "entity": "Q99736007",
+      "distanceM": 37,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Wat_Ban_Den%2C_the_Ubosot_building_and_surrounding_buildings_P_20180109_134854_1_p.jpg/1920px-Wat_Ban_Den%2C_the_Ubosot_building_and_surrounding_buildings_P_20180109_134854_1_p.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 4.0",
+      "artist": "FredTC",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Ban_Den,_the_Ubosot_building_and_surrounding_buildings_P_20180109_134854_1_p.jpg"
+    },
+    {
+      "slug": "wat-phra-that-doi-saket",
+      "entity": "Q43845478",
+      "distanceM": 63,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%98%E0%B8%B2%E0%B8%95%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%AA%E0%B8%B0%E0%B9%80%E0%B8%81%E0%B9%87%E0%B8%94_-_panoramio.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "licence": "CC BY 3.0",
+      "artist": "lopsura",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%98%E0%B8%B2%E0%B8%95%E0%B8%B8%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%AA%E0%B8%B0%E0%B9%80%E0%B8%81%E0%B9%87%E0%B8%94_-_panoramio.jpg"
+    },
+    {
+      "slug": "wat-buppharam",
+      "entity": "Q1167874",
+      "distanceM": 9,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/%282022%29_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9A%E0%B8%B8%E0%B8%9E%E0%B8%9E%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%A1_%E0%B8%AD.%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87_%E0%B8%88.%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88%2CWat_Buppharam%2CChiangmai_%286%29.jpg/1920px-%282022%29_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9A%E0%B8%B8%E0%B8%9E%E0%B8%9E%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%A1_%E0%B8%AD.%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87_%E0%B8%88.%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88%2CWat_Buppharam%2CChiangmai_%286%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 4.0",
+      "artist": "กสิณธร ราชโอรส",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:(2022)_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%9A%E0%B8%B8%E0%B8%9E%E0%B8%9E%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%A1_%E0%B8%AD.%E0%B9%80%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B8%87_%E0%B8%88.%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88,Wat_Buppharam,Chiangmai_(6).jpg"
+    },
+    {
+      "slug": "wat-saen-fang",
+      "entity": "Q28405193",
+      "distanceM": 21,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Chiang_Mai_-_Wat_Saen_Fang_-_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B9%81%E0%B8%AA%E0%B8%99%E0%B8%9D%E0%B8%B2%E0%B8%87_%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_%282026%29_-_IMG_24.jpg/1920px-Chiang_Mai_-_Wat_Saen_Fang_-_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B9%81%E0%B8%AA%E0%B8%99%E0%B8%9D%E0%B8%B2%E0%B8%87_%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_%282026%29_-_IMG_24.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 4.0",
+      "artist": "Chainwit.",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Saen_Fang_-_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B9%81%E0%B8%AA%E0%B8%99%E0%B8%9D%E0%B8%B2%E0%B8%87_%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_(2026)_-_IMG_24.jpg"
+    },
+    {
+      "slug": "wat-mahawan",
+      "entity": "Q110313689",
+      "distanceM": 26,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Wat_Mahawan.jpg/1920px-Wat_Mahawan.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 4.0",
+      "artist": "Christophe95",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Mahawan.jpg"
+    },
+    {
+      "slug": "wat-phan-on",
+      "entity": "Q18702273",
+      "distanceM": 26,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Chiang_Mai_-_Wat_Phan_On_-_0017.jpg/1920px-Chiang_Mai_-_Wat_Phan_On_-_0017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Stefan Fussan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Phan_On_-_0017.jpg"
+    },
+    {
+      "slug": "wat-chiang-yuen",
+      "entity": "Q1699542",
+      "distanceM": 13,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Chiang_Mai_-_Stupa_of_Wat_Chiang_Yuen_-_%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%98%E0%B8%B2%E0%B8%95%E0%B8%B8%E0%B9%80%E0%B8%88%E0%B8%94%E0%B8%B5%E0%B8%A2%E0%B9%8C_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%A2%E0%B8%B7%E0%B8%99_%E0%B8%88.%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_%282026%29_-_IMG_10.jpg/1920px-thumbnail.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 4.0",
+      "artist": "Chainwit.",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Stupa_of_Wat_Chiang_Yuen_-_%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%A1%E0%B8%AB%E0%B8%B2%E0%B8%98%E0%B8%B2%E0%B8%95%E0%B8%B8%E0%B9%80%E0%B8%88%E0%B8%94%E0%B8%B5%E0%B8%A2%E0%B9%8C_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%A2%E0%B8%B7%E0%B8%99_%E0%B8%88.%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_(2026)_-_IMG_10.jpg"
+    },
+    {
+      "slug": "wat-jed-lin",
+      "entity": "Q16004163",
+      "distanceM": 43,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Chiang_Mai_-_Wat_Chet_Lin_-_0007.jpg/1920px-Chiang_Mai_-_Wat_Chet_Lin_-_0007.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Stefan Fussan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Chet_Lin_-_0007.jpg"
+    },
+    {
+      "slug": "wat-phuak-hong",
+      "entity": "Q20155454",
+      "distanceM": 11,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Ancient_stupa_in_Wat_Puag_Hong_%2C_Chiangmai_%2CThailand.jpg/1920px-Ancient_stupa_in_Wat_Puag_Hong_%2C_Chiangmai_%2CThailand.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Kokunut555",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Ancient_stupa_in_Wat_Puag_Hong_,_Chiangmai_,Thailand.jpg"
+    },
+    {
+      "slug": "wat-duang-di",
+      "entity": "Q18046080",
+      "distanceM": 4,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Chiang_Mai_-_Wat_Duang_Di_-_0001.jpg/1920px-Chiang_Mai_-_Wat_Duang_Di_-_0001.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Stefan Fussan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Duang_Di_-_0001.jpg"
+    },
+    {
+      "slug": "wat-si-koet",
+      "entity": "Q20051158",
+      "distanceM": 21,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Chiang_Mai_-_Wat_Si_Koet_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%A8%E0%B8%A3%E0%B8%B5%E0%B9%80%E0%B8%81%E0%B8%B4%E0%B8%94_%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_%282026%29_-_IMG_06.jpg/1920px-Chiang_Mai_-_Wat_Si_Koet_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%A8%E0%B8%A3%E0%B8%B5%E0%B9%80%E0%B8%81%E0%B8%B4%E0%B8%94_%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_%282026%29_-_IMG_06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 4.0",
+      "artist": "Chainwit.",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Si_Koet_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%A8%E0%B8%A3%E0%B8%B5%E0%B9%80%E0%B8%81%E0%B8%B4%E0%B8%94_%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88_(2026)_-_IMG_06.jpg"
+    },
+    {
+      "slug": "wat-pan-whaen",
+      "entity": "Q109985214",
+      "distanceM": 37,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/7/71/Wat_phan_waen_chiang_mai.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Takeaway",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_phan_waen_chiang_mai.jpg"
+    },
+    {
+      "slug": "wat-umong-maha-thera-chan",
+      "entity": "Q18713202",
+      "distanceM": 23,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Chiang_Mai_-_Wat_Umong_Maha_Therachan_-_0001.jpg/1920px-Chiang_Mai_-_Wat_Umong_Maha_Therachan_-_0001.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Stefan Fussan",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Umong_Maha_Therachan_-_0001.jpg"
+    },
+    {
+      "slug": "wat-buak-khrok-luang",
+      "entity": "Q16004191",
+      "distanceM": 15,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Wat_Buak_Krok_Luang_06.jpg/1920px-Wat_Buak_Krok_Luang_06.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Takeaway",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Buak_Krok_Luang_06.jpg"
+    },
+    {
+      "slug": "wat-phra-non-khon-muang",
+      "entity": "Q13020758",
+      "distanceM": 15,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%99%E0%B8%AD%E0%B8%99%E0%B8%82%E0%B8%AD%E0%B8%99%E0%B8%A1%E0%B9%88%E0%B8%A7%E0%B8%871.JPG/1920px-%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%99%E0%B8%AD%E0%B8%99%E0%B8%82%E0%B8%AD%E0%B8%99%E0%B8%A1%E0%B9%88%E0%B8%A7%E0%B8%871.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Thanya1",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:%E0%B8%9E%E0%B8%A3%E0%B8%B0%E0%B8%99%E0%B8%AD%E0%B8%99%E0%B8%82%E0%B8%AD%E0%B8%99%E0%B8%A1%E0%B9%88%E0%B8%A7%E0%B8%871.JPG"
+    },
+    {
+      "slug": "tha-phae-gate",
+      "entity": "Q13016585",
+      "distanceM": 41,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Eastern_Gate_of_Chiang_Mai.jpg/1920px-Eastern_Gate_of_Chiang_Mai.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY 4.0",
+      "artist": "Douglas Perkins",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Eastern_Gate_of_Chiang_Mai.jpg"
+    },
+    {
+      "slug": "three-kings-monument",
+      "entity": "Q13017454",
+      "distanceM": 2,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a4/3_kings_monument.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+      "licence": "CC BY 3.0",
+      "artist": "Sry85",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:3_kings_monument.JPG"
+    },
+    {
+      "slug": "san-kamphaeng-hot-springs",
+      "entity": "Q16639025",
+      "distanceM": 31,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Sankamphaeng002.JPG/1920px-Sankamphaeng002.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Taguelmoust",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Sankamphaeng002.JPG"
+    },
+    {
+      "slug": "wiang-tha-kan",
+      "entity": "Q20898012",
+      "distanceM": 101,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%AD%E0%B8%81_%E0%B9%80%E0%B8%A7%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%99.JPG/1920px-%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%AD%E0%B8%81_%E0%B9%80%E0%B8%A7%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%99.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Andromeda Oscar",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%95%E0%B9%89%E0%B8%99%E0%B8%81%E0%B8%AD%E0%B8%81_%E0%B9%80%E0%B8%A7%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%97%E0%B9%88%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%99.JPG"
+    },
+    {
+      "slug": "ban-haw-mosque",
+      "entity": "Q4022414",
+      "distanceM": 31,
+      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Baan_Haw_Mosque_4-6-09.jpg/1920px-Baan_Haw_Mosque_4-6-09.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "licence": "CC BY-SA 3.0",
+      "artist": "Iceway12 at en.wikipedia",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Baan_Haw_Mosque_4-6-09.jpg"
+    }
+  ],
+  "rejected": [
+    {
+      "slug": "sunday-walking-street-thapae",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "saturday-walking-street-wualai",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "warorot-market",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "night-bazaar",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "jing-jai-market",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "chang-phueak-night-market",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "muang-mai-market",
+      "reason": "3 entities nearby, none is this place"
+    },
+    {
+      "slug": "ton-payom-market",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "ploen-ruedee-night-market",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "one-nimman",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "think-park",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "ton-lamyai-market",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "chiang-mai-gate-market",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "kad-na-mor",
+      "reason": "2 entities nearby, none is this place"
+    },
+    {
+      "slug": "maya-lifestyle-shopping-center",
+      "reason": "9 entities nearby, none is this place"
+    },
+    {
+      "slug": "central-festival-chiang-mai",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "kad-farang-village",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "san-kamphaeng-walking-street",
+      "reason": "1 entities nearby, none is this place"
+    },
+    {
+      "slug": "maiiam-contemporary-art-museum",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "lanna-folklife-museum",
+      "reason": "Q109237442 matches but has no photo"
+    },
+    {
+      "slug": "chiang-mai-historical-centre",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "chiang-mai-national-museum",
+      "reason": "4 entities nearby, none is this place"
+    },
+    {
+      "slug": "cmu-art-center",
+      "reason": "2 entities nearby, none is this place"
+    },
+    {
+      "slug": "highland-people-discovery-museum",
+      "reason": "2 entities nearby, none is this place"
+    },
+    {
+      "slug": "art-in-paradise-chiang-mai",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "lanna-architecture-center",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "lanna-traditional-house-museum",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "dara-pirom-palace-museum",
+      "reason": "Q16141151 matches but has no photo"
+    },
+    {
+      "slug": "museum-of-world-insects",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "weave-artisan-society",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "gallery-seescape",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "baan-jang-nak",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "bua-tong-sticky-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "chiang-mai-grand-canyon",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "doi-pui",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mon-cham",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "huay-tung-tao",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "doi-luang-chiang-dao",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "chiang-dao-cave",
+      "reason": "1 entities nearby, none is this place"
+    },
+    {
+      "slug": "kew-mae-pan-nature-trail",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "wachirathan-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mae-ya-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "huay-kaew-waterfall",
+      "reason": "Q34846090 matches but has no photo"
+    },
+    {
+      "slug": "pha-chor",
+      "reason": "Q28458396 matches but has no photo"
+    },
+    {
+      "slug": "ob-khan-national-park",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "queen-sirikit-botanic-garden",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "royal-park-rajapruek",
+      "reason": "Q16434564 matches but has no photo"
+    },
+    {
+      "slug": "ang-kaew-cmu",
+      "reason": "Q136697484 matches but has no photo"
+    },
+    {
+      "slug": "doi-ang-khang",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "doi-pha-hom-pok",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "fang-hot-springs",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "ang-khang-royal-station",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "huai-nam-dang-national-park",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mork-fa-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "pong-dueat-geyser",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mae-ngat-dam",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "tad-mork-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "sri-lanna-national-park",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "doi-mon-lan",
+      "reason": "Q31668470 matches but has no photo"
+    },
+    {
+      "slug": "ob-luang-national-park",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "doi-tao-lake",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "doi-mon-jong",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mae-klang-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "siriphum-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "ang-ka-luang-nature-trail",
+      "reason": "Q1646490 matches but has no photo"
+    },
+    {
+      "slug": "twin-royal-pagodas-inthanon",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mae-tia-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mae-kampong-waterfall",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "huay-kaew-arboretum",
+      "reason": "Q136697484 matches but has no photo"
+    },
+    {
+      "slug": "muang-on-cave",
+      "reason": "1 entities nearby, none is this place"
+    },
+    {
+      "slug": "tham-tap-tao-forest-park",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "mae-takhrai-national-park",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "wat-umong",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "wat-suan-dok",
+      "reason": "8 entities nearby, none is this place"
+    },
+    {
+      "slug": "wat-phra-that-si-chom-thong",
+      "reason": "Q2681283 matches but has no photo"
+    },
+    {
+      "slug": "wat-tha-ton",
+      "reason": "2 entities nearby, none is this place"
+    },
+    {
+      "slug": "wat-pa-dara-phirom",
+      "reason": "Q3090866 matches but has no photo"
+    },
+    {
+      "slug": "wat-rampoeng",
+      "reason": "Q13020681 matches but has no photo"
+    },
+    {
+      "slug": "wat-inthakhin-sadue-muang",
+      "reason": "Q18920949 matches but has no photo"
+    },
+    {
+      "slug": "wat-fai-hin",
+      "reason": "Q13020747 matches but has no photo"
+    },
+    {
+      "slug": "wat-tham-pha-plong",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "wat-luang-khun-win",
+      "reason": "Q109321361 matches but has no photo"
+    },
+    {
+      "slug": "mae-kampong",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "baan-tawai",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "wua-lai-silver-village",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "bo-sang-umbrella-village",
+      "reason": "Q4931161 matches but has no photo"
+    },
+    {
+      "slug": "wiang-kum-kam",
+      "reason": "9 entities nearby, none is this place"
+    },
+    {
+      "slug": "ban-mae-klang-luang",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "khun-chang-khian",
+      "reason": "Q110281307 matches but has no photo"
+    },
+    {
+      "slug": "muang-kung-pottery-village",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "ban-tha-ton",
+      "reason": "2 entities nearby, none is this place"
+    },
+    {
+      "slug": "ban-piang-luang",
+      "reason": "nothing mapped within range"
+    },
+    {
+      "slug": "ban-wat-chan-pine-forest",
+      "reason": "Q13020653 matches but has no photo"
+    },
+    {
+      "slug": "chang-phueak-gate",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "suan-dok-gate",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "jaeng-si-phum",
+      "reason": "12 entities nearby, none is this place"
+    },
+    {
+      "slug": "kruba-srivichai-monument",
+      "reason": "2 entities nearby, none is this place"
+    }
+  ]
+}

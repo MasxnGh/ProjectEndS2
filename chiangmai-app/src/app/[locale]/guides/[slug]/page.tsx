@@ -1,3 +1,4 @@
+import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CalendarDays, Clock } from "lucide-react";
@@ -91,7 +92,7 @@ export default async function GuideDetailPage({
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
         <div className="relative z-10 mx-auto w-full max-w-3xl px-6 pb-12 lg:px-10">
-          <div className="flex items-center gap-4 text-xs uppercase tracking-wide text-[#f3efe4]/80">
+          <div className="flex items-center gap-4 text-xs uppercase tracking-wide text-band-muted">
             <span className="flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5" />
               {guide.readMinutes} {dict.guides.readTime}
@@ -101,14 +102,14 @@ export default async function GuideDetailPage({
               {publishedDate}
             </span>
           </div>
-          <h1 className="mt-3 font-serif-display text-4xl leading-[1.05] text-[#f3efe4] sm:text-5xl">
+          <h1 className="mt-3 font-serif-display text-4xl leading-[1.05] text-band-foreground sm:text-5xl">
             {guide.title[locale]}
           </h1>
-          <p className="mt-3 max-w-xl text-lg text-[#f3efe4]/85">{guide.dek[locale]}</p>
+          <p className="mt-3 max-w-xl text-lg text-band-muted">{guide.dek[locale]}</p>
         </div>
       </section>
 
-      <div className="mx-auto max-w-3xl px-6 py-16 lg:px-10 lg:py-20">
+      <Section as="div" width="prose" rhythm="tight" className="lg:py-20">
         <div className="space-y-12">
           {guide.sections.map((section, i) => (
             <Reveal key={i} delay={i * 0.05}>
@@ -136,7 +137,7 @@ export default async function GuideDetailPage({
             </div>
           </div>
         ) : null}
-      </div>
+      </Section>
     </article>
   );
 }

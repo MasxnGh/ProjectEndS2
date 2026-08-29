@@ -4,11 +4,11 @@ import { join } from "node:path";
 
 export const OG_SIZE = { width: 1200, height: 630 };
 
-const CREAM = "#f3efe4";
-const GOLD = "#c9a24b";
-const INK = "#171613";
-
-const THAI_PATTERN = /[฀-๿]/;
+// Mirrors the dark theme in globals.css. Share cards are always dark, whatever
+// theme the visitor uses, because they sit on someone else's timeline.
+const PAPER = "#e6eae7";
+const CELADON = "#8fbfa8";
+const INK = "#10171e";
 
 async function loadGoogleFont(family: string, text: string): Promise<ArrayBuffer | null> {
   if (!text) return null;
@@ -44,18 +44,17 @@ export async function renderOgImage({
   kicker: string;
   photoPath: string | undefined;
 }) {
-  const needsThai = THAI_PATTERN.test(title) || THAI_PATTERN.test(kicker);
-
-  // "Chiangmai Journey" is always plain ASCII, so this fetch reliably succeeds
-  // and guarantees satori always has at least one usable font (it throws if the
-  // fonts array ends up empty, which happened before when the title/kicker
-  // was Thai text with zero coverage in the Latin-only Fraunces font).
+  // One font covers both scripts now. This used to branch on whether the title
+  // contained Thai, because Fraunces has no Thai glyphs and satori throws when
+  // it ends up with no usable font — Trirong is drawn with both, so the branch
+  // is gone and a mixed Thai/Latin title sets in a single face.
+  //
+  // The brand name is fetched separately and always in ASCII, so it stays the
+  // guaranteed non-empty font even if the title request fails.
   const [bgSrc, brandFont, displayFont] = await Promise.all([
     loadLocalPhoto(photoPath),
-    loadGoogleFont("Fraunces:wght@600", "Chiangmai Journey"),
-    needsThai
-      ? loadGoogleFont("Noto+Serif+Thai:wght@600", `${title}${kicker}`)
-      : loadGoogleFont("Fraunces:wght@600", `${title}${kicker}`),
+    loadGoogleFont("Trirong:wght@600", "Chiangmai Journey"),
+    loadGoogleFont("Trirong:wght@600", `${title}${kicker}`),
   ]);
 
   const fonts: { name: string; data: ArrayBuffer; style: "normal"; weight: 600 }[] = [];
@@ -91,7 +90,7 @@ export async function renderOgImage({
             inset: 0,
             display: "flex",
             background:
-              "linear-gradient(to top, rgba(23,22,19,0.92) 10%, rgba(23,22,19,0.35) 55%, rgba(23,22,19,0.5) 100%)",
+              "linear-gradient(to top, rgba(16,23,30,0.92) 10%, rgba(16,23,30,0.35) 55%, rgba(16,23,30,0.5) 100%)",
           }}
         />
         <div
@@ -104,7 +103,7 @@ export async function renderOgImage({
             gap: 12,
             padding: "10px 20px",
             borderRadius: 999,
-            background: "rgba(23,22,19,0.55)",
+            background: "rgba(16,23,30,0.55)",
           }}
         >
           <div
@@ -113,11 +112,11 @@ export async function renderOgImage({
               height: 22,
               display: "flex",
               transform: "rotate(45deg)",
-              border: `2px solid ${GOLD}`,
+              border: `2px solid ${CELADON}`,
               borderRadius: 4,
             }}
           />
-          <span style={{ fontFamily: "Brand", fontSize: 26, color: CREAM, letterSpacing: 1 }}>Chiangmai Journey</span>
+          <span style={{ fontFamily: "Brand", fontSize: 26, color: PAPER, letterSpacing: 1 }}>Chiangmai Journey</span>
         </div>
         <div
           style={{
@@ -137,9 +136,9 @@ export async function renderOgImage({
               alignSelf: "flex-start",
               padding: "6px 16px",
               borderRadius: 999,
-              background: "rgba(23,22,19,0.72)",
+              background: "rgba(16,23,30,0.72)",
               fontSize: 18,
-              color: GOLD,
+              color: CELADON,
               letterSpacing: 3,
               textTransform: "uppercase",
             }}
@@ -151,7 +150,7 @@ export async function renderOgImage({
               fontFamily: displayFamily,
               fontSize: 58,
               lineHeight: 1.15,
-              color: CREAM,
+              color: PAPER,
               display: "flex",
               maxWidth: 1000,
             }}

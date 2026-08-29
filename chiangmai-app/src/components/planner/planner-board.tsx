@@ -1,5 +1,6 @@
 "use client";
 
+import { Section } from "@/components/ui/section";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -556,7 +557,7 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+    <Section as="div" width="wide" rhythm="tight" className="lg:py-20">
       <Suspense fallback={null}>
         <PlanImportListener />
       </Suspense>
@@ -588,7 +589,7 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
         onSaveAsNew={cloudSync.resolveMigrationSaveAsNew}
         onReplaceExisting={cloudSync.resolveMigrationReplaceExisting}
       />
-      <SectionHeading kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
+      <SectionHeading as="h1" kicker={dict.nav.planner} title={dict.planner.title} subtitle={dict.planner.subtitle} />
 
       {isEmpty ? null : (
         <div className="mt-8">
@@ -1043,6 +1044,6 @@ export function PlannerBoard({ aiEnabled = false }: { aiEnabled?: boolean }) {
           />
         </>
       )}
-    </div>
+    </Section>
   );
 }

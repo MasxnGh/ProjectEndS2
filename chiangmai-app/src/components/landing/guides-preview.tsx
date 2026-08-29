@@ -6,6 +6,7 @@ import { PlaceImage } from "@/components/place-image";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal, RevealGroup, revealItemVariants } from "@/components/reveal";
+import { Section } from "@/components/ui/section";
 import { useLocale } from "@/components/providers/locale-provider";
 import { guides } from "@/data/guides";
 import { motion } from "motion/react";
@@ -14,7 +15,7 @@ export function GuidesPreview() {
   const { locale, dict } = useLocale();
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+    <Section width="default" rhythm="default">
       <Reveal>
         <SectionHeading kicker={dict.home.guidesPreview.kicker} title={dict.home.guidesPreview.title} />
       </Reveal>
@@ -48,6 +49,6 @@ export function GuidesPreview() {
           </motion.div>
         ))}
       </RevealGroup>
-    </section>
+    </Section>
   );
 }

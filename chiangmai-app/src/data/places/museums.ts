@@ -44,7 +44,6 @@ export const museums: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "contemporary art museum gallery Thailand",
   },
   {
     slug: "chiang-mai-city-arts-cultural-centre",
@@ -89,7 +88,6 @@ export const museums: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Chiang Mai city arts cultural centre building",
   },
   {
     slug: "lanna-folklife-museum",
@@ -222,7 +220,6 @@ export const museums: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-12",
-    photoQuery: "Lanna Buddha image museum Thailand",
   },
   {
     slug: "cmu-art-center",
@@ -393,7 +390,6 @@ export const museums: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-20",
-    photoQuery: "Lanna teak colonial house museum Chiang Mai",
   },
   {
     slug: "lanna-traditional-house-museum",
@@ -435,7 +431,6 @@ export const museums: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-20",
-    photoQuery: "traditional Lanna wooden house museum Chiang Mai",
   },
   {
     slug: "dara-pirom-palace-museum",
@@ -477,7 +472,6 @@ export const museums: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: "2026-08-20",
-    photoQuery: "Dara Pirom Palace museum Mae Rim Thailand",
   },
   {
     slug: "museum-of-world-insects",
@@ -642,6 +636,5 @@ export const museums: Place[] = [
     dressCode: null,
     requiresBooking: false,
     dataLastVerified: null,
-    photoQuery: "Thai wood carving elephant workshop studio",
   },
 ];

@@ -2,13 +2,15 @@ export function MapPinIcon({
   size = 30,
   emphasized = true,
   className,
-  color = "#C9A24B",
+  color = "var(--color-accent)",
   label,
 }: {
   size?: number;
   emphasized?: boolean;
   className?: string;
-  /** Stroke/fill colour — defaults to the brand champagne gold; the Trip Planner tints this per day. */
+  /** Stroke/fill colour. Defaults to the theme accent — this renders as a
+   *  DOM marker, not inside the map canvas, so a CSS variable resolves here and
+   *  follows the theme for free. The Trip Planner tints it per day. */
   color?: string;
   /** Stop number shown in the pin's head, e.g. a day's visiting order. Omit for the plain dot used on Explore/Place. */
   label?: number;

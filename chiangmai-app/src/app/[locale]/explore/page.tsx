@@ -4,6 +4,7 @@ import { places } from "@/data/places";
 import type { PlaceCategory } from "@/data/types";
 import { buildPageMetadata } from "@/lib/seo";
 import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
+import type { SquareBucket } from "@/lib/city-square";
 import { ExploreClient } from "./explore-client";
 
 const CATEGORIES: PlaceCategory[] = [
@@ -19,6 +20,13 @@ const CATEGORIES: PlaceCategory[] = [
 
 function isPlaceCategory(value: string | undefined): value is PlaceCategory {
   return Boolean(value) && (CATEGORIES as string[]).includes(value as string);
+}
+
+/** The zone buckets that can arrive in the URL, e.g. from the landing page. */
+const ZONES: SquareBucket[] = ["inside", "wall", "north", "east", "south", "west", "beyond"];
+
+function isZone(value: string | undefined): value is SquareBucket {
+  return Boolean(value) && (ZONES as string[]).includes(value as string);
 }
 
 export async function generateMetadata({
@@ -42,13 +50,21 @@ export default async function ExplorePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string; q?: string; from?: string; day?: string; view?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    zone?: string;
+    q?: string;
+    from?: string;
+    day?: string;
+    view?: string;
+  }>;
 }) {
   const { locale } = await params;
   const loc = isLocale(locale) ? locale : "en";
   const dict = getDictionary(loc);
-  const { category, q, from, day, view } = await searchParams;
+  const { category, zone, q, from, day, view } = await searchParams;
   const initialCategory = isPlaceCategory(category) ? category : null;
+  const initialZone = isZone(zone) ? zone : null;
   const initialView = view === "map" ? "map" : "grid";
   const parsedDay = Number(day);
   const plannerDayNumber = from === "planner" && Number.isInteger(parsedDay) && parsedDay > 0 ? parsedDay : null;
@@ -66,6 +82,7 @@ export default async function ExplorePage({
       <ExploreClient
         places={places}
         initialCategory={initialCategory}
+        initialZone={initialZone}
         initialQuery={q ?? ""}
         initialView={initialView}
         plannerDayNumber={plannerDayNumber}

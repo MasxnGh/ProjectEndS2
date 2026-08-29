@@ -25,7 +25,10 @@ import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
 import { motion, useReducedMotion } from "motion/react";
 import { EASE } from "@/lib/motion";
+import { Section } from "@/components/ui/section";
 import { ExploreResultsBar, type ActiveFilterChip } from "@/components/explore/explore-results-bar";
+import { ZoneFilter } from "@/components/explore/zone-filter";
+import { locateInSquare, type SquareBucket } from "@/lib/city-square";
 import { sortPlaces, type ExploreSort } from "@/lib/explore/sort";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
@@ -131,12 +134,14 @@ function FilterPill({
 export function ExploreClient({
   places,
   initialCategory,
+  initialZone,
   initialQuery,
   initialView,
   plannerDayNumber,
 }: {
   places: Place[];
   initialCategory: PlaceCategory | null;
+  initialZone: SquareBucket | null;
   initialQuery: string;
   initialView: "grid" | "map";
   plannerDayNumber: number | null;
@@ -149,6 +154,7 @@ export function ExploreClient({
 
   const [query, setQuery] = useState(initialQuery);
   const [category, setCategory] = useState<PlaceCategory | null>(initialCategory);
+  const [zone, setZone] = useState<SquareBucket | null>(initialZone);
   const [district, setDistrict] = useState<District | null>(null);
   const [price, setPrice] = useState<PriceLevel | null>(null);
   const [time, setTime] = useState<BestTime | null>(null);
@@ -227,6 +233,19 @@ export function ExploreClient({
     setDistrictRef("");
   }
 
+  /**
+   * Each place's position relative to the old city wall, computed once.
+   *
+   * Derived rather than stored: it comes from the coordinates the catalogue
+   * already holds, so it cannot fall out of step with the map the way the
+   * hand-typed `district` field can.
+   */
+  const bucketBySlug = useMemo(() => {
+    const map = new Map<string, SquareBucket>();
+    for (const place of places) map.set(place.slug, locateInSquare(place.coordinates).bucket);
+    return map;
+  }, [places]);
+
   const filteredBase = useMemo(() => {
     const q = query.trim().toLowerCase();
     return places.filter((place) => {
@@ -239,13 +258,39 @@ export function ExploreClient({
         if (!haystack.includes(q)) return false;
       }
       if (category && place.category !== category) return false;
+      if (zone && bucketBySlug.get(place.slug) !== zone) return false;
       if (district && place.district !== district) return false;
       if (price && place.priceLevel !== price) return false;
       if (time && !place.bestTime.includes(time)) return false;
       if (distance && distanceBucketFrom(place.coordinates) !== distance) return false;
       return true;
     });
-  }, [places, query, category, district, price, time, distance]);
+  }, [places, query, category, zone, bucketBySlug, district, price, time, distance]);
+
+  /**
+   * How many results each zone would return under everything *except* the zone
+   * filter — so a region that would empty the grid is shown as unavailable
+   * before it is clicked, rather than after.
+   */
+  const zoneCounts = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const counts: Partial<Record<SquareBucket, number>> = {};
+    for (const place of places) {
+      if (q) {
+        const haystack =
+          `${place.name.en} ${place.name.th} ${place.shortDescription.en} ${place.shortDescription.th} ${place.tags.join(" ")}`.toLowerCase();
+        if (!haystack.includes(q)) continue;
+      }
+      if (category && place.category !== category) continue;
+      if (district && place.district !== district) continue;
+      if (price && place.priceLevel !== price) continue;
+      if (time && !place.bestTime.includes(time)) continue;
+      if (distance && distanceBucketFrom(place.coordinates) !== distance) continue;
+      const bucket = bucketBySlug.get(place.slug);
+      if (bucket) counts[bucket] = (counts[bucket] ?? 0) + 1;
+    }
+    return counts;
+  }, [places, query, category, district, price, time, distance, bucketBySlug]);
 
   const proximityResults = useMemo(() => {
     if (!reference) return null;
@@ -270,6 +315,7 @@ export function ExploreClient({
   const filterKey = [
     query,
     category,
+    zone,
     district,
     price,
     time,
@@ -292,7 +338,7 @@ export function ExploreClient({
   const visiblePlaces = sorted.slice(0, visibleCount);
   const hasMore = sorted.length > visiblePlaces.length;
 
-  const hasFilters = Boolean(query || category || district || price || time || distance);
+  const hasFilters = Boolean(query || category || zone || district || price || time || distance);
 
   // What is actually applied, spelled out and individually removable. Before
   // this the only signal was a count badge on a collapsed panel, so you could
@@ -305,6 +351,12 @@ export function ExploreClient({
         id: "category",
         label: dict.common.categories[category],
         onClear: () => setCategory(null),
+      });
+    if (zone)
+      chips.push({
+        id: "zone",
+        label: dict.square.zones[zone],
+        onClear: () => setZone(null),
       });
     if (district)
       chips.push({
@@ -327,14 +379,14 @@ export function ExploreClient({
         onClear: () => setDistance(null),
       });
     return chips;
-  }, [query, category, district, price, time, distance, dict]);
+  }, [query, category, zone, district, price, time, distance, dict]);
 
   /**
    * Re-staggers the grid when the *filters* change, but deliberately not when
    * the search box changes: re-keying on every keystroke would restart the
    * animation on each letter typed and make the grid strobe.
    */
-  const filterSignature = [category, district, price, time, distance, sort].join("|");
+  const filterSignature = [category, zone, district, price, time, distance, sort].join("|");
   const secondaryActiveCount = [district, price, time, distance].filter(Boolean).length;
   const comparePlaces = useMemo(
     () => compareSlugs.map((slug) => places.find((p) => p.slug === slug)).filter((p): p is NonNullable<typeof p> => Boolean(p)),
@@ -347,6 +399,7 @@ export function ExploreClient({
   function clearFilters() {
     setQuery("");
     setCategory(null);
+    setZone(null);
     setDistrict(null);
     setPrice(null);
     setTime(null);
@@ -358,7 +411,7 @@ export function ExploreClient({
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-16 lg:px-10 lg:py-20">
+    <Section width="wide" rhythm="tight" as="div" className="lg:py-20">
       <Suspense fallback={null}>
         <ExploreViewUrlSync view={view} onViewChangeFromUrl={setView} />
       </Suspense>
@@ -382,10 +435,19 @@ export function ExploreClient({
       ) : null}
 
       <Reveal>
-        <SectionHeading kicker={dict.nav.explore} title={dict.explore.title} subtitle={dict.explore.subtitle} />
+        <SectionHeading as="h1" kicker={dict.nav.explore} title={dict.explore.title} subtitle={dict.explore.subtitle} />
       </Reveal>
 
-      <div className="mt-10 space-y-4">
+      {/*
+        * Search and the zone square share the row.
+        *
+        * The search box is capped at max-w-md, so on a wide display two thirds
+        * of this row was empty while the site's most distinctive control sat
+        * folded inside the "Filters" panel. Putting them side by side spends
+        * the width on something and makes the square the first thing offered.
+        */}
+      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+      <div className="space-y-4">
         <div className="relative max-w-md">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -429,7 +491,7 @@ export function ExploreClient({
             <LocateFixed className="h-3.5 w-3.5" />
             {dict.explore.nearMe.button}
             {reference ? (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-background/30 px-1 text-[10px] font-semibold">
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-background/30 px-1 text-xs font-semibold">
                 {proximityResults?.length ?? 0}
               </span>
             ) : null}
@@ -470,7 +532,7 @@ export function ExploreClient({
             <SlidersHorizontal className="h-3.5 w-3.5" />
             {dict.explore.filters.moreFilters}
             {secondaryActiveCount > 0 ? (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] font-semibold text-accent-foreground">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
                 {secondaryActiveCount}
               </span>
             ) : null}
@@ -488,6 +550,17 @@ export function ExploreClient({
             </button>
           ) : null}
         </div>
+      </div>
+
+      <div className="lg:border-l lg:border-border lg:pl-12">
+        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {dict.explore.filters.zone}
+        </p>
+        <ZoneFilter value={zone} onChange={setZone} counts={zoneCounts} />
+      </div>
+      </div>
+
+      <div className="mt-4 space-y-4">
 
         {proximityOpen ? (
           <div className="space-y-4 rounded-lg border border-border bg-surface-muted/40 p-4">
@@ -557,7 +630,7 @@ export function ExploreClient({
                   aria-valuetext={`${radiusKm} km`}
                   className="w-full accent-accent"
                 />
-                <div className="flex justify-between text-[10px] text-muted-foreground">
+                <div className="flex justify-between text-xs text-muted-foreground">
                   {RADIUS_STEPS_KM.map((km) => (
                     <span key={km}>{km} km</span>
                   ))}
@@ -666,7 +739,7 @@ export function ExploreClient({
             {!aqiLayer.isLoading && aqiLayer.dataBySlug.size === 0 ? (
               <p className="text-xs text-muted-foreground">{dict.explore.airQuality.unavailable}</p>
             ) : null}
-            <p className="text-[11px] text-muted-foreground/70">{dict.weather.attribution}</p>
+            <p className="text-xs text-muted-foreground/70">{dict.weather.attribution}</p>
           </div>
         ) : null}
       </div>
@@ -712,6 +785,13 @@ export function ExploreClient({
         <p className="py-24 text-center text-muted-foreground">{dict.explore.filters.noResults}</p>
       ) : view === "grid" ? (
         <>
+        {/* The results are a section of the page, so they get a name. Without
+            one the outline jumped straight from the page title to the h3 on
+            each card, and a screen-reader user moving by heading arrived in a
+            list of places with nothing saying what the list was. */}
+        <h2 className="sr-only">
+          {dict.explore.filters.results} ({sorted.length})
+        </h2>
         <motion.div
           // Re-keyed on the filters only, never on the query: keying on the
           // search text too would restart this animation on every keystroke
@@ -886,6 +966,6 @@ export function ExploreClient({
           </Link>
         </div>
       ) : null}
-    </div>
+    </Section>
   );
 }

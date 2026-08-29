@@ -188,7 +188,7 @@ export function DateRangePicker({ startDate, dayCount, onRangeChange, className 
             </button>
           </div>
 
-          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="mt-3 grid grid-cols-7 gap-1 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {weekdayLabels.map((label, i) => (
               <div key={`${label}-${i}`}>{label}</div>
             ))}

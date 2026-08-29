@@ -180,7 +180,6 @@ const en = {
     },
     categories: {
       kicker: "Wander By Mood",
-      title: "Five ways into the city",
       viewAll: "View all",
     },
     featured: {
@@ -205,6 +204,26 @@ const en = {
       title: "Stories to read before you go",
     },
   },
+  square: {
+    kicker: "Orientation",
+    title: "The city is a square",
+    body: "The old city is a walled square, 1.6km on each side, with a gate in the middle of every wall and a bastion at every corner. It is how people here give directions: Nimman is west of the moat, the Ping is east of it. Every place in this guide is plotted below by its own coordinates.",
+    legend: "One dot, one place",
+    placeTitle: "Where this is",
+    fromCentre: "{km} km from the old city",
+    seeAll: "All {count} places here",
+    zones: {
+      inside: "Inside the walls",
+      wall: "On the moat",
+      north: "North of the moat",
+      east: "East, toward the Ping",
+      south: "South of the moat",
+      west: "West, toward Doi Suthep",
+      beyond: "Farther afield",
+    },
+    beyondNote:
+      "Outside the walls, direction is exact and distance is compressed to fit. The farthest places are left off entirely.",
+  },
   explore: {
     title: "Explore Chiang Mai",
     subtitle: "Filter by mood, district, budget or time of day.",
@@ -228,6 +247,7 @@ const en = {
       price: "Budget",
       time: "Best time",
       distance: "Distance",
+      zone: "Where in the city",
       moreFilters: "Filters",
       clear: "Clear filters",
       results: "places",
@@ -425,6 +445,21 @@ const en = {
     },
     dayLabel: "Day {day}",
   },
+  credits: {
+    navLabel: "Credits",
+    title: "Credits",
+    intro: "Where the photography and the underlying data on this site come from.",
+    photosTitle: "Photographs",
+    photosBody:
+      "Place photography comes from Wikimedia Commons. A photo is used only when three things agree: Wikidata attaches the image to that place's own entry, that entry's coordinates are within 400m of ours, and it is the same kind of thing — a temple standing next to a cave is neither the cave nor a reason to illustrate it. Places that fail any of the three keep an illustration instead, which is why many here have no photograph. Most images are licensed CC BY or CC BY-SA, where naming the photographer is a condition of use rather than a courtesy.",
+    photosEmpty: "No photographs are in use yet.",
+    dataTitle: "Place data",
+    dataBody:
+      "Coordinates come from OpenStreetMap, © OpenStreetMap contributors, ODbL 1.0. Weather and air quality come from Open-Meteo, map tiles from MapTiler, and routing from OpenRouteService. Opening hours are partly from OpenStreetMap and partly editorial estimates — each place says which.",
+    illustratedTitle: "Illustrated placeholders",
+    illustratedBody:
+      "Places without a photograph show a generated illustration instead of a stock image. Cafés and restaurants are deliberately left this way: there is no free licensed photograph of a specific noodle shop, and a generic interior captioned with a real business's name would be a small lie told a hundred times over.",
+  },
   place: {
     localTip: "A local's tip",
     overview: "Overview",
@@ -435,6 +470,8 @@ const en = {
     awardPast: "Previously held",
     awardSince: "Since {year}",
     awardSourceLink: "Check this on {source}",
+    photoBy: "Photo: {artist} ({licence})",
+    photoCreditsLink: "Photo credits",
     awardSourcePlain: "Source: {source}",
     awardSourceNote: "Every award links to a page we opened and checked. These are third-party write-ups, not the awarding body's own site — credit is shown on each link.",
     awardYears: "{from}–{to}",
@@ -896,6 +933,7 @@ const en = {
     about:
       "Chiangmai Journey is an independent, editorial guide to Chiang Mai — built for travellers who prefer fewer, finer places.",
     explore: "Explore",
+    yours: "Your trips",
     company: "About",
     privacy: "Privacy Policy",
     terms: "Terms of Use",

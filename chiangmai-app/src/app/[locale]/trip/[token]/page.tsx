@@ -1,3 +1,4 @@
+import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -61,7 +62,7 @@ export default async function SharedTripPage({
   const places = countPlaces(trip);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16 lg:px-10 lg:py-20">
+    <Section as="div" width="default" rhythm="tight" className="lg:py-20">
       <Reveal as="div">
       <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent-text">{t.kicker}</p>
       <h1 className="mt-3 font-serif-display text-4xl leading-tight sm:text-5xl">
@@ -143,6 +144,6 @@ export default async function SharedTripPage({
           </li>
         ))}
       </ol>
-    </div>
+    </Section>
   );
 }

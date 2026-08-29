@@ -90,7 +90,7 @@ export function TripSummaryBar({ stats }: { stats: TripSummaryStats }) {
                 aria-hidden="true"
               />
               <div className={cn("min-w-0", condensed ? "flex items-baseline gap-2" : "")}>
-                <dt className="flex items-center gap-1 truncate text-[11px] uppercase tracking-wide text-muted-foreground">
+                <dt className="flex items-center gap-1 truncate text-xs uppercase tracking-wide text-muted-foreground">
                   {label}
                   {key === "cost" ? (
                     <InfoHint

@@ -206,12 +206,27 @@ PHASE0-TODO.md section 4. They are reasonable, not measured.
 
 ## Photos
 
-`Place.photoQuery` drives `npm run fetch:photos`. It is set only for public
-landmarks a stock photo can honestly depict (temples, waterfalls, gates,
-markets) and is **deliberately absent for named businesses** — a Pexels photo of
-a generic "Thai coffee shop" captioned as Ristr8to would misinform the visitor.
-Those places fall back to `<PlaceImage>`'s illustrated gradient, which claims
-nothing.
+`npm run fetch:photos` pulls freely-licensed photography from Wikimedia Commons
+via Wikidata. A photo is used only when three independent things agree: Wikidata
+attaches the image to an entity (P18), that entity's coordinates (P625) are
+within 400m of ours, and its type (P31) is the same kind of thing we are
+describing. Anything else keeps `<PlaceImage>`'s illustrated gradient, which
+claims nothing.
+
+This replaced a keyword search against Pexels, which asked for "specialty coffee
+shop Thailand" and captioned whatever came back with a specific place's name. Of
+its 26 downloads, only 4 could be shown to depict the place named; three showed
+somewhere else entirely, including a temple 700km away in Pattaya, and one
+street-food photo was serving as four different markets at once. All 26 were
+audited and 21 deleted.
+
+Even the replacement needed auditing. Its first run accepted 41 photos and five
+were wrong — a town standing in for the temple above it, a telescope dome for
+Doi Inthanon — which is what the P31 type gate and the Thai-name fix now catch.
+Accepted matches, with distance and licence, are recorded in
+`scripts/commons-results.json`; the rules themselves are covered by
+`src/lib/commons-match.test.ts`, and every published photo is credited on
+`/credits` because CC BY-SA requires it.
 
 ## Province-wide expansion — 91 places added (2026-08-20)
 
