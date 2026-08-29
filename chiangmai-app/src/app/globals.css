@@ -280,9 +280,32 @@
   border: 2px solid var(--color-background);
 }
 
+/*
+ * Display headings, and why their line-height depends on the language.
+ *
+ * Thai stacks up to two marks above the base letter and one below, so a line of
+ * Thai occupies far more vertical space than the same size of Latin. Measured on
+ * the home hero: at 80px the Thai title needs 138px of room — 1.69× the font
+ * size — while the heading was set to `leading-[0.98]`, a line box of 78.4px.
+ * The lines physically overlapped, which is what made the Thai hero look wrong
+ * while the English one looked fine.
+ *
+ * A tight display leading is a real choice for Latin, so it is kept there and
+ * relaxed only where the script needs it. `lang` is already on <html>, set from
+ * the route, so this needs nothing at the call sites.
+ */
+:root {
+  --display-leading: 1;
+}
+
+:root:lang(th) {
+  --display-leading: 1.32;
+}
+
 .font-serif-display {
   font-family: var(--font-serif);
   font-optical-sizing: auto;
+  line-height: var(--display-leading);
 }
 
 @media (prefers-reduced-motion: reduce) {

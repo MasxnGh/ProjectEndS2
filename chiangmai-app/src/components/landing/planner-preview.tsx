@@ -54,7 +54,7 @@ export function PlannerPreview() {
             <span className="h-px w-8 bg-band-accent" aria-hidden />
             {dict.home.plannerPreview.kicker}
           </p>
-          <h2 className="font-serif-display text-4xl leading-[1.05] tracking-tight sm:text-5xl">
+          <h2 className="font-serif-display text-4xl tracking-tight sm:text-5xl">
             {dict.home.plannerPreview.title}
           </h2>
           <p className="mt-5 max-w-lg text-lg leading-relaxed text-band-muted text-pretty">

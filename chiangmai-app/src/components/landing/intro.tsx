@@ -16,7 +16,7 @@ export function Intro() {
             <span className="h-px w-8 bg-accent" aria-hidden />
             {dict.home.intro.kicker}
           </p>
-          <h2 className="font-serif-display text-4xl leading-[1.05] tracking-tight sm:text-5xl">
+          <h2 className="font-serif-display text-4xl tracking-tight sm:text-5xl">
             {dict.home.intro.title}
           </h2>
         </Reveal>

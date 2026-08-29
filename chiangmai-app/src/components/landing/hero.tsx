@@ -29,7 +29,7 @@ export function Hero() {
           {dict.home.hero.kicker}
         </motion.p>
 
-        <h1 className="font-serif-display text-6xl leading-[0.98] tracking-tight sm:text-7xl md:text-8xl lg:text-[7.5rem]">
+        <h1 className="font-serif-display text-6xl tracking-tight sm:text-7xl md:text-8xl lg:text-[7.5rem]">
           <SplitText text={line1} as="span" className="block" />
           <SplitText text={line2} as="span" delay={0.15} className="block text-band-accent" />
         </h1>

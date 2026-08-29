@@ -102,7 +102,7 @@ export default async function GuideDetailPage({
               {publishedDate}
             </span>
           </div>
-          <h1 className="mt-3 font-serif-display text-4xl leading-[1.05] text-band-foreground sm:text-5xl">
+          <h1 className="mt-3 font-serif-display text-4xl text-band-foreground sm:text-5xl">
             {guide.title[locale]}
           </h1>
           <p className="mt-3 max-w-xl text-lg text-band-muted">{guide.dek[locale]}</p>
@@ -116,7 +116,12 @@ export default async function GuideDetailPage({
               <h2 className="font-serif-display text-2xl">{section.heading[locale]}</h2>
               <p
                 className={`mt-4 text-lg leading-relaxed text-muted-foreground text-pretty ${
-                  i === 0
+                  /* A drop cap is a Latin device and does not survive the
+                     journey: ::first-letter takes one character, which in Thai
+                     is usually a leading vowel — เ, แ, โ, ไ, ใ — that means
+                     nothing on its own, and at leading 0.85 any tone mark above
+                     it is clipped. English only. */
+                  i === 0 && locale === "en"
                     ? "first-letter:float-left first-letter:mr-3 first-letter:font-serif-display first-letter:text-6xl first-letter:leading-[0.85] first-letter:text-accent-text"
                     : ""
                 }`}
