@@ -29,7 +29,13 @@ export function Hero() {
           {dict.home.hero.kicker}
         </motion.p>
 
-        <h1 className="font-serif-display text-6xl tracking-tight sm:text-7xl md:text-8xl lg:text-[7.5rem]">
+        {/* The brand name, so it is Latin on both language versions — `lang`
+            says so, which is what keeps the Thai page from setting it with
+            Thai line-height. */}
+        <h1
+          lang="en"
+          className="font-serif-display text-6xl tracking-tight sm:text-7xl md:text-8xl lg:text-[7.5rem]"
+        >
           <SplitText text={line1} as="span" className="block" />
           <SplitText text={line2} as="span" delay={0.15} className="block text-band-accent" />
         </h1>

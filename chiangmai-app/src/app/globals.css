@@ -302,6 +302,19 @@
   --display-leading: 1.32;
 }
 
+/*
+ * A Latin run inside a Thai page is still Latin.
+ *
+ * The hero title is the brand name, so it reads "Chiangmai Journey" in both
+ * languages — and on the Thai page it would otherwise inherit Thai leading and
+ * sit noticeably looser than the identical words on the English one. Marking
+ * the element with `lang` is the correct way to say the language changes here,
+ * and it earns the Latin setting back.
+ */
+[lang="en"] {
+  --display-leading: 1;
+}
+
 .font-serif-display {
   font-family: var(--font-serif);
   font-optical-sizing: auto;
