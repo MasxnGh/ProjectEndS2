@@ -125,3 +125,43 @@ describe("isSortAvailable", () => {
     expect(isSortAvailable("nearest", OLD_CITY)).toBe(true);
   });
 });
+
+describe("photographed places first", () => {
+  /*
+   * Real slugs, so this is tied to what the photo pipeline actually produced
+   * rather than to a mock that would keep passing after the manifest changed.
+   * wat-chedi-luang has a verified Commons photograph; khao-soi-khun-yai is a
+   * named business, which the pipeline deliberately never fetches.
+   */
+  const photographed = makePlace({ slug: "wat-chedi-luang", rating: 4.0 });
+  const illustrated = makePlace({ slug: "khao-soi-khun-yai", rating: 5.0 });
+
+  it("leads with the photographed one under the default order", () => {
+    const sorted = sortPlaces([illustrated, photographed], "recommended", null);
+    expect(sorted.map((p) => p.slug)).toEqual(["wat-chedi-luang", "khao-soi-khun-yai"]);
+  });
+
+  it("keeps the catalogue's own order inside each group", () => {
+    const a = makePlace({ slug: "wat-phra-singh" });
+    const b = makePlace({ slug: "wat-chedi-luang" });
+    // Both are photographed, so neither is promoted past the other.
+    expect(sortPlaces([a, b], "recommended", null).map((p) => p.slug)).toEqual([
+      "wat-phra-singh",
+      "wat-chedi-luang",
+    ]);
+  });
+
+  it("does not override a sort the visitor actually chose", () => {
+    // The higher rating wins even though it has no photograph — "highest
+    // rated" has to mean highest rated.
+    const sorted = sortPlaces([photographed, illustrated], "rating", null);
+    expect(sorted[0].slug).toBe("khao-soi-khun-yai");
+  });
+
+  it("breaks ties in an explicit sort with the photograph", () => {
+    const tiedPhoto = makePlace({ slug: "wat-chedi-luang", rating: 4.5 });
+    const tiedNoPhoto = makePlace({ slug: "khao-soi-khun-yai", rating: 4.5 });
+    const sorted = sortPlaces([tiedNoPhoto, tiedPhoto], "rating", null);
+    expect(sorted[0].slug).toBe("wat-chedi-luang");
+  });
+});

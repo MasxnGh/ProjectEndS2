@@ -43,8 +43,16 @@ export const SQUARE_CENTRE: LatLng = {
  * side of it. The gates and bastions are the wall, and calling Tha Phae Gate
  * "inside the old city" would be a technically-true answer that no one who has
  * stood there would give.
+ *
+ * Widened from 40m once the remaining gates and bastions were added with
+ * coordinates from OpenStreetMap: at 40m, Chiang Mai Gate missed the band by
+ * 40cm and Jaeng Katam by 2m, so structures that *are* the wall were being
+ * filed as inside it. 67m is also the honest physical figure — the moat and the
+ * ring road on either side of it are about that wide — and it moves only three
+ * further catalogue entries onto the ring, all of them addresses on the moat
+ * road itself.
  */
-const WALL_BAND_DEG = 0.00035; // ~40m
+const WALL_BAND_DEG = 0.0006; // ~67m: the moat plus its ring roads
 
 /**
  * Past this, direction is all that is left worth saying. Doi Inthanon is 60km
