@@ -166,7 +166,7 @@ const en = {
   home: {
     hero: {
       kicker: "A Lanna Journal",
-      title: ["Chiang Mai,", "Slowly."],
+      title: ["Chiangmai", "Journey"],
       subtitle:
         "An editorial guide to the temples, valleys and quiet cafés of Northern Thailand — planned at the pace you choose.",
       cta: "Begin your journey",

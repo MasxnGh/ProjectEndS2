@@ -43,7 +43,7 @@ export function Orientation({
           <span className="h-px w-8 bg-accent" aria-hidden />
           {t.kicker}
         </p>
-        <h2 className="max-w-2xl font-serif-display text-4xl leading-[1.05] tracking-tight text-balance sm:text-5xl">
+        <h2 className="max-w-2xl font-serif-display text-4xl tracking-tight text-balance sm:text-5xl">
           {t.title}
         </h2>
         <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground text-pretty">

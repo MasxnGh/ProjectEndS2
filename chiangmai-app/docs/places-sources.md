@@ -1,6 +1,6 @@
 # Where the place data came from
 
-This documents the sourcing for the 193 places in `src/data/places/`, so anyone
+This documents the sourcing for the 204 places in `src/data/places/`, so anyone
 grading or maintaining this project can tell verified fact from editorial
 judgment. Read it alongside [PHASE0-TODO.md](../PHASE0-TODO.md), which covers the
 same distinction for the original 26 places.
@@ -36,6 +36,98 @@ hedged ("roughly", "or until sold out") so the display copy does not overclaim.
 **Before treating any of this as authoritative** — for example before showing a
 hard "closed today" message — spot-check the highest-traffic places against the
 venue's own page and set `dataLastVerified` to the date you checked.
+
+## The 2026 additions — six places, thirty-one candidates
+
+`scripts/resolve-place-candidates.mjs` looks a candidate up on Nominatim and
+keeps it only if the result sits inside the province bounds
+`src/data/places.test.ts` asserts and its name matches what was asked for.
+Thirty-one names went in and six came out with usable coordinates.
+
+Most of the losses were not missing data. The first run matched an English query
+against Nominatim's answer, which for these places is in Thai — "Wat Ram Poeng"
+against `วัดร่ำเปิง` shares nothing, so a dozen entries that were sitting in the
+results were dropped. Matching on the Thai name as well recovered them, at which
+point most turned out to be in the catalogue already: of fourteen candidates
+checked against the existing 193, eleven were duplicates. The catalogue was more
+complete than the request assumed, and padding it with near-duplicates would
+have been the wrong answer.
+
+One false positive is worth recording: a query for `ข้าวซอยแม่สาย` returned
+"Krua Lawng Khao", a different restaurant, and the name check passed it because
+both contain *khao* — a word in a large share of Thai food names. It was dropped
+by hand. Nearby is not the same as the same, and neither is sharing a common
+word.
+
+What was added, with coordinates from Nominatim on 2026-08-29:
+
+| Place | Why it was missing |
+|---|---|
+| ประตูเชียงใหม่ · ประตูแสนปุง | The catalogue had three of the five old-city gates |
+| แจ่งหัวลิน · แจ่งกะต๊ำ | It had one of the four corner bastions |
+| เจี่ยท้งเฮง | Chinese-Thai, in a restaurant list that leaned on khao soi |
+| ขนมจีนสันป่าข่อย | Khanom jeen with nam ngiao, likewise |
+
+Still dropped for want of a confirmable coordinate, and so deliberately absent:
+ต๋องเต็มโต๊ะ, ตลาดสมเพชร, เดอะ ริเวอร์ไซด์, แดช, แจ่งกู่เฮือง.
+
+Adding the gates and bastions also corrected `WALL_BAND_DEG` in
+`src/lib/city-square.ts`. At 40m, Chiang Mai Gate missed the "on the moat" band
+by 40cm and Jaeng Katam by 2m, so structures that *are* the wall were filed as
+inside it. The band is 67m now — the moat plus its ring roads — which puts all
+four on the wall and moves only three further entries onto the ring.
+
+Opening hours for the two restaurants are **not verified**: both carry
+`dataLastVerified: null` and their `openingHoursText` says so in both languages.
+
+## Five pins supplied by the project owner, and what they corrected
+
+Five places had been dropped for want of a confirmable coordinate. The owner
+supplied Google Maps links for all five; the pin was taken from the `!3d/!4d`
+pair in the resolved URL and then **checked against a second source** rather
+than trusted on its own. Reverse-geocoding each against OpenStreetMap confirmed
+three by name — `tong tem tob` on Nimman Soi 13, `Riverside Bar & Restaurant` on
+Charoenrat, `Dash` on Moon Muang Soi 2. Somphet Market returned a pharmacy at
+183 Moon Muang Rd, a neighbour rather than the market, so that pin rests on the
+supplied link alone and is recorded here as such. Jaeng Ku Hueang returned Arak
+Road, which is the road the bastion stands on.
+
+**Jaeng Ku Hueang corrected the wall model.** It is the south-west bastion, and
+with it the square could be fitted to all four corners instead of bracketed
+between places known to be inside and outside. The west line had been **235m too
+far west**; north, south and east were within 60m. The corrected square measures
+1513m north to south by 1568m east to west, which agrees with the ~1.6km the
+city is recorded as having been laid out to, and all four bastions now sit the
+same distance from the centre — 1.07 to 1.11km. `src/lib/city-square.test.ts`
+asserts both of those, because the old assertions all tested which *side* of a
+line a place fell on, which stayed true across a wide range of wrong lines.
+
+## Do the names and photographs match the places?
+
+Asked directly, and answered with two independent checks.
+
+**Names.** 38 of the 39 published photographs are attached by Wikidata to an
+entity whose name matches the place. Eight match only after transliteration —
+Wat Jed Lin against `Wat Chet Lin`, Wat Pan Whaen against `Wat Phan Waen`, Nong
+Buak Hard Park against `Buak Hard Public Park` — and were read individually
+rather than counted. The thirty-ninth, Wat Umong, is the one hand-verified
+Pexels photograph and has no entity by design.
+
+**Photographs.** The distance between our pin and the Wikidata entity the image
+belongs to has a median of **31m**, and 30 of 38 are under 100m. Two exceed
+200m: Bhubing Palace at 373m and Doi Inthanon at 292m, both large sites whose
+files are named `Bhubing Palace` and `InthanonChedi1` — the palace and the
+summit chedis. Nothing else is above 180m.
+
+**Reverse geocoding did not settle it, and the reason is worth recording.**
+Running all 39 pins back through Nominatim returned a name matching ours for
+only 18. Reading the other 21 rather than counting them: three are alternate
+names for the same place (`วัดเด่นสะหลีศรีเมืองแกน`, `วัดต้นเกว๋น`,
+`Wiang Tha Kan`), and the rest are the road the temple stands on or the café at
+its gate — `กาแฟ ยูเทิร์น` for Wat Chedi Luang, `Republic Coffee` for Wat Si
+Koet. Reverse geocoding returns the nearest addressable object, which for a
+temple compound is rarely the temple. It is the wrong instrument for this
+question, and an 18/39 figure would be a misleading way to report it.
 
 ## Michelin tags — verified against the MICHELIN Guide (2026-08-12)
 

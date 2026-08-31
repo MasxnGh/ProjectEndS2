@@ -14,22 +14,28 @@ import { haversineKm, type LatLng } from "@/lib/geo/distance";
  * cannot disagree with the map, and it gives the same answer for a place nobody
  * has labelled yet.
  *
- * The wall lines below were not recalled from memory — they were fitted to
- * landmarks in this catalogue whose position relative to the wall is not in
- * question, and the tests pin those cases:
+ * The wall lines are the average of the four corner bastions, which are the
+ * corners — no estimation is involved:
  *
- *   Jaeng Si Phum (18.7950, 98.9936) is the north-east bastion, so it sets both
- *   the north and east lines. Tha Phae Gate sits at 98.9934, agreeing with the
- *   east line to within 20m. Wat Lok Molee stands just outside the north moat;
- *   Wat Sri Suphan is in Wua Lai, outside the south; Wat Suan Dok is outside the
- *   west; and Nong Buak Hard Park is inside the south-west corner. Every one of
- *   those falls on the correct side of the lines chosen here.
+ *   แจ่งหัวลิน   NW  18.79530, 98.97850
+ *   แจ่งศรีภูมิ   NE  18.79500, 98.99360
+ *   แจ่งกู่เฮือง  SW  18.78161, 98.97798
+ *   แจ่งกะต๊ำ    SE  18.78142, 98.99273
+ *
+ * An earlier version had only the north-east bastion and bracketed the other
+ * two lines between places known to be inside and outside — Wat Suan Dok beyond
+ * the west moat, Nong Buak Hard Park within it. That bracket was wide, and the
+ * west line came out **235m too far west**; north, south and east were within
+ * 60m. Once all four corners were known the square could be fitted instead of
+ * guessed, and the result is 1513m north to south by 1568m east to west, which
+ * agrees with the ~1.6km square the city is recorded as having been laid out
+ * to. That agreement is the check that the fit is right.
  */
 export const CITY_SQUARE = {
-  north: 18.795,
-  south: 18.781,
-  west: 98.976,
-  east: 98.9935,
+  north: 18.79515,
+  south: 18.78151,
+  west: 98.97824,
+  east: 98.99317,
 } as const;
 
 /** Centre of the square — near Wat Chedi Luang and the city pillar, as it should be. */
@@ -43,8 +49,16 @@ export const SQUARE_CENTRE: LatLng = {
  * side of it. The gates and bastions are the wall, and calling Tha Phae Gate
  * "inside the old city" would be a technically-true answer that no one who has
  * stood there would give.
+ *
+ * Widened from 40m once the remaining gates and bastions were added with
+ * coordinates from OpenStreetMap: at 40m, Chiang Mai Gate missed the band by
+ * 40cm and Jaeng Katam by 2m, so structures that *are* the wall were being
+ * filed as inside it. 67m is also the honest physical figure — the moat and the
+ * ring road on either side of it are about that wide — and it moves only three
+ * further catalogue entries onto the ring, all of them addresses on the moat
+ * road itself.
  */
-const WALL_BAND_DEG = 0.00035; // ~40m
+const WALL_BAND_DEG = 0.0006; // ~67m: the moat plus its ring roads
 
 /**
  * Past this, direction is all that is left worth saying. Doi Inthanon is 60km

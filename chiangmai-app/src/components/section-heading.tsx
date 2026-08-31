@@ -33,7 +33,7 @@ export function SectionHeading({
           {kicker}
         </p>
       ) : null}
-      <Tag className="font-serif-display text-4xl leading-[1.05] tracking-tight text-balance sm:text-5xl md:text-6xl">
+      <Tag className="font-serif-display text-4xl tracking-tight text-balance sm:text-5xl md:text-6xl">
         {title}
       </Tag>
       {subtitle ? (

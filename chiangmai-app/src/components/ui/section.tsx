@@ -33,11 +33,18 @@ const WIDTH: Record<SectionWidth, string> = {
   full: "w-full",
 };
 
+/*
+ * Rhythm compresses on a phone.
+ *
+ * The same air that gives a section room on a 1600px display is dead scroll on
+ * a 375px one — 112px above and below a paragraph is most of a thumb swipe
+ * spent on nothing. Each step keeps its desktop value from `sm` up.
+ */
 const RHYTHM: Record<SectionRhythm, string> = {
   none: "",
-  tight: "py-12 lg:py-16",
-  default: "py-20 lg:py-28",
-  loose: "py-28 lg:py-40",
+  tight: "py-8 sm:py-12 lg:py-16",
+  default: "py-12 sm:py-20 lg:py-28",
+  loose: "py-16 sm:py-28 lg:py-40",
 };
 
 export function Section({

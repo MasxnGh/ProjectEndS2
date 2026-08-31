@@ -96,7 +96,7 @@ export function ExploreResultsBar({
               <select
                 value={sort}
                 onChange={(e) => onSortChange(e.target.value as ExploreSort)}
-                className="rounded-full border border-border bg-transparent px-3 py-1.5 text-xs text-foreground outline-none transition-colors focus:border-accent"
+                className="min-h-11 rounded-full border border-border bg-transparent px-3 text-xs text-foreground outline-none transition-colors focus:border-accent sm:min-h-0 sm:py-1.5"
               >
                 {EXPLORE_SORTS.map((option) => (
                   <option

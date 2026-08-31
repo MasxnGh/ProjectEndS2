@@ -180,7 +180,7 @@ export default async function PlaceDetailPage({
           <SplitText
             as="h1"
             text={place.name[locale]}
-            className="font-serif-display text-4xl leading-[1.02] text-band-foreground sm:text-5xl md:text-6xl"
+            className="font-serif-display text-4xl text-band-foreground sm:text-5xl md:text-6xl"
           />
           <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-band-muted">
             <span className="flex items-center gap-1.5">

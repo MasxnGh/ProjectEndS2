@@ -79,7 +79,9 @@ export function ZoneFilter({
       <div
         role="group"
         aria-label={t.title}
-        className="relative aspect-square w-44 shrink-0 select-none"
+        // Bigger on a phone: the outer bands are 22% of the width, so 176px
+        // left them 39px tall and 208px brings them to 45px.
+        className="relative aspect-square w-52 shrink-0 select-none sm:w-44"
       >
         {/* The drawing. Purely decorative — every label lives on the buttons. */}
         <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" aria-hidden>
@@ -161,7 +163,7 @@ export function ZoneFilter({
           aria-pressed={value === "beyond"}
           disabled={(counts.beyond ?? 0) === 0 && value !== "beyond"}
           className={cn(
-            "mt-3 w-full rounded-md border px-3 py-2 text-left text-sm transition-colors sm:w-auto",
+            "mt-3 flex min-h-11 w-full items-center rounded-md border px-3 text-left text-sm transition-colors sm:w-auto",
             value === "beyond"
               ? "border-accent bg-accent/12 text-accent-text"
               : "border-border hover:border-border-strong",

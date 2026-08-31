@@ -1,0 +1,103 @@
+{
+  "resolved": [
+    {
+      "slug": "chiang-mai-gate",
+      "en": "Chiang Mai Gate",
+      "th": "ประตูเชียงใหม่",
+      "category": "village",
+      "lat": 18.78136,
+      "lng": 98.98898,
+      "osmName": "ประตูเชียงใหม่",
+      "osmType": "city_gate",
+      "displayName": "ประตูเชียงใหม่, ถนนบำรุงบุรี, แขวงเม็งราย, ตำบลพระสิงห์, เทศบาลนครเชียงใหม่, ป่าแดด, อำเภอเมืองเชียงใหม่, จังหวัดเชียงใหม่, 55520, ประเทศไทย"
+    },
+    {
+      "slug": "jia-tong-heng",
+      "en": "Jia Tong Heng",
+      "th": "เจี่ยท้งเฮง",
+      "category": "restaurant",
+      "lat": 18.78182,
+      "lng": 99.0015,
+      "osmName": "เจี่ยท้งเฮง",
+      "osmType": "restaurant",
+      "displayName": "เจี่ยท้งเฮง, ถนนเจริญประเทศ 8, แขวงเม็งราย, ตำบลช้างคลาน, เทศบาลนครเชียงใหม่, ฟ้าฮ่าม, อำเภอเมืองเชียงใหม่, จังหวัดเชียงใหม่, 55520, ประเทศไทย"
+    },
+    {
+      "slug": "khanom-jeen-san-pa-khoi",
+      "en": "Khanom Jeen San Pa Khoi",
+      "th": "ขนมจีนสันป่าข่อย",
+      "category": "restaurant",
+      "lat": 18.78577,
+      "lng": 99.00842,
+      "osmName": "ขนมจีนสันป่าข่อย (เจ้าเก่า)",
+      "osmType": "restaurant",
+      "displayName": "ขนมจีนสันป่าข่อย (เจ้าเก่า), ถนนท่าสะต๋อย, แขวงกาวิละ, เทศบาลนครเชียงใหม่, ฟ้าฮ่าม, อำเภอเมืองเชียงใหม่, จังหวัดเชียงใหม่, 50000, ประเทศไทย"
+    }
+  ],
+  "dropped": [
+    {
+      "slug": "suan-prung-gate",
+      "en": "Suan Prung Gate",
+      "th": "ประตูสวนปรุง",
+      "category": "village",
+      "reason": "no result",
+      "sawCount": 0
+    },
+    {
+      "slug": "jaeng-ku-hueang",
+      "en": "Jaeng Ku Hueang",
+      "th": "แจ่งกู่เฮือง",
+      "category": "village",
+      "reason": "no result",
+      "sawCount": 0
+    },
+    {
+      "slug": "jaeng-hua-rin",
+      "en": "Jaeng Hua Rin",
+      "th": "แจ่งหัวริน",
+      "category": "village",
+      "reason": "no result",
+      "sawCount": 0
+    },
+    {
+      "slug": "jaeng-katam",
+      "en": "Jaeng Katam",
+      "th": "แจ่งกะต๊ำ",
+      "category": "village",
+      "reason": "no result matched the name in province",
+      "sawCount": 1
+    },
+    {
+      "slug": "tong-tem-toh",
+      "en": "Tong Tem Toh",
+      "th": "ต๋องเต็มโต๊ะ",
+      "category": "restaurant",
+      "reason": "no result",
+      "sawCount": 0
+    },
+    {
+      "slug": "the-riverside-chiang-mai",
+      "en": "The Riverside Bar & Restaurant",
+      "th": "เดอะ ริเวอร์ไซด์",
+      "category": "restaurant",
+      "reason": "no result",
+      "sawCount": 0
+    },
+    {
+      "slug": "dash-restaurant-bar",
+      "en": "Dash Restaurant & Bar",
+      "th": "แดช เรสเตอรองท์ แอนด์ บาร์",
+      "category": "restaurant",
+      "reason": "no result",
+      "sawCount": 0
+    },
+    {
+      "slug": "somphet-market",
+      "en": "Somphet Market",
+      "th": "ตลาดสมเพชร",
+      "category": "market",
+      "reason": "no result",
+      "sawCount": 0
+    }
+  ]
+}

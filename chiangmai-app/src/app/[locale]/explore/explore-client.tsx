@@ -120,7 +120,8 @@ function FilterPill({
       type="button"
       onClick={onClick}
       className={cn(
-        "shrink-0 rounded-full border px-4 py-2 text-sm transition-colors duration-200",
+        // min-h-11 is 44px, the smallest target a finger hits reliably.
+        "flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm transition-colors duration-200",
         active
           ? "border-accent bg-accent text-accent-foreground"
           : "border-border text-foreground/80 hover:border-accent hover:text-accent-text"
@@ -482,7 +483,7 @@ export function ExploreClient({
             onClick={() => setProximityOpen((v) => !v)}
             aria-expanded={proximityOpen}
             className={cn(
-              "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              "flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
               reference
                 ? "border-accent bg-accent text-accent-foreground"
                 : "border-border hover:border-accent hover:text-accent-text"
@@ -513,7 +514,7 @@ export function ExploreClient({
             onClick={() => setAirQualityOn((v) => !v)}
             aria-pressed={airQualityOn}
             className={cn(
-              "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              "flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
               airQualityOn
                 ? "border-accent bg-accent text-accent-foreground"
                 : "border-border hover:border-accent hover:text-accent-text"
@@ -527,7 +528,7 @@ export function ExploreClient({
             type="button"
             onClick={() => setFiltersOpen((v) => !v)}
             aria-expanded={filtersOpen}
-            className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
+            className="flex min-h-11 items-center gap-2 rounded-full border border-border px-4 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
           >
             <SlidersHorizontal className="h-3.5 w-3.5" />
             {dict.explore.filters.moreFilters}
@@ -758,7 +759,7 @@ export function ExploreClient({
                 type="button"
                 onClick={() => handleSetView("grid")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  "flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors sm:min-h-0 sm:py-1.5",
                   view === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                 )}
               >
@@ -769,7 +770,7 @@ export function ExploreClient({
                 type="button"
                 onClick={() => handleSetView("map")}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  "flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors sm:min-h-0 sm:py-1.5",
                   view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
                 )}
               >
@@ -797,9 +798,11 @@ export function ExploreClient({
           // search text too would restart this animation on every keystroke
           // and make the grid strobe while someone types.
           key={filterSignature}
-          // Two columns even on the narrowest phone: one column of 450px cards
-          // turned 24 results into sixteen screens of scrolling.
-          className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3"
+          // One column on a phone, because each entry is a row there rather
+          // than a card — see PlaceCard. Two columns of 156px cards was the
+          // earlier answer to a one-column page being sixteen screens long, but
+          // it bought that by squeezing the place name into 65px of measure.
+          className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
           initial="hidden"
           animate="visible"
           transition={{ staggerChildren: reducedMotion ? 0 : 0.04 }}
@@ -829,9 +832,10 @@ export function ExploreClient({
                   // The Compare pill below is positioned against this grid
                   // cell, not the card. `h-full` makes the card fill the cell
                   // so the pill can't detach and float below a short card, and
-                  // `pb-14` reserves the band it sits in so it can't cover the
-                  // district/duration/price row.
-                  className="h-full pb-14"
+                  // the bottom padding reserves the band it sits in so it can't
+                  // cover the district/duration/price row. No band on a phone,
+                  // where the pill is not shown.
+                  className="h-full sm:pb-14"
                   place={place}
                   plannerDayId={plannerDayId ?? undefined}
                   plannerDayNumber={plannerDayNumber ?? undefined}
@@ -844,7 +848,12 @@ export function ExploreClient({
                   aria-pressed={selected}
                   aria-label={selected ? dict.explore.compare.remove : dict.explore.compare.add}
                   className={cn(
-                    "absolute bottom-3 left-3 z-10 flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-medium backdrop-blur-sm transition-colors",
+                    /* Not on a phone. Compare puts several places on one map
+                       to weigh them against each other, which needs room the
+                       phone map does not have — and the reserved band cost 44px
+                       on every row of the main browse list. Explore's map view
+                       is the better tool at that size. */
+                    "absolute bottom-3 left-3 z-10 hidden h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium backdrop-blur-sm transition-colors sm:flex",
                     selected
                       ? "border-secondary bg-secondary text-secondary-foreground"
                       : "border-border-strong bg-background/85 text-foreground hover:border-secondary"
