@@ -121,3 +121,48 @@ describe("isInsideWalls", () => {
     expect(isInsideWalls(getPlaceBySlug("nimmanhaemin")!.coordinates)).toBe(false);
   });
 });
+
+describe("the square is fitted to the four bastions", () => {
+  /*
+   * The corners are the definition, so this is not a regression test in the
+   * usual sense — it is the check that the constant still describes a square.
+   *
+   * An earlier version knew only the north-east corner and bracketed the west
+   * line between a temple outside the moat and a park inside it; that bracket
+   * put the line 235m too far west, and nothing caught it because every
+   * assertion was about which *side* of a line a place fell on, which stays
+   * true across a wide range of wrong lines. Distance from the centre does not:
+   * on a square all four corners are the same distance from the middle, so if
+   * one line drifts, one pair of corners drifts with it.
+   */
+  const BASTIONS: [string, number, number][] = [
+    ["แจ่งหัวลิน", 18.7953, 98.9785],
+    ["แจ่งศรีภูมิ", 18.795, 98.9936],
+    ["แจ่งกู่เฮือง", 18.7816148, 98.977978],
+    ["แจ่งกะต๊ำ", 18.78142, 98.99273],
+  ];
+
+  it("puts every corner on the wall", () => {
+    for (const [name, lat, lng] of BASTIONS) {
+      expect(locateInSquare({ lat, lng }).zone, name).toBe("wall");
+    }
+  });
+
+  it("keeps all four corners the same distance from the centre", () => {
+    const distances = BASTIONS.map(([, lat, lng]) => locateInSquare({ lat, lng }).km);
+    const spread = Math.max(...distances) - Math.min(...distances);
+    // 40m of spread across a 1.5km square is the survey noise in the pins.
+    expect(spread).toBeLessThan(0.05);
+  });
+
+  it("measures the square at the size the city was laid out to", () => {
+    // Chiang Mai's wall is recorded as roughly 1.6km on a side. This is the
+    // independent check that the fitted lines describe the real thing.
+    const northSouth = (CITY_SQUARE.north - CITY_SQUARE.south) * 111;
+    const eastWest = (CITY_SQUARE.east - CITY_SQUARE.west) * 111 * Math.cos((18.79 * Math.PI) / 180);
+    expect(northSouth).toBeGreaterThan(1.4);
+    expect(northSouth).toBeLessThan(1.7);
+    expect(eastWest).toBeGreaterThan(1.4);
+    expect(eastWest).toBeLessThan(1.7);
+  });
+});
