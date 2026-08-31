@@ -27,6 +27,7 @@ export function PlaceCard({
   plannerDayNumber,
   distanceKm,
   travelMinutes,
+  overlay,
 }: {
   place: Place;
   className?: string;
@@ -36,6 +37,16 @@ export function PlaceCard({
   /** Real distance from a reference point (current place, or a proximity-search origin) — shown as a badge when set. */
   distanceKm?: number;
   travelMinutes?: number;
+  /**
+   * An extra control positioned against the card — Explore's Compare pill.
+   *
+   * It has to be rendered *inside* the element that lifts on hover, not beside
+   * it. As a sibling in the grid cell the pill stayed put while the card rose
+   * 4px underneath it, so the two came apart every time the pointer arrived.
+   * Anything passed here shares the card's hover, and positions against the
+   * card's own box rather than the cell's.
+   */
+  overlay?: React.ReactNode;
 }) {
   const { locale, dict } = useLocale();
   const { showToast } = useToast();
@@ -257,6 +268,8 @@ export function PlaceCard({
         className="absolute inset-0 z-0"
         aria-label={`${dict.common.viewDetails}: ${place.name[locale]}`}
       />
+
+      {overlay}
       </SpotlightCard>
     </motion.div>
   );

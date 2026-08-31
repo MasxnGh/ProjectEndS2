@@ -829,39 +829,42 @@ export function ExploreClient({
                 }}
               >
                 <PlaceCard
-                  // The Compare pill below is positioned against this grid
-                  // cell, not the card. `h-full` makes the card fill the cell
-                  // so the pill can't detach and float below a short card, and
-                  // the bottom padding reserves the band it sits in so it can't
-                  // cover the district/duration/price row. No band on a phone,
-                  // where the pill is not shown.
+                  // `h-full` makes the card fill the cell, and the bottom
+                  // padding reserves the band the Compare pill sits in so it
+                  // cannot cover the district/duration/price row. No band on a
+                  // phone, where the pill is not shown.
                   className="h-full sm:pb-14"
                   place={place}
                   plannerDayId={plannerDayId ?? undefined}
                   plannerDayNumber={plannerDayNumber ?? undefined}
                   distanceKm={proximity?.distanceKm}
                   travelMinutes={proximity?.travelMinutes}
+                  // Handed to the card rather than rendered beside it: as a
+                  // sibling in this cell the pill stayed put while the card
+                  // rose 4px on hover, and the two visibly came apart.
+                  overlay={
+                    <button
+                      type="button"
+                      onClick={() => toggleCompare(place.slug)}
+                      aria-pressed={selected}
+                      aria-label={selected ? dict.explore.compare.remove : dict.explore.compare.add}
+                      className={cn(
+                        /* Not on a phone. Compare puts several places on one
+                           map to weigh them against each other, which needs
+                           room the phone map does not have — and the reserved
+                           band cost 44px on every row of the main browse list.
+                           Explore's map view is the better tool at that size. */
+                        "absolute bottom-3 left-3 z-10 hidden h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium backdrop-blur-sm transition-colors sm:flex",
+                        selected
+                          ? "border-secondary bg-secondary text-secondary-foreground"
+                          : "border-border-strong bg-background/85 text-foreground hover:border-secondary"
+                      )}
+                    >
+                      {selected ? <Check className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
+                      {dict.explore.compare.pill}
+                    </button>
+                  }
                 />
-                <button
-                  type="button"
-                  onClick={() => toggleCompare(place.slug)}
-                  aria-pressed={selected}
-                  aria-label={selected ? dict.explore.compare.remove : dict.explore.compare.add}
-                  className={cn(
-                    /* Not on a phone. Compare puts several places on one map
-                       to weigh them against each other, which needs room the
-                       phone map does not have — and the reserved band cost 44px
-                       on every row of the main browse list. Explore's map view
-                       is the better tool at that size. */
-                    "absolute bottom-3 left-3 z-10 hidden h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium backdrop-blur-sm transition-colors sm:flex",
-                    selected
-                      ? "border-secondary bg-secondary text-secondary-foreground"
-                      : "border-border-strong bg-background/85 text-foreground hover:border-secondary"
-                  )}
-                >
-                  {selected ? <Check className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
-                  {dict.explore.compare.pill}
-                </button>
               </motion.div>
             );
           })}
