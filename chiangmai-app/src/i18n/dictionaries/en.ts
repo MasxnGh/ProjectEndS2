@@ -686,6 +686,8 @@ const en = {
       optimize: "Optimize route",
       optimizing: "Arranging…",
       openInGoogleMaps: "Open in Google Maps",
+      openInGoogleMapsTrimmed:
+        "Open in Google Maps — {count} stops left out, Maps allows nine between the ends",
       totalDistance: "Total distance",
       totalDuration: "Travel time",
       stops: "Stops",

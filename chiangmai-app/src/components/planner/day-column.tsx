@@ -6,7 +6,8 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { EASE } from "@/lib/motion";
 
-import { AlertTriangle, ChevronDown, Plus, Sparkles, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, Map as MapIcon, Plus, Sparkles, Trash2 } from "lucide-react";
+import { googleMapsDirectionsUrl, googleMapsPlaceUrl } from "@/lib/google-maps";
 import type { Place } from "@/data/types";
 import type { AirQualityResponse, DailyForecastEntry } from "@/lib/weather/types";
 import { SortablePlaceItem } from "@/components/planner/sortable-place-item";
@@ -97,6 +98,20 @@ export function DayColumn({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [usedFallbackTimes, setUsedFallbackTimes] = useState(false);
 
+  /*
+   * Taking the finished day out to Google Maps.
+   *
+   * The link existed already, but only inside the planner's separate "map"
+   * view — so someone who built a plan in the default view never saw it. It
+   * belongs on the day, next to the controls that built it.
+   *
+   * A day with one stop gets a place link instead of a route: Google's
+   * directions action needs somewhere to travel from.
+   */
+  const directions = googleMapsDirectionsUrl(places);
+  const mapsHref =
+    directions.url || (places.length === 1 ? googleMapsPlaceUrl(places[0]) : "");
+
   const stats = dayStats(places);
   const schedule = buildSchedule(places);
   const pace = computeDayPace(places, schedule);
@@ -176,6 +191,32 @@ export function DayColumn({
           {date ? <p className="text-xs text-muted-foreground">{formatDayDate(date, locale)}</p> : null}
         </div>
         <div className="flex items-center gap-1">
+          {mapsHref ? (
+            <a
+              href={mapsHref}
+              target="_blank"
+              rel="noreferrer"
+              className="no-print rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-surface-muted hover:text-accent-text"
+              title={
+                directions.omitted > 0
+                  ? dict.planner.route.openInGoogleMapsTrimmed.replace(
+                      "{count}",
+                      String(directions.omitted)
+                    )
+                  : dict.planner.route.openInGoogleMaps
+              }
+              aria-label={
+                directions.omitted > 0
+                  ? dict.planner.route.openInGoogleMapsTrimmed.replace(
+                      "{count}",
+                      String(directions.omitted)
+                    )
+                  : dict.planner.route.openInGoogleMaps
+              }
+            >
+              <MapIcon className="h-4 w-4" />
+            </a>
+          ) : null}
           <button
             type="button"
             onClick={(event) => onAddPlace(event.currentTarget)}

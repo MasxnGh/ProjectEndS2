@@ -1,5 +1,6 @@
 "use client";
 
+import { googleMapsDirectionsUrl } from "@/lib/google-maps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import MapGL, { Marker, Popup, NavigationControl, Source, Layer, type MapRef } from "react-map-gl/maplibre";
@@ -106,24 +107,6 @@ function DayRouteLayer({ day, color }: { day: TripDay; color: string }) {
       />
     </Source>
   );
-}
-
-function googleMapsDirectionsUrl(placesInOrder: Place[]) {
-  if (placesInOrder.length === 0) return "";
-  const origin = placesInOrder[0].coordinates;
-  const destination = placesInOrder[placesInOrder.length - 1].coordinates;
-  const waypoints = placesInOrder
-    .slice(1, -1)
-    .map((p) => `${p.coordinates.lat},${p.coordinates.lng}`)
-    .join("|");
-  const params = new URLSearchParams({
-    api: "1",
-    origin: `${origin.lat},${origin.lng}`,
-    destination: `${destination.lat},${destination.lng}`,
-    travelmode: "driving",
-  });
-  if (waypoints) params.set("waypoints", waypoints);
-  return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
 export function PlannerMap({
@@ -328,7 +311,7 @@ export function PlannerMap({
       <div className="grid gap-3 sm:grid-cols-2">
         {days.map((day, dayIndex) => {
           const stats = dayStats(day.places);
-          const mapsUrl = googleMapsDirectionsUrl(day.places);
+          const directions = googleMapsDirectionsUrl(day.places);
           return (
             <div key={day.id} className="rounded-md border border-border p-4 text-sm">
               <button
@@ -364,15 +347,20 @@ export function PlannerMap({
                 {day.places.length === 0 ? <li>{dict.planner.dayEmptyBody}</li> : null}
               </ul>
 
-              {mapsUrl ? (
+              {directions.url ? (
                 <a
-                  href={mapsUrl}
+                  href={directions.url}
                   target="_blank"
                   rel="noreferrer"
                   className="no-print mt-3 flex items-center gap-1.5 text-xs font-medium text-accent-text hover:underline"
                 >
                   <ExternalLink className="h-3 w-3" />
-                  {dict.planner.route.openInGoogleMaps}
+                  {directions.omitted > 0
+                    ? dict.planner.route.openInGoogleMapsTrimmed.replace(
+                        "{count}",
+                        String(directions.omitted)
+                      )
+                    : dict.planner.route.openInGoogleMaps}
                 </a>
               ) : null}
             </div>
