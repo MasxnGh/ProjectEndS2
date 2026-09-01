@@ -1,5 +1,6 @@
 "use client";
 
+import { OpenInMapsLink } from "@/components/planner/open-in-maps-link";
 import { useMemo, useState } from "react";
 import { AlertTriangle, ChevronDown, ChevronUp, Lock, LocateFixed, Route, Sun, Sunset } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -379,9 +380,14 @@ export function DayTimeline({
 
   return (
     <div className={cn("rounded-lg border border-border bg-surface p-4", fullWidth ? "w-full" : "w-[380px] shrink-0 snap-start lg:w-[400px]")}>
-      <h3 className="mb-3 font-serif-display text-lg">
-        {dict.planner.day} {dayNumber}
-      </h3>
+      {/* The timeline is the view someone reads on the morning of the day, so
+          the link out to navigation belongs at the top of it. */}
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <h3 className="font-serif-display text-lg">
+          {dict.planner.day} {dayNumber}
+        </h3>
+        <OpenInMapsLink places={places} variant="icon" className="-mr-1.5 shrink-0" />
+      </div>
 
       {baseLocation ? (
         timeline.leaveByMinutes !== null ? (
