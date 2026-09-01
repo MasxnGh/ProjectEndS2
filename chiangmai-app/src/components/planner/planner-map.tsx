@@ -1,10 +1,11 @@
 "use client";
 
+import { OpenInMapsLink } from "@/components/planner/open-in-maps-link";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import MapGL, { Marker, Popup, NavigationControl, Source, Layer, type MapRef } from "react-map-gl/maplibre";
 import { useReducedMotion } from "motion/react";
-import { ExternalLink, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTheme } from "@/components/providers/theme-provider";
@@ -106,24 +107,6 @@ function DayRouteLayer({ day, color }: { day: TripDay; color: string }) {
       />
     </Source>
   );
-}
-
-function googleMapsDirectionsUrl(placesInOrder: Place[]) {
-  if (placesInOrder.length === 0) return "";
-  const origin = placesInOrder[0].coordinates;
-  const destination = placesInOrder[placesInOrder.length - 1].coordinates;
-  const waypoints = placesInOrder
-    .slice(1, -1)
-    .map((p) => `${p.coordinates.lat},${p.coordinates.lng}`)
-    .join("|");
-  const params = new URLSearchParams({
-    api: "1",
-    origin: `${origin.lat},${origin.lng}`,
-    destination: `${destination.lat},${destination.lng}`,
-    travelmode: "driving",
-  });
-  if (waypoints) params.set("waypoints", waypoints);
-  return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
 export function PlannerMap({
@@ -328,7 +311,6 @@ export function PlannerMap({
       <div className="grid gap-3 sm:grid-cols-2">
         {days.map((day, dayIndex) => {
           const stats = dayStats(day.places);
-          const mapsUrl = googleMapsDirectionsUrl(day.places);
           return (
             <div key={day.id} className="rounded-md border border-border p-4 text-sm">
               <button
@@ -364,17 +346,7 @@ export function PlannerMap({
                 {day.places.length === 0 ? <li>{dict.planner.dayEmptyBody}</li> : null}
               </ul>
 
-              {mapsUrl ? (
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="no-print mt-3 flex items-center gap-1.5 text-xs font-medium text-accent-text hover:underline"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  {dict.planner.route.openInGoogleMaps}
-                </a>
-              ) : null}
+              <OpenInMapsLink places={day.places} className="mt-3 text-xs" />
             </div>
           );
         })}

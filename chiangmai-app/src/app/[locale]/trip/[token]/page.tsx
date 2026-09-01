@@ -6,6 +6,7 @@ import { CalendarRange, Eye, MapPin } from "lucide-react";
 import { findSharedTripByToken } from "@/lib/db/shared-trip";
 import { toSerializedTrip, type SerializedTrip } from "@/lib/db/types";
 import { getPlaceBySlug } from "@/data/places";
+import { OpenInMapsLink } from "@/components/planner/open-in-maps-link";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { CopySharedTripButton } from "@/components/trips/copy-shared-trip-button";
 import { Reveal } from "@/components/reveal";
@@ -100,9 +101,21 @@ export default async function SharedTripPage({
           // <li> children, and a wrapper div there is invalid markup.
           <li key={index}>
           <Reveal as="div" delay={Math.min(index, 6) * 0.06}>
-            <h2 className="font-serif-display text-2xl">
-              {t.dayLabel.replace("{day}", String(index + 1))}
-            </h2>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+              <h2 className="font-serif-display text-2xl">
+                {t.dayLabel.replace("{day}", String(index + 1))}
+              </h2>
+              {/* Whoever opens a shared link is usually the one about to drive
+                  it, so this is the surface that most needs the way out to
+                  navigation. Built from the stops that still resolve — a slug
+                  whose place has left the catalogue is shown below but cannot
+                  be routed to. */}
+              <OpenInMapsLink
+                places={day.stops
+                  .map((stop) => getPlaceBySlug(stop.placeSlug))
+                  .filter((place): place is NonNullable<typeof place> => Boolean(place))}
+              />
+            </div>
             <ol className="mt-4 space-y-3">
               {day.stops.map((stop) => {
                 const place = getPlaceBySlug(stop.placeSlug);

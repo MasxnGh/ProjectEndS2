@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { EASE } from "@/lib/motion";
 
 import { AlertTriangle, ChevronDown, Plus, Sparkles, Trash2 } from "lucide-react";
+import { OpenInMapsLink } from "@/components/planner/open-in-maps-link";
 import type { Place } from "@/data/types";
 import type { AirQualityResponse, DailyForecastEntry } from "@/lib/weather/types";
 import { SortablePlaceItem } from "@/components/planner/sortable-place-item";
@@ -176,6 +177,7 @@ export function DayColumn({
           {date ? <p className="text-xs text-muted-foreground">{formatDayDate(date, locale)}</p> : null}
         </div>
         <div className="flex items-center gap-1">
+          <OpenInMapsLink places={places} variant="icon" />
           <button
             type="button"
             onClick={(event) => onAddPlace(event.currentTarget)}

@@ -687,6 +687,8 @@ const th: Dictionary = {
       optimize: "จัดเส้นทางให้เหมาะสม",
       optimizing: "กำลังจัดเส้นทาง…",
       openInGoogleMaps: "เปิดใน Google Maps",
+      openInGoogleMapsTrimmed:
+        "เปิดใน Google Maps — ตัดออก {count} จุด เพราะ Maps รับจุดแวะระหว่างทางได้ 9 จุด",
       totalDistance: "ระยะทางรวม",
       totalDuration: "เวลาเดินทาง",
       stops: "จุดแวะ",
