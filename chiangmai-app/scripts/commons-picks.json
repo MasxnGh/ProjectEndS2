@@ -1,0 +1,109 @@
+[
+  {
+    "slug": "chang-phueak-gate",
+    "file": "File:Chang Phueak Gate (3).jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "doi-inthanon",
+    "file": "File:Doi Inthanon, View from Royal Pagoda, Thailand.jpg",
+    "entity": "Q1140075",
+    "replaces": "661px InthanonChedi1.jpg, too small to publish above card size",
+    "evidence": "Title and Commons category name Doi Inthanon; view over the ranges from the royal pagoda terrace. Checked by eye."
+  },
+  {
+    "slug": "doi-luang-chiang-dao",
+    "file": "File:แสงสุดท้าย ดอยหลวงเชียงดาว (Sunset at Doi Luang Chiang Dao).jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "kew-mae-pan-nature-trail",
+    "file": "File:Kew Mae Pan Nature Trail Steps.jpg",
+    "evidence": "Title names the trail; file sits in Commons category \"Doi Inthanon\". Shows the boardwalk steps on the ridge. Checked by eye."
+  },
+  {
+    "slug": "mae-ya-waterfall",
+    "file": "File:น้ำตกแม่ยะ012469.jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "muang-on-cave",
+    "file": "File:Tham Muang On P1120703a.jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "ob-khan-national-park",
+    "file": "File:Stream flowing through Op Khan Gorge, Op Khan National Park, Chiang Mai, Thailand.jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "ob-luang-national-park",
+    "file": "File:ออบหลวง - panoramio.jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "queen-sirikit-botanic-garden",
+    "file": "File:Queen Sirikit Botanic Garden (III).jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "saturday-walking-street-wualai",
+    "file": "File:Chiangmai walking street (Saturday only, Wualai Rd.) - panoramio (2).jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "suan-dok-gate",
+    "file": "File:Suan Dok Gate 2.jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "twin-royal-pagodas-inthanon",
+    "file": "File:Twin Pagodas of Doi Inthanon.JPG",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "wachirathan-waterfall",
+    "file": "File:Wachirathan Falls.jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "wat-inthakhin-sadue-muang",
+    "file": "File:วัดอินทขีล.jpg",
+    "entity": "Q18920949",
+    "evidence": "Wikidata Q18920949 passed the fetcher's name, coordinate and kind gates but has no P18 image; this file is from that entity's Commons category. Checked by eye."
+  },
+  {
+    "slug": "wat-pa-dara-phirom",
+    "file": "File:Wat Pha Daraphirom Buddhist Temple in Chiang Mai Thailand 26.jpg",
+    "entity": "Q3090866",
+    "evidence": "Wikidata Q3090866 passed the fetcher's name, coordinate and kind gates but has no P18 image; this file is from that entity's Commons category. Checked by eye."
+  },
+  {
+    "slug": "wat-phra-that-si-chom-thong",
+    "file": "File:Wat Phrathat Chomthong8.jpg",
+    "entity": "Q2681283",
+    "evidence": "Wikidata Q2681283 passed the fetcher's name, coordinate and kind gates but has no P18 image; this file is from that entity's Commons category. Checked by eye."
+  },
+  {
+    "slug": "wat-rampoeng",
+    "file": "File:วัดร่ำเปิง ตโปทาราม 2562.jpg",
+    "entity": "Q13020681",
+    "evidence": "Wikidata Q13020681 passed the fetcher's name, coordinate and kind gates but has no P18 image; this file is from that entity's Commons category. Checked by eye."
+  },
+  {
+    "slug": "wat-tham-pha-plong",
+    "file": "File:Wat Tham Pha Plong (11900494616).jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  },
+  {
+    "slug": "wat-umong",
+    "file": "File:Chiang Mai - Wat Umong วัดอุโมงค์ (สวนพุทธธรรม) (2026) - IMG 03.jpg",
+    "replaces": "Pexels photo of a posed visitor",
+    "evidence": "Title names Wat Umong (Suan Phutthatham), the forest temple, not Wat Umong Maha Thera Chan in the old city. Shows the brick tunnel and a lit Buddha niche, which no other Chiang Mai temple has. Checked by eye."
+  },
+  {
+    "slug": "wiang-kum-kam",
+    "file": "File:Wiang Kum Kam 6.jpg",
+    "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
+  }
+]

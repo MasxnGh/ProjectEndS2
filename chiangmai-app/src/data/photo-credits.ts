@@ -32,16 +32,9 @@ export interface PhotoCredit {
  * with, written down here, because nothing automatic checked it.
  */
 const MANUAL_CREDITS: Record<string, PhotoCredit> = {
-  // Wat Umong has no Wikidata entity within 400m, so the fetcher cannot reach
-  // it. This is the one survivor of the old Pexels set: its source title is
-  // "man posing in historic thai temple tunnel", and the image shows the brick
-  // tunnel with a gilded Buddha at the end, which no other temple in Chiang Mai
-  // has. Pexels does not require attribution; the photographer is named anyway.
-  "wat-umong": {
-    artist: "Pete Miller Portraits",
-    licence: "Pexels licence",
-    sourceUrl: "https://www.pexels.com/photo/man-posing-in-historic-thai-temple-tunnel-35446052/",
-  },
+  // Empty at present. Wat Umong was the one survivor of the old Pexels set — a
+  // visitor posing in the tunnel — and has been replaced by a Commons
+  // photograph of the tunnel itself, credited below like the rest.
 };
 
 const photoCredits: Record<string, PhotoCredit> = {
@@ -57,6 +50,12 @@ const photoCredits: Record<string, PhotoCredit> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Bhubing_Palace_(7981858020).jpg",
     entity: "Q4902096",
   },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "chang-phueak-gate": {
+    artist: "Krzysztof Golik",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Chang_Phueak_Gate_(3).jpg",
+  },
   "chiang-mai-city-arts-cultural-centre": {
     artist: "Stefan Fussan",
     licence: "CC BY-SA 3.0",
@@ -64,10 +63,16 @@ const photoCredits: Record<string, PhotoCredit> = {
     entity: "Q18808485",
   },
   "doi-inthanon": {
-    artist: "Plenz",
-    licence: "CC BY-SA 3.0",
-    sourceUrl: "https://commons.wikimedia.org/wiki/File:InthanonChedi1.jpg",
+    artist: "Vyacheslav Argenberg",
+    licence: "CC BY 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Doi_Inthanon,_View_from_Royal_Pagoda,_Thailand.jpg",
     entity: "Q1140075",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "doi-luang-chiang-dao": {
+    artist: "Suriya.saeng",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B9%81%E0%B8%AA%E0%B8%87%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%97%E0%B9%89%E0%B8%B2%E0%B8%A2_%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%AB%E0%B8%A5%E0%B8%A7%E0%B8%87%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%94%E0%B8%B2%E0%B8%A7_(Sunset_at_Doi_Luang_Chiang_Dao).jpg",
   },
   "kad-suan-kaew": {
     artist: "Vano111ru",
@@ -75,11 +80,29 @@ const photoCredits: Record<string, PhotoCredit> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%94%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B9%81%E0%B8%81%E0%B9%89%E0%B8%A7.jpg",
     entity: "Q13024177",
   },
+  // Title names the trail; file sits in Commons category "Doi Inthanon". Shows the boardwalk steps on the ridge. Checked by eye.
+  "kew-mae-pan-nature-trail": {
+    artist: "Douglas Perkins",
+    licence: "CC BY 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Kew_Mae_Pan_Nature_Trail_Steps.jpg",
+  },
   "mae-sa-waterfall": {
     artist: "jon collier from waltham, ma, usa",
     licence: "CC BY-SA 2.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:2014-Thailand-358_(15990792649).jpg",
     entity: "Q111449536",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "mae-ya-waterfall": {
+    artist: "Krutiew",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B8%99%E0%B9%89%E0%B8%B3%E0%B8%95%E0%B8%81%E0%B9%81%E0%B8%A1%E0%B9%88%E0%B8%A2%E0%B8%B0012469.jpg",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "muang-on-cave": {
+    artist: "FredTC",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Tham_Muang_On_P1120703a.jpg",
   },
   "nong-buak-hard-park": {
     artist: "Kawin Jungsakulrujirek",
@@ -87,11 +110,41 @@ const photoCredits: Record<string, PhotoCredit> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Buak_Hard_Park.jpg",
     entity: "Q16255674",
   },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "ob-khan-national-park": {
+    artist: "Luketaibai",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Stream_flowing_through_Op_Khan_Gorge,_Op_Khan_National_Park,_Chiang_Mai,_Thailand.jpg",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "ob-luang-national-park": {
+    artist: "::::=UT=::::",
+    licence: "CC BY-SA 3.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B8%AD%E0%B8%AD%E0%B8%9A%E0%B8%AB%E0%B8%A5%E0%B8%A7%E0%B8%87_-_panoramio.jpg",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "queen-sirikit-botanic-garden": {
+    artist: "Supanut Arunoprayote",
+    licence: "CC BY 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Queen_Sirikit_Botanic_Garden_(III).jpg",
+  },
   "san-kamphaeng-hot-springs": {
     artist: "Taguelmoust",
     licence: "CC BY-SA 3.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Sankamphaeng002.JPG",
     entity: "Q16639025",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "saturday-walking-street-wualai": {
+    artist: "chootrong",
+    licence: "CC BY 3.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Chiangmai_walking_street_(Saturday_only,_Wualai_Rd.)_-_panoramio_(2).jpg",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "suan-dok-gate": {
+    artist: "Christophe95",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Suan_Dok_Gate_2.jpg",
   },
   "tha-phae-gate": {
     artist: "Douglas Perkins",
@@ -104,6 +157,18 @@ const photoCredits: Record<string, PhotoCredit> = {
     licence: "CC BY 3.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:3_kings_monument.JPG",
     entity: "Q13017454",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "twin-royal-pagodas-inthanon": {
+    artist: "ElliotJW",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Twin_Pagodas_of_Doi_Inthanon.JPG",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "wachirathan-waterfall": {
+    artist: "KOSIN SUKHUM",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Wachirathan_Falls.jpg",
   },
   "wat-ban-den": {
     artist: "FredTC",
@@ -153,6 +218,12 @@ const photoCredits: Record<string, PhotoCredit> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Duang_Di_-_0001.jpg",
     entity: "Q18046080",
   },
+  "wat-inthakhin-sadue-muang": {
+    artist: "Panuwat Tansui",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AD%E0%B8%B4%E0%B8%99%E0%B8%97%E0%B8%82%E0%B8%B5%E0%B8%A5.jpg",
+    entity: "Q18920949",
+  },
   "wat-inthrawat-ton-kwen": {
     artist: "Takeaway",
     licence: "CC BY-SA 3.0",
@@ -182,6 +253,12 @@ const photoCredits: Record<string, PhotoCredit> = {
     licence: "CC BY-SA 4.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Wat_Mahawan.jpg",
     entity: "Q110313689",
+  },
+  "wat-pa-dara-phirom": {
+    artist: "PEAK99",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Wat_Pha_Daraphirom_Buddhist_Temple_in_Chiang_Mai_Thailand_26.jpg",
+    entity: "Q3090866",
   },
   "wat-pan-whaen": {
     artist: "Takeaway",
@@ -237,11 +314,23 @@ const photoCredits: Record<string, PhotoCredit> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Phra_That_Doi_Suthep_01.jpg",
     entity: "Q1517698",
   },
+  "wat-phra-that-si-chom-thong": {
+    artist: "Mr Atsadang Katwibun",
+    licence: "CC BY-SA 3.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Wat_Phrathat_Chomthong8.jpg",
+    entity: "Q2681283",
+  },
   "wat-phuak-hong": {
     artist: "Kokunut555",
     licence: "CC BY-SA 3.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Ancient_stupa_in_Wat_Puag_Hong_,_Chiangmai_,Thailand.jpg",
     entity: "Q20155454",
+  },
+  "wat-rampoeng": {
+    artist: "Chainwit.",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%A3%E0%B9%88%E0%B8%B3%E0%B9%80%E0%B8%9B%E0%B8%B4%E0%B8%87_%E0%B8%95%E0%B9%82%E0%B8%9B%E0%B8%97%E0%B8%B2%E0%B8%A3%E0%B8%B2%E0%B8%A1_2562.jpg",
+    entity: "Q13020681",
   },
   "wat-saen-fang": {
     artist: "Chainwit.",
@@ -261,11 +350,29 @@ const photoCredits: Record<string, PhotoCredit> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Silver_Temple_in_Chiang_Mai.jpg",
     entity: "Q59641379",
   },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "wat-tham-pha-plong": {
+    artist: "Andrea Schaffer from Sydney, Australia",
+    licence: "CC BY 2.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Wat_Tham_Pha_Plong_(11900494616).jpg",
+  },
+  // Title names Wat Umong (Suan Phutthatham), the forest temple, not Wat Umong Maha Thera Chan in the old city. Shows the brick tunnel and a lit Buddha niche, which no other Chiang Mai temple has. Checked by eye.
+  "wat-umong": {
+    artist: "Chainwit.",
+    licence: "CC BY 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Umong_%E0%B8%A7%E0%B8%B1%E0%B8%94%E0%B8%AD%E0%B8%B8%E0%B9%82%E0%B8%A1%E0%B8%87%E0%B8%84%E0%B9%8C_(%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B8%9E%E0%B8%B8%E0%B8%97%E0%B8%98%E0%B8%98%E0%B8%A3%E0%B8%A3%E0%B8%A1)_(2026)_-_IMG_03.jpg",
+  },
   "wat-umong-maha-thera-chan": {
     artist: "Stefan Fussan",
     licence: "CC BY-SA 3.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Chiang_Mai_-_Wat_Umong_Maha_Therachan_-_0001.jpg",
     entity: "Q18713202",
+  },
+  // Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye.
+  "wiang-kum-kam": {
+    artist: "Mathew Schwartz",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Wiang_Kum_Kam_6.jpg",
   },
   "wiang-tha-kan": {
     artist: "Andromeda Oscar",

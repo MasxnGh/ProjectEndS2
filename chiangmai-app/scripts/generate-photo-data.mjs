@@ -64,14 +64,19 @@ async function main() {
     .filter((a) => onDisk.has(a.slug))
     .sort((a, b) => a.slug.localeCompare(b.slug));
 
+  // A photo from fetch-commons-picks.mjs may have no Wikidata entity behind it.
+  // PhotoCredit says such a photo carries its evidence in a comment instead, so
+  // that is what gets written, rather than `entity: undefined`.
   const entries = credits
     .map(
       (a) =>
+        (a.evidence && !a.entity ? `  // ${a.evidence}\n` : "") +
         `  ${JSON.stringify(a.slug)}: {\n` +
         `    artist: ${JSON.stringify(cleanArtist(a.artistRaw ?? a.artist))},\n` +
         `    licence: ${JSON.stringify(a.licence)},\n` +
         `    sourceUrl: ${JSON.stringify(a.descriptionUrl)},\n` +
-        `    entity: ${JSON.stringify(a.entity)},\n  },`
+        (a.entity ? `    entity: ${JSON.stringify(a.entity)},\n` : "") +
+        `  },`
     )
     .join("\n");
 
