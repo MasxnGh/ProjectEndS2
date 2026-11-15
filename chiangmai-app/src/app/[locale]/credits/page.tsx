@@ -1,13 +1,17 @@
-import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { allPhotoCredits } from "@/data/photo-credits";
+import { HOME_HERO } from "@/data/home-hero";
 import { getPlaceBySlug } from "@/data/places";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
-import { Reveal } from "@/components/reveal";
+import { cx, focusRing } from "@/components/brand/cx";
+import { ICON_STROKE } from "@/components/brand/icons";
+import { PageHead } from "@/components/brand/page-head";
+import { PlacePhoto } from "@/components/brand/place-photo";
+import { Wrap } from "@/components/brand/surface";
 
 export async function generateMetadata({
   params,
@@ -42,62 +46,84 @@ export default async function CreditsPage({ params }: { params: Promise<{ locale
   const t = dict.credits;
   const credits = allPhotoCredits();
 
+  const textLink = cx(
+    "rounded-xs underline-offset-4 hover:text-brand hover:underline hover:decoration-[1.5px]",
+    focusRing,
+  );
+
   return (
-    <Section as="div" width="prose" rhythm="tight" className="lg:py-20">
-      <Reveal as="div">
-        <h1 className="font-serif-display text-4xl leading-tight sm:text-5xl">{t.title}</h1>
-        <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">{t.intro}</p>
-      </Reveal>
+    <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
+      <Wrap className="max-w-[calc(880px+4rem)]">
+        <PageHead title={t.title} intro={t.intro} />
 
-      <Reveal as="div" delay={0.08} className="mt-12">
-        <h2 className="font-serif-display text-2xl">{t.photosTitle}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">{t.photosBody}</p>
+        <section aria-labelledby="credits-photos" className="grid gap-2">
+          <h2 id="credits-photos" className="text-title font-semibold text-brand">
+            {t.photosTitle}
+          </h2>
+          <p className="max-w-[68ch] text-body leading-[1.8] text-pretty text-ink-soft">{t.photosBody}</p>
 
-        {credits.length === 0 ? (
-          <p className="mt-6 rounded-lg border border-dashed border-border-strong p-6 text-sm text-muted-foreground">
-            {t.photosEmpty}
-          </p>
-        ) : (
-          <ul className="mt-6 divide-y divide-border rounded-lg border border-border">
-            {credits.map((credit) => {
-              const place = getPlaceBySlug(credit.slug);
-              return (
-                <li key={credit.slug} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-4">
-                  <span className="min-w-0 flex-1 text-sm">
-                    {place ? (
-                      <Link href={`/${loc}/place/${place.slug}`} className="hover:text-accent-text">
-                        {place.name[loc]}
-                      </Link>
-                    ) : (
-                      credit.slug
-                    )}
-                  </span>
-                  <span className="text-sm text-muted-foreground">{credit.artist}</span>
-                  <a
-                    href={credit.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex shrink-0 items-center gap-1 text-xs text-accent-text hover:underline"
+          {credits.length === 0 ? (
+            <p className="mt-4 rounded-lg bg-well p-6 text-body text-ink-soft">{t.photosEmpty}</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-line rounded-lg border border-line bg-panel shadow-float">
+              {credits.map((credit) => {
+                const isHero = credit.slug === HOME_HERO.photo;
+                const place = getPlaceBySlug(isHero ? HOME_HERO.place : credit.slug);
+                const name = place ? (isHero ? `${place.name[loc]} · ${t.heroPhoto}` : place.name[loc]) : credit.slug;
+                return (
+                  <li
+                    key={credit.slug}
+                    className="grid grid-cols-[56px_minmax(0,1fr)] items-center gap-x-4 gap-y-1 px-4 py-3 sm:grid-cols-[56px_minmax(0,1fr)_auto] sm:px-5"
                   >
-                    {credit.licence}
-                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </Reveal>
+                    {/* The photo itself, so a credit can be matched to the picture at a glance. */}
+                    <div className="relative row-span-2 aspect-square overflow-hidden rounded-md bg-well sm:row-span-1">
+                      <PlacePhoto slug={credit.slug} alt="" sizes="56px" />
+                    </div>
+                    <p className="grid min-w-0 gap-0.5">
+                      <span className="text-body font-medium text-ink">
+                        {place ? (
+                          <Link href={`/${loc}/place/${place.slug}`} className={textLink}>
+                            {name}
+                          </Link>
+                        ) : (
+                          name
+                        )}
+                      </span>
+                      <span className="text-small break-words text-ink-soft">{credit.artist}</span>
+                    </p>
+                    <a
+                      href={credit.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cx(
+                        "inline-flex min-h-11 items-center gap-1.5 justify-self-start rounded-sm text-small font-medium text-brand underline decoration-[1.5px] underline-offset-4 hover:decoration-2 sm:justify-self-end",
+                        focusRing,
+                      )}
+                    >
+                      {credit.licence}
+                      <ExternalLink aria-hidden strokeWidth={ICON_STROKE} className="size-3.5" />
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
 
-      <Reveal as="div" delay={0.12} className="mt-12">
-        <h2 className="font-serif-display text-2xl">{t.dataTitle}</h2>
-        <p className="mt-2 leading-relaxed text-muted-foreground text-pretty">{t.dataBody}</p>
-      </Reveal>
+        <section aria-labelledby="credits-data" className="grid max-w-[68ch] gap-2 pt-14">
+          <h2 id="credits-data" className="text-title font-semibold text-brand">
+            {t.dataTitle}
+          </h2>
+          <p className="text-body leading-[1.8] text-pretty text-ink">{t.dataBody}</p>
+        </section>
 
-      <Reveal as="div" delay={0.16} className="mt-12">
-        <h2 className="font-serif-display text-2xl">{t.illustratedTitle}</h2>
-        <p className="mt-2 leading-relaxed text-muted-foreground text-pretty">{t.illustratedBody}</p>
-      </Reveal>
-    </Section>
+        <section aria-labelledby="credits-art" className="grid max-w-[68ch] gap-2 pt-10">
+          <h2 id="credits-art" className="text-title font-semibold text-brand">
+            {t.illustratedTitle}
+          </h2>
+          <p className="text-body leading-[1.8] text-pretty text-ink">{t.illustratedBody}</p>
+        </section>
+      </Wrap>
+    </div>
   );
 }

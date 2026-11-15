@@ -82,3 +82,33 @@ export function sortPlaces(
 export function isSortAvailable(sort: ExploreSort, reference: LatLng | null): boolean {
   return sort !== "nearest" || reference !== null;
 }
+
+/**
+ * "Recommended" with no category chosen: the same order, dealt out one
+ * category at a time.
+ *
+ * The catalogue files are grouped by category and temples come first, so the
+ * unfiltered list used to open on two dozen temples before anything else —
+ * which made the site look like a temple guide. This keeps everything else
+ * about the order: photographed places still come first, and inside each
+ * category the editorial sequence is untouched. Only the interleaving is new.
+ */
+export function mixCategories(places: Place[]): Place[] {
+  const deal = (list: Place[]) => {
+    const queues = new Map<string, Place[]>();
+    for (const place of list) {
+      const queue = queues.get(place.category);
+      if (queue) queue.push(place);
+      else queues.set(place.category, [place]);
+    }
+    const out: Place[] = [];
+    const lanes = [...queues.values()];
+    for (let i = 0; out.length < list.length; i++) {
+      for (const lane of lanes) if (i < lane.length) out.push(lane[i]);
+    }
+    return out;
+  };
+  const withPhoto = places.filter((p) => getPlacePhoto(p.slug));
+  const without = places.filter((p) => !getPlacePhoto(p.slug));
+  return [...deal(withPhoto), ...deal(without)];
+}

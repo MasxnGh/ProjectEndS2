@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Place } from "@/data/types";
-import { isSortAvailable, sortPlaces } from "./sort";
+import { isSortAvailable, mixCategories, sortPlaces } from "./sort";
 
 function makePlace(overrides: Partial<Place> & Pick<Place, "slug">): Place {
   return {
@@ -163,5 +163,33 @@ describe("photographed places first", () => {
     const tiedNoPhoto = makePlace({ slug: "khao-soi-khun-yai", rating: 4.5 });
     const sorted = sortPlaces([tiedNoPhoto, tiedPhoto], "rating", null);
     expect(sorted[0].slug).toBe("wat-chedi-luang");
+  });
+});
+
+describe("mixCategories", () => {
+  // Slugs without a photograph in the manifest, so they all fall in one half.
+  const list = [
+    makePlace({ slug: "t1", category: "temple" }),
+    makePlace({ slug: "t2", category: "temple" }),
+    makePlace({ slug: "t3", category: "temple" }),
+    makePlace({ slug: "n1", category: "nature" }),
+    makePlace({ slug: "c1", category: "cafe" }),
+    makePlace({ slug: "c2", category: "cafe" }),
+  ];
+
+  it("deals one from each category in turn, keeping each category's own order", () => {
+    expect(mixCategories(list).map((p) => p.slug)).toEqual(["t1", "n1", "c1", "t2", "c2", "t3"]);
+  });
+
+  it("keeps every place exactly once", () => {
+    const result = mixCategories(list);
+    expect(result).toHaveLength(list.length);
+    expect(new Set(result.map((p) => p.slug)).size).toBe(list.length);
+  });
+
+  it("keeps photographed places ahead of the rest", () => {
+    // wat-phra-that-doi-suthep has a credited photo in the manifest.
+    const mixed = mixCategories([makePlace({ slug: "t1" }), makePlace({ slug: "wat-phra-that-doi-suthep" })]);
+    expect(mixed[0].slug).toBe("wat-phra-that-doi-suthep");
   });
 });

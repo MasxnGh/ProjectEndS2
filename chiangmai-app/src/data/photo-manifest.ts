@@ -7,7 +7,6 @@ const photoManifest: Record<string, string> = {
   "chiang-mai-city-arts-cultural-centre": "/images/places/chiang-mai-city-arts-cultural-centre.jpg",
   "doi-inthanon": "/images/places/doi-inthanon.jpg",
   "doi-luang-chiang-dao": "/images/places/doi-luang-chiang-dao.jpg",
-  "kad-suan-kaew": "/images/places/kad-suan-kaew.jpg",
   "kew-mae-pan-nature-trail": "/images/places/kew-mae-pan-nature-trail.jpg",
   "mae-sa-waterfall": "/images/places/mae-sa-waterfall.jpg",
   "mae-ya-waterfall": "/images/places/mae-ya-waterfall.jpg",
@@ -58,9 +57,7 @@ const photoManifest: Record<string, string> = {
   "wat-umong-maha-thera-chan": "/images/places/wat-umong-maha-thera-chan.jpg",
   "wiang-kum-kam": "/images/places/wiang-kum-kam.jpg",
   "wiang-tha-kan": "/images/places/wiang-tha-kan.jpg",
-  "48-hours-in-nimman": "/images/guides/48-hours-in-nimman.jpg",
-  "cafe-hopping-route": "/images/guides/cafe-hopping-route.jpg",
-  "temples-of-the-old-city": "/images/guides/temples-of-the-old-city.jpg"
+  "home-hero": "/images/hero/home-hero.jpg"
 };
 
 export function getPlacePhoto(slug: string): string | undefined {

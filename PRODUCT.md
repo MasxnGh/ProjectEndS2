@@ -20,7 +20,7 @@ Success is a traveller leaving with a plan they trust: every stop is a real plac
 
 ## Positioning
 
-A hand-curated guide joined to a planner that does real arithmetic. The catalogue is 204 places chosen and written by the authors, not scraped listings; the planner orders a day by actual travel time and reports feasibility (closures, opening hours, air quality) instead of only collecting bookmarks. The stated idea, in the product's own words: "ไม่ใช่ลิสต์ให้ไล่ติ๊ก แต่เป็นบทหนึ่งของการเดินทาง" — not a checklist to tick off, but a chapter of a journey.
+A hand-curated guide joined to a planner that does real arithmetic. The catalogue is 203 places chosen and written by the authors, not scraped listings; the planner orders a day by actual travel time and reports feasibility (closures, opening hours, air quality) instead of only collecting bookmarks. The stated idea, in the product's own words: "ไม่ใช่ลิสต์ให้ไล่ติ๊ก แต่เป็นบทหนึ่งของการเดินทาง" — not a checklist to tick off, but a chapter of a journey.
 
 ## Operating Context
 
@@ -31,7 +31,7 @@ A hand-curated guide joined to a planner that does real arithmetic. The catalogu
 
 ## Capabilities and Constraints
 
-- **Catalogue:** 204 places in 8 categories (temple, nature, village & culture, cafe, restaurant, market, museum, activity) across 7 zones defined by the old city square and the directions out from it. 3 long-form guides.
+- **Catalogue:** 203 places in 8 categories (temple, nature, village & culture, cafe, restaurant, market, museum, activity) across 7 zones defined by the old city square and the directions out from it. 3 long-form guides.
 - **Planner (the hero feature):** build a trip from dates, travellers, budget and places; days ordered by shortest travel time; drag to reorder; sample trip; "Plan with AI" (Gemini by default, Anthropic optional) that only ever returns place slugs from the catalogue; per-day feasibility, pace, weather and golden-hour timeline; summary with budget and transport comparison; save, share by link/QR, print to PDF.
 - **Explore:** search, category/zone/mood/budget/time filters, grid and map views, "near me", air-quality filter.
 - **Place pages:** description, local tip, practical info, weather and AQI, map, compare with another place, nearby places.
@@ -50,9 +50,9 @@ A hand-curated guide joined to a planner that does real arithmetic. The catalogu
 
 ## Evidence on Hand
 
-- **Place data:** `chiangmai-app/src/data/places/*.ts` (204 entries with coordinates, hours, price level, duration, descriptions and tips in th/en). Sources in `chiangmai-app/docs/places-sources.md`.
+- **Place data:** `chiangmai-app/src/data/places/*.ts` (203 entries with coordinates, hours, price level, duration, descriptions and tips in th/en). Sources in `chiangmai-app/docs/places-sources.md`.
 - **Guides:** `chiangmai-app/src/data/guides.ts` (3 guides, th/en).
-- **Photography:** 57 files in `chiangmai-app/public/images/places/` covering 57 of 204 places, all from Wikimedia Commons under CC BY / CC BY-SA. 37 were matched automatically through Wikidata by name, coordinates and entity type (`chiangmai-app/scripts/fetch-commons-photos.mjs`); 20 are hand-verified picks, each with its evidence recorded (`scripts/commons-picks.json`, `scripts/fetch-commons-picks.mjs`). Credits live in `src/data/photo-credits.ts`. Coverage is uneven: 33 of 37 temples have a photo, nature 13 of 44, villages 8 of 25, markets 2 of 20, museums 1 of 15; cafes, restaurants and activities have none, because Commons holds no free photograph of a specific named business.
+- **Photography:** 56 files in `chiangmai-app/public/images/places/` covering 56 of 203 places, all from Wikimedia Commons under CC BY / CC BY-SA. 36 were matched automatically through Wikidata by name, coordinates and entity type (`chiangmai-app/scripts/fetch-commons-photos.mjs`); 20 are hand-verified picks, each with its evidence recorded (`scripts/commons-picks.json`, `scripts/fetch-commons-picks.mjs`). Credits live in `src/data/photo-credits.ts`. Coverage is uneven: 33 of 37 temples have a photo, nature 13 of 44, villages 8 of 25, markets 1 of 19, museums 1 of 15; cafes, restaurants and activities have none, because Commons holds no free photograph of a specific named business.
 - **Guide covers:** 3 files in `chiangmai-app/public/images/guides/`. Their source, photographer and licence are not recorded anywhere in the repository (open item: trace or replace).
 - **UI copy:** `chiangmai-app/src/i18n/dictionaries/th.ts` and `en.ts`.
 - **Absent, and not to be fabricated:** user reviews, testimonials, visitor counts, awards or "used by" claims, press, and photographs of places that have none. No AI-generated imagery of real places.
@@ -60,7 +60,7 @@ A hand-curated guide joined to a planner that does real arithmetic. The catalogu
 ## Product Principles
 
 1. **The plan must be true.** Times, distances, costs and closures come from the planner's own calculations and are labelled when estimated. Nothing is rounded into a nicer story.
-2. **Curated, not exhaustive.** 204 places chosen by people who went. The product earns trust by what it leaves out.
+2. **Curated, not exhaustive.** 203 places chosen by people who went. The product earns trust by what it leaves out.
 3. **The city has a shape.** Chiang Mai is a walled square with a moat; orientation by that square is how the product explains where anything is.
 4. **Phone first, presentation ready.** Every task completes with one thumb; the planner also has to read clearly from the back of a classroom.
 5. **Thai first.** Thai is the source language for copy and the script the typography is built around; English is a full peer, not an afterthought.

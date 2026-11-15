@@ -1,15 +1,23 @@
-import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarRange, Eye, MapPin } from "lucide-react";
+import { CalendarRange, Eye, MapPin, Navigation, Share2 } from "lucide-react";
 import { findSharedTripByToken } from "@/lib/db/shared-trip";
 import { toSerializedTrip, type SerializedTrip } from "@/lib/db/types";
 import { getPlaceBySlug } from "@/data/places";
-import { OpenInMapsLink } from "@/components/planner/open-in-maps-link";
-import { isLocale, getDictionary, type Locale } from "@/i18n";
+import type { Place, TripStop } from "@/data/types";
+import { isLocale, getDictionary, type Dictionary, type Locale } from "@/i18n";
+import { Badge } from "@/components/brand/badge";
+import { ButtonLink, buttonStyles } from "@/components/brand/button";
+import { cx, focusRing } from "@/components/brand/cx";
+import { categoryIcon, ICON_STROKE } from "@/components/brand/icons";
+import { NoPhoto, PlacePhoto } from "@/components/brand/place-photo";
+import { fill, placeWhere } from "@/components/brand/place-text";
+import { Wrap } from "@/components/brand/surface";
+import { dayMapsLink } from "@/components/plan/maps-link";
+import { dayCountLabel, longDayDate, placeCountLabel, stopsLabel, tripRange } from "@/components/plan/plan-text";
 import { CopySharedTripButton } from "@/components/trips/copy-shared-trip-button";
-import { Reveal } from "@/components/reveal";
+import { ThaiName } from "@/components/brand/thai-name";
 
 /**
  * A share link is a capability: holding the token is what grants access. So
@@ -22,6 +30,13 @@ export const metadata: Metadata = {
 
 function countPlaces(trip: SerializedTrip): number {
   return trip.days.reduce((total, day) => total + day.stops.length, 0);
+}
+
+/** The trip's dates on one line, from the days that have one. */
+function datesLabel(trip: SerializedTrip, locale: Locale): string | null {
+  const dates = trip.days.map((day) => day.date).filter((date): date is string => Boolean(date));
+  if (dates.length === 0) return null;
+  return tripRange(dates[0], dates[dates.length - 1], locale);
 }
 
 export default async function SharedTripPage({
@@ -47,116 +62,195 @@ export default async function SharedTripPage({
 
   if (!trip) {
     return (
-      <div className="mx-auto max-w-2xl px-6 py-24 text-center lg:px-10">
-        <h1 className="font-serif-display text-3xl sm:text-4xl">{t.notFound.title}</h1>
-        <p className="mt-4 leading-relaxed text-muted-foreground text-pretty">{t.notFound.body}</p>
-        <Link
-          href={`/${loc}/planner`}
-          className="mt-8 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground hover:brightness-95"
-        >
-          {t.notFound.cta}
-        </Link>
+      <div data-brand className="bg-page font-brand text-ink">
+        <Wrap className="grid max-w-[calc(640px+4rem)] justify-items-center gap-4 py-20 text-center sm:py-28">
+          <span aria-hidden className="grid size-14 place-items-center rounded-full bg-well text-brand">
+            <MapPin strokeWidth={ICON_STROKE} className="size-6" />
+          </span>
+          <h1 className="text-headline text-balance text-brand">{t.notFound.title}</h1>
+          <p className="max-w-[48ch] text-body text-pretty text-ink-soft">{t.notFound.body}</p>
+          <ButtonLink href={`/${loc}/planner`} arrow className="mt-4">
+            {t.notFound.cta}
+          </ButtonLink>
+        </Wrap>
       </div>
     );
   }
 
-  const places = countPlaces(trip);
+  const placeTotal = countPlaces(trip);
+  const dates = datesLabel(trip, loc);
 
   return (
-    <Section as="div" width="default" rhythm="tight" className="lg:py-20">
-      <Reveal as="div">
-      <p className="text-xs font-medium uppercase tracking-[0.2em] text-accent-text">{t.kicker}</p>
-      <h1 className="mt-3 font-serif-display text-4xl leading-tight sm:text-5xl">
-        {trip.title || dict.myTrips.untitled}
-      </h1>
+    <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-20">
+      <Wrap className="max-w-[calc(880px+4rem)]">
+        <header className="grid gap-4 pt-8 pb-10 sm:pt-12">
+          {/* No kicker above the title (DESIGN.md): that it was shared is a badge beside the facts. */}
+          <h1 className="text-[clamp(2rem,1.5rem+2.2vw,3.25rem)] leading-[1.25] font-semibold text-balance text-brand">
+            {trip.title || dict.myTrips.untitled}
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            <Badge tone="leaf" icon={<Share2 aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}>
+              {t.kicker}
+            </Badge>
+            <Badge icon={<CalendarRange aria-hidden strokeWidth={ICON_STROKE} className="size-4" />} className="tabular-nums">
+              {dates ? `${dayCountLabel(trip.days.length, dict)} · ${dates}` : dayCountLabel(trip.days.length, dict)}
+            </Badge>
+            <Badge icon={<MapPin aria-hidden strokeWidth={ICON_STROKE} className="size-4" />} className="tabular-nums">
+              {placeCountLabel(placeTotal, dict)}
+            </Badge>
+          </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <CalendarRange className="h-4 w-4 text-accent-text" aria-hidden="true" />
-          {trip.days.length === 1
-            ? dict.myTrips.dayCountOne
-            : dict.myTrips.dayCount.replace("{count}", String(trip.days.length))}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <MapPin className="h-4 w-4 text-accent-text" aria-hidden="true" />
-          {places === 1
-            ? dict.myTrips.placeCountOne
-            : dict.myTrips.placeCount.replace("{count}", String(places))}
-        </span>
-      </div>
+          <div className="mt-2 flex items-start gap-3 rounded-lg bg-sand-fill p-4 text-body text-pretty">
+            <Eye aria-hidden strokeWidth={ICON_STROKE} className="mt-1 size-5 flex-none text-brand" />
+            <p>
+              {t.readOnly} <span className="text-ink-soft">{t.timesNote}</span>
+            </p>
+          </div>
 
-      <p className="mt-6 flex items-start gap-2.5 rounded-lg border-l-4 border-accent bg-surface-muted p-4 text-sm">
-        <Eye className="mt-0.5 h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />
-        {t.readOnly}
+          <div className="pt-2">
+            <CopySharedTripButton token={token} locale={loc} />
+          </div>
+        </header>
+
+        <ol className="grid gap-10">
+          {trip.days.map((day, index) => (
+            <SharedDay key={index} dayNumber={index + 1} date={day.date} stops={day.stops} locale={loc} dict={dict} />
+          ))}
+        </ol>
+
+        <p className="mt-12 border-t border-line pt-8 text-center">
+          <ButtonLink href={`/${loc}/planner`} variant="ghost" arrow>
+            {t.notFound.cta}
+          </ButtonLink>
+        </p>
+      </Wrap>
+    </div>
+  );
+}
+
+function SharedDay({
+  dayNumber,
+  date,
+  stops,
+  locale,
+  dict,
+}: {
+  dayNumber: number;
+  date: string | null;
+  stops: TripStop[];
+  locale: Locale;
+  dict: Dictionary;
+}) {
+  const t = dict.sharedTrip;
+  const headingId = `shared-day-${dayNumber}`;
+  // Whoever opens a shared link is usually the one about to drive it, so this
+  // is the surface that most needs the way out to navigation. Built from the
+  // stops that still resolve: a slug whose place has left the catalogue is
+  // listed below but cannot be routed to.
+  const places = stops.map((stop) => getPlaceBySlug(stop.placeSlug)).filter((place): place is Place => Boolean(place));
+  const mapsLink = dayMapsLink(places, dict, dict.planner.route.openInGoogleMaps);
+
+  return (
+    <li>
+      <section aria-labelledby={headingId}>
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+          <div className="grid gap-1">
+            <h2 id={headingId} className="text-headline text-brand">
+              {fill(t.dayLabel, { day: dayNumber })}
+            </h2>
+            <p className="text-small text-ink-soft tabular-nums">
+              {/* An empty day says so in its own box below; "0 stops" here would say it twice. */}
+              {[date ? longDayDate(date, locale) : null, stops.length > 0 ? stopsLabel(stops.length, dict) : null]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          </div>
+          {mapsLink ? (
+            <a
+              href={mapsLink.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonStyles({ variant: "secondary", size: "sm" })}
+            >
+              <Navigation aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+              {mapsLink.label}
+            </a>
+          ) : null}
+        </div>
+
+        {stops.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-line-strong p-6 text-center text-body text-ink-soft">
+            {t.dayEmpty}
+          </p>
+        ) : (
+          <ol className="rounded-lg border border-line bg-panel shadow-float">
+            {stops.map((stop, stopIndex) => (
+              <SharedStop key={`${stop.placeSlug}-${stopIndex}`} stop={stop} order={stopIndex + 1} locale={locale} dict={dict} />
+            ))}
+          </ol>
+        )}
+      </section>
+    </li>
+  );
+}
+
+function SharedStop({ stop, order, locale, dict }: { stop: TripStop; order: number; locale: Locale; dict: Dictionary }) {
+  const t = dict.sharedTrip;
+  const place = getPlaceBySlug(stop.placeSlug);
+  const Icon = place ? categoryIcon[place.category] : MapPin;
+
+  return (
+    <li className="grid grid-cols-[52px_minmax(0,1fr)] items-start gap-3 border-t border-line p-4 first:border-t-0 sm:grid-cols-[60px_64px_minmax(0,1fr)] sm:gap-4">
+      {/* The time the owner saved. It is shown as saved, not worked out again
+          here: the page reads someone else's plan, it does not re-plan it. */}
+      <p className="pt-0.5 leading-[1.3] tabular-nums">
+        {stop.plannedArrival ? (
+          <span className="text-label font-semibold text-brand">{stop.plannedArrival}</span>
+        ) : (
+          <span className="text-credit text-ink-soft">{t.noTime}</span>
+        )}
       </p>
 
-      <div className="mt-8">
-        <CopySharedTripButton token={token} locale={loc} />
+      <div className="relative hidden size-16 overflow-hidden rounded-md sm:block">
+        {place ? (
+          <PlacePhoto
+            slug={place.slug}
+            alt=""
+            sizes="64px"
+            fallback={<NoPhoto icon={Icon} label={dict.common.categories[place.category]} size="sm" className="p-0" />}
+          />
+        ) : (
+          <NoPhoto icon={Icon} label={t.missingPlace} size="sm" className="p-0" />
+        )}
       </div>
-      </Reveal>
 
-      <ol className="mt-12 space-y-10">
-        {trip.days.map((day, index) => (
-          // Reveal sits inside the <li>, not around it: an <ol> may only have
-          // <li> children, and a wrapper div there is invalid markup.
-          <li key={index}>
-          <Reveal as="div" delay={Math.min(index, 6) * 0.06}>
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-              <h2 className="font-serif-display text-2xl">
-                {t.dayLabel.replace("{day}", String(index + 1))}
-              </h2>
-              {/* Whoever opens a shared link is usually the one about to drive
-                  it, so this is the surface that most needs the way out to
-                  navigation. Built from the stops that still resolve — a slug
-                  whose place has left the catalogue is shown below but cannot
-                  be routed to. */}
-              <OpenInMapsLink
-                places={day.stops
-                  .map((stop) => getPlaceBySlug(stop.placeSlug))
-                  .filter((place): place is NonNullable<typeof place> => Boolean(place))}
-              />
-            </div>
-            <ol className="mt-4 space-y-3">
-              {day.stops.map((stop) => {
-                const place = getPlaceBySlug(stop.placeSlug);
-                // A slug can outlive its catalogue entry if a place is ever
-                // removed; showing the raw slug beats dropping the stop
-                // silently and making the shared day look shorter than it is.
-                return (
-                  <li
-                    key={stop.placeSlug}
-                    className="flex items-baseline gap-4 rounded-lg border border-border p-4"
-                  >
-                    {stop.plannedArrival ? (
-                      <span className="w-14 shrink-0 tabular-nums text-sm text-muted-foreground">
-                        {stop.plannedArrival}
-                      </span>
-                    ) : null}
-                    <div className="flex-1">
-                      {place ? (
-                        <>
-                          <Link
-                            href={`/${loc}/place/${place.slug}`}
-                            className="font-medium hover:text-accent-text"
-                          >
-                            {place.name[loc]}
-                          </Link>
-                          <p className="mt-0.5 text-sm text-muted-foreground">
-                            {dict.common.districts[place.district]}
-                          </p>
-                        </>
-                      ) : (
-                        <span className="font-medium text-muted-foreground">{stop.placeSlug}</span>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          </Reveal>
-          </li>
-        ))}
-      </ol>
-    </Section>
+      <div className="grid min-w-0 gap-1">
+        <p className="flex min-w-0 items-start gap-2">
+          <span
+            aria-hidden
+            className="mt-0.5 grid size-6 flex-none place-items-center rounded-full bg-brand text-credit font-semibold text-on-brand tabular-nums"
+          >
+            {order}
+          </span>
+          {place ? (
+            <Link
+              href={`/${locale}/place/${place.slug}`}
+              className={cx("min-w-0 text-label leading-[1.4] text-ink hover:underline hover:underline-offset-2", focusRing)}
+            >
+              <span className="sr-only">{order}. </span>
+              <ThaiName text={place.name[locale]} />
+            </Link>
+          ) : (
+            // A slug can outlive its catalogue entry if a place is ever
+            // removed; showing it beats dropping the stop silently and making
+            // the shared day look shorter than it is.
+            <span className="min-w-0 text-label leading-[1.4] break-words text-ink-soft">{stop.placeSlug}</span>
+          )}
+        </p>
+        <p className="text-small text-pretty text-ink-soft">
+          {place ? `${dict.common.categories[place.category]} · ${placeWhere(place, dict)}` : t.missingPlace}
+        </p>
+      </div>
+    </li>
   );
 }

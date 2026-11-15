@@ -2,10 +2,15 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { CalendarRange, Copy, MapPin, Pencil, Share2, Trash2 } from "lucide-react";
+import { CalendarRange, Copy, Luggage, MapPin, Pencil, Share2, Trash2 } from "lucide-react";
 import { getPlaceBySlug } from "@/data/places";
-import { getPlacePhoto } from "@/data/photo-manifest";
-import { PlaceImage } from "@/components/place-image";
+import { ButtonLink } from "@/components/brand/button";
+import { cx, focusRing } from "@/components/brand/cx";
+import { IconButton } from "@/components/brand/icon-button";
+import { categoryIcon, ICON_STROKE } from "@/components/brand/icons";
+import { NoPhoto, PlacePhoto } from "@/components/brand/place-photo";
+import { fill } from "@/components/brand/place-text";
+import { dayCountLabel, placeCountLabel } from "@/components/plan/plan-text";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import type { SerializedTrip } from "@/lib/db/types";
@@ -141,17 +146,15 @@ export function MyTripsList({
 
   if (trips.length === 0) {
     return (
-      <section className="mt-12 rounded-lg border border-dashed border-border-strong p-10 text-center">
-        <h2 className="font-serif-display text-2xl">{t.empty.title}</h2>
-        <p className="mx-auto mt-3 max-w-md leading-relaxed text-muted-foreground text-pretty">
-          {loadFailed ? t.loadFailed : t.empty.body}
-        </p>
-        <Link
-          href={`/${locale}/planner`}
-          className="mt-6 inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-95"
-        >
+      <section className="grid justify-items-center gap-3 rounded-lg bg-well px-6 py-12 text-center">
+        <span aria-hidden className="grid size-14 place-items-center rounded-full bg-panel text-brand">
+          <Luggage strokeWidth={ICON_STROKE} className="size-6" />
+        </span>
+        <h2 className="text-title font-semibold text-brand">{t.empty.title}</h2>
+        <p className="max-w-[44ch] text-body text-pretty text-ink-soft">{loadFailed ? t.loadFailed : t.empty.body}</p>
+        <ButtonLink href={`/${locale}/planner`} arrow className="mt-2">
           {t.empty.cta}
-        </Link>
+        </ButtonLink>
       </section>
     );
   }
@@ -162,7 +165,7 @@ export function MyTripsList({
           shrinks out instead of the grid snapping shut under the cursor —
           which matters here because deletion is undoable and the eye needs to
           see which card left. */}
-      <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence initial={false}>
         {trips.map((trip, index) => {
           const slug = firstPlaceSlug(trip);
@@ -178,67 +181,63 @@ export function MyTripsList({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: m.reduced ? 1 : 0.96 }}
               transition={{ ...m.tween("base"), delay: Math.min(index, 8) * m.stagger(0.05) }}
-              className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-surface"
+              className="flex h-full flex-col overflow-hidden rounded-lg border border-line bg-panel shadow-float"
             >
               <Link
                 href={`/${locale}/planner?trip=${trip.id}`}
-                className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                className={cx("group/trip block rounded-t-lg", focusRing, "focus-visible:outline-offset-[-3px]")}
               >
-                <div className="relative h-36 w-full">
+                <div className="relative aspect-[16/9] w-full overflow-hidden">
                   {place ? (
-                    <PlaceImage
-                      category={place.category}
-                      paletteSeed={place.paletteSeed}
-                      photoSrc={getPlacePhoto(place.slug)}
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      className="h-full w-full"
+                    <PlacePhoto
+                      slug={place.slug}
+                      alt=""
+                      sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1024px) 45vw, 400px"
+                      fallback={
+                        <NoPhoto
+                          icon={categoryIcon[place.category]}
+                          caption={place.name[locale]}
+                          label={place.name[locale]}
+                          size="md"
+                        />
+                      }
                     />
                   ) : (
-                    <div className="h-full w-full bg-surface-muted" />
+                    <NoPhoto icon={Luggage} label={title} size="md" />
                   )}
                 </div>
-                <div className="p-5 pb-3">
-                  <h2 className="font-serif-display text-xl leading-snug">{title}</h2>
-                </div>
+                <h2 className="px-5 pt-4 text-title font-semibold text-pretty text-ink group-hover/trip:text-brand group-hover/trip:underline group-hover/trip:decoration-[1.5px] group-hover/trip:underline-offset-4">
+                  {title}
+                </h2>
               </Link>
 
-              <div className="flex-1 px-5 pb-4">
-                <dl className="space-y-1.5 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <CalendarRange className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />
-                    <dd>
-                      {trip.startDate ? formatDate(trip.startDate, locale) : t.noDates}
-                      {" · "}
-                      {trip.days.length === 1
-                        ? t.dayCountOne
-                        : t.dayCount.replace("{count}", String(trip.days.length))}
-                    </dd>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 shrink-0 text-accent-text" aria-hidden="true" />
-                    <dd>
-                      {places === 1 ? t.placeCountOne : t.placeCount.replace("{count}", String(places))}
-                    </dd>
-                  </div>
-                </dl>
-                <p className="mt-3 text-xs text-muted-foreground">
-                  {t.updated.replace("{date}", formatDate(trip.updatedAt, locale))}
+              <div className="grid flex-1 content-start gap-1.5 px-5 pt-2 pb-4 text-small text-ink-soft tabular-nums">
+                <p className="flex items-center gap-2">
+                  <CalendarRange aria-hidden strokeWidth={ICON_STROKE} className="size-4 flex-none text-brand" />
+                  {trip.startDate ? formatDate(trip.startDate, locale) : t.noDates}
+                  {" · "}
+                  {dayCountLabel(trip.days.length, dict)}
                 </p>
+                <p className="flex items-center gap-2">
+                  <MapPin aria-hidden strokeWidth={ICON_STROKE} className="size-4 flex-none text-brand" />
+                  {placeCountLabel(places, dict)}
+                </p>
+                <p className="mt-1.5 text-credit">{fill(t.updated, { date: formatDate(trip.updatedAt, locale) })}</p>
               </div>
 
-              <div className="flex flex-wrap gap-1 border-t border-border p-2">
-                <IconAction label={t.actions.rename} onClick={() => setRenaming(trip)}>
-                  <Pencil className="h-4 w-4" aria-hidden="true" />
-                </IconAction>
-                <IconAction label={t.actions.duplicate} onClick={() => handleDuplicate(trip)}>
-                  <Copy className="h-4 w-4" aria-hidden="true" />
-                </IconAction>
-                <IconAction label={t.actions.share} onClick={() => setSharing(trip)}>
-                  <Share2 className="h-4 w-4" aria-hidden="true" />
-                </IconAction>
-                <IconAction label={t.actions.delete} destructive onClick={() => setDeleting(trip)}>
-                  <Trash2 className="h-4 w-4" aria-hidden="true" />
-                </IconAction>
+              <div className="flex gap-1 border-t border-line p-2">
+                <IconButton label={fill(t.actions.actionFor, { action: t.actions.rename, title })} title={t.actions.rename} tone="plain" onClick={() => setRenaming(trip)}>
+                  <Pencil aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+                </IconButton>
+                <IconButton label={fill(t.actions.actionFor, { action: t.actions.duplicate, title })} title={t.actions.duplicate} tone="plain" onClick={() => handleDuplicate(trip)}>
+                  <Copy aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+                </IconButton>
+                <IconButton label={fill(t.actions.actionFor, { action: t.actions.share, title })} title={t.actions.share} tone="plain" onClick={() => setSharing(trip)}>
+                  <Share2 aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+                </IconButton>
+                <IconButton label={fill(t.actions.actionFor, { action: t.actions.delete, title })} title={t.actions.delete} tone="plain" onClick={() => setDeleting(trip)} className="ml-auto">
+                  <Trash2 aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+                </IconButton>
               </div>
             </motion.li>
           );
@@ -278,33 +277,5 @@ export function MyTripsList({
         />
       ) : null}
     </>
-  );
-}
-
-function IconAction({
-  label,
-  onClick,
-  destructive,
-  children,
-}: {
-  label: string;
-  onClick: () => void;
-  destructive?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      // The icon carries no text, so the accessible name comes from the label
-      // and the same string doubles as the hover tooltip.
-      aria-label={label}
-      title={label}
-      className={`rounded-md p-2 text-muted-foreground transition-colors hover:bg-surface-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent ${
-        destructive ? "hover:text-destructive" : "hover:text-accent-text"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

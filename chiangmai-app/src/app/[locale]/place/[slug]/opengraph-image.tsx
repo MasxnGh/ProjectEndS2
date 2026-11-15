@@ -1,11 +1,13 @@
+import { MapPin } from "lucide-react";
 import { getPlaceBySlug } from "@/data/places";
-import { getPlacePhoto } from "@/data/photo-manifest";
 import { isLocale, getDictionary } from "@/i18n";
-import { renderOgImage, OG_SIZE } from "@/lib/og-image";
+import { categoryIcon } from "@/components/brand/icons";
+import { placeWhere } from "@/components/brand/place-text";
+import { renderOgImage, OG_SIZE, OG_TYPE } from "@/lib/og-image";
 
 export const runtime = "nodejs";
 export const size = OG_SIZE;
-export const contentType = "image/png";
+export const contentType = OG_TYPE;
 
 export default async function Image({
   params,
@@ -17,9 +19,17 @@ export default async function Image({
   const dict = getDictionary(locale);
   const place = getPlaceBySlug(slug);
 
+  if (!place) {
+    return renderOgImage({ locale, dict, title: dict.meta.siteName, line: dict.meta.tagline, art: MapPin });
+  }
+  const icon = categoryIcon[place.category];
   return renderOgImage({
-    title: place?.name[locale] ?? dict.meta.siteName,
-    kicker: place ? dict.common.categories[place.category] : dict.meta.tagline,
-    photoPath: place ? getPlacePhoto(place.slug) : undefined,
+    locale,
+    dict,
+    title: place.name[locale],
+    kicker: { label: dict.common.categories[place.category], icon },
+    line: placeWhere(place, dict),
+    photo: place.slug,
+    art: icon,
   });
 }

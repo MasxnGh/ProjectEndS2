@@ -1,11 +1,13 @@
+import { BookOpen } from "lucide-react";
 import { getGuideBySlug } from "@/data/guides";
-import { getPlacePhoto } from "@/data/photo-manifest";
+import { getPlaceBySlug } from "@/data/places";
+import { guideArea, guideCoverIcon, guideCoverSlug } from "@/components/guides/guide-cover";
 import { isLocale, getDictionary } from "@/i18n";
-import { renderOgImage, OG_SIZE } from "@/lib/og-image";
+import { renderOgImage, OG_SIZE, OG_TYPE } from "@/lib/og-image";
 
 export const runtime = "nodejs";
 export const size = OG_SIZE;
-export const contentType = "image/png";
+export const contentType = OG_TYPE;
 
 export default async function Image({
   params,
@@ -17,9 +19,19 @@ export default async function Image({
   const dict = getDictionary(locale);
   const guide = getGuideBySlug(slug);
 
+  if (!guide) {
+    return renderOgImage({ locale, dict, title: dict.meta.siteName, line: dict.meta.tagline, art: BookOpen });
+  }
+  // The page's own cover: a credited place photo, or the sand art with where it goes.
+  const cover = guideCoverSlug(guide);
   return renderOgImage({
-    title: guide?.title[locale] ?? dict.meta.siteName,
-    kicker: dict.guides.title,
-    photoPath: guide ? getPlacePhoto(guide.slug) : undefined,
+    locale,
+    dict,
+    title: guide.title[locale],
+    kicker: { label: dict.guides.title, icon: BookOpen },
+    line: guideArea(guide, dict),
+    photo: cover,
+    photoOf: cover ? getPlaceBySlug(cover)?.name[locale] : undefined,
+    art: guideCoverIcon(guide),
   });
 }

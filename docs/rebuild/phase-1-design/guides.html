@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คู่มือ · Chiangmai Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+  .g-head { padding-block: var(--s-7) var(--s-6); display: grid; gap: var(--s-3); max-width: 720px; }
+  .g-head h1 { font-size: clamp(2.25rem, 1.7rem + 2.4vw, 3.5rem); line-height: 1.2; }
+  .g-head p { font-size: 1.125rem; color: var(--text-2); }
+  .g-head .brush { margin-top: -4px; }
+  .rows { display: grid; gap: var(--s-8); }
+  .row { display: grid; gap: var(--s-5); align-items: center; }
+  .row .media { aspect-ratio: 16 / 10; border-radius: var(--r-xl); }
+  .row .txt { display: grid; gap: var(--s-3); align-content: center; max-width: 52ch; }
+  .row .n { font-size: var(--fs-small); color: var(--text-2); display: flex; gap: var(--s-3); align-items: center; }
+  .row h2 { font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem); line-height: 1.3; }
+  .row p { color: var(--text-2); font-size: 1.0625rem; }
+  .row .stops { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-2); }
+  @media (min-width: 900px) {
+    .row { grid-template-columns: 1.15fr 1fr; gap: var(--s-8); }
+    .row:nth-child(even) .media-wrap { order: 2; }
+  }
+</style>
+</head>
+<body>
+<main id="main" class="wrap">
+  <header class="g-head">
+    <h1>คู่มือ</h1>
+    <svg class="brush" viewBox="0 0 96 12" aria-hidden="true"><path d="M3 8.5C22 4 52 2.5 93 5.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+    <p>เรื่องที่ควรอ่านก่อนไป เขียนจากการเดินจริง แต่ละเรื่องพาไปสถานที่ในคู่มือที่เปิดดูต่อได้ทันที</p>
+  </header>
+  <div class="rows" id="rows"></div>
+</main>
+<script src="assets/catalogue.js"></script>
+<script src="assets/shell.js"></script>
+<script>
+  const { icon, bySlug, img, CAT, C } = UI;
+  UI.mount("guides");
+  const cover = { "temples-of-the-old-city": "wat-phra-singh" };
+  const fmtDate = (d) => new Date(d).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "numeric" });
+  document.getElementById("rows").innerHTML = C.guides.map((g) => {
+    const ph = cover[g.s] && bySlug(cover[g.s]);
+    const m = ph ? `<div class="photo graded media"><img src="${img(ph.s)}" alt="${ph.th}" loading="lazy"></div><p class="credit" style="margin-top:8px">ภาพ: ${ph.th} — ${ph.credit.by} · ${ph.credit.lic}</p>`
+      : `<div class="noimg media" aria-hidden="true"><span class="ring">${icon(g.s.includes("cafe") ? "coffee" : "pin", "i--xl")}</span><span class="zone">${g.places.map((s) => bySlug(s).th).slice(0, 2).join(" · ")}</span></div>`;
+    return `<article class="row">
+      <div class="media-wrap"><a href="guide.html?s=${g.s}">${m}</a></div>
+      <div class="txt">
+        <span class="n num">${icon("book", "i--sm")} อ่าน ${g.read} นาที · ${fmtDate(g.at)}</span>
+        <h2><a href="guide.html?s=${g.s}">${g.title}</a></h2>
+        <p>${g.dek}</p>
+        <div class="stops">${g.places.map((s) => `<a class="badge" href="place.html?s=${s}">${icon(CAT[bySlug(s).c].icon, "i--sm")} ${bySlug(s).th}</a>`).join("")}</div>
+        <div style="margin-top:8px"><a class="btn btn--secondary" href="guide.html?s=${g.s}">อ่านเรื่องนี้ ${icon("arrow", "i--sm i--arrow")}</a></div>
+      </div>
+    </article>`;
+  }).join("");
+</script>
+</body>
+</html>

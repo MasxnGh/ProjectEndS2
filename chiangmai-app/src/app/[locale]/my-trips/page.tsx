@@ -1,4 +1,3 @@
-import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -7,7 +6,8 @@ import { toSerializedTrip, type SerializedTrip } from "@/lib/db/types";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { MyTripsList } from "@/components/trips/my-trips-list";
-import { Reveal } from "@/components/reveal";
+import { PageHead } from "@/components/brand/page-head";
+import { Wrap } from "@/components/brand/surface";
 
 export async function generateMetadata({
   params,
@@ -71,15 +71,11 @@ export default async function MyTripsPage({ params }: { params: Promise<{ locale
   }
 
   return (
-    <Section as="div" width="default" rhythm="tight" className="lg:py-20">
-      <Reveal as="div" className="max-w-2xl">
-        <h1 className="font-serif-display text-4xl leading-tight sm:text-5xl">{dict.myTrips.title}</h1>
-        <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">
-          {dict.myTrips.intro}
-        </p>
-      </Reveal>
-
-      <MyTripsList initialTrips={trips} loadFailed={loadFailed} locale={loc} />
-    </Section>
+    <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
+      <Wrap>
+        <PageHead title={dict.myTrips.title} intro={dict.myTrips.intro} />
+        <MyTripsList initialTrips={trips} loadFailed={loadFailed} locale={loc} />
+      </Wrap>
+    </div>
   );
 }

@@ -19,7 +19,7 @@ import { fileURLToPath } from "node:url";
 import { cleanArtist } from "./lib/commons-match.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const IMAGE_DIRS = ["places", "guides"];
+const IMAGE_DIRS = ["places", "hero"];
 
 async function listSlugs(dir) {
   const full = path.join(ROOT, "public", "images", dir);
@@ -82,13 +82,14 @@ async function main() {
 
   const creditsPath = path.join(ROOT, "src", "data", "photo-credits.ts");
   const source = await fs.readFile(creditsPath, "utf8");
-  const replaced = source.replace(
-    /const photoCredits: Record<string, PhotoCredit> = \{[\s\S]*?\n\};/,
-    `const photoCredits: Record<string, PhotoCredit> = {${entries ? "\n" + entries + "\n" : ""}};`
-  );
-  if (replaced === source && credits.length > 0) {
+  const record = /const photoCredits: Record<string, PhotoCredit> = \{[\s\S]*?\n\};/;
+  if (!record.test(source)) {
     throw new Error("could not find the photoCredits record to replace in photo-credits.ts");
   }
+  const replaced = source.replace(
+    record,
+    `const photoCredits: Record<string, PhotoCredit> = {${entries ? "\n" + entries + "\n" : ""}};`
+  );
   await fs.writeFile(creditsPath, replaced);
 
   // MANUAL_CREDITS lives outside the generated block, so read it back to avoid

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สำรวจ · Chiangmai Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/vendor/maplibre-gl.css">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+  .ex-head { display: grid; gap: var(--s-4); padding-block: var(--s-6) var(--s-4); }
+  .ex-head h1 { font-size: var(--fs-headline); }
+  .ex-head p { color: var(--text-2); }
+  .ex-search { max-width: 640px; box-shadow: none; }
+  .filter-bar { position: sticky; top: 72px; z-index: 20; background: var(--bg); padding-block: var(--s-3); border-bottom: 1px solid var(--line); display: grid; gap: var(--s-3); }
+  .filter-row { display: flex; align-items: center; gap: var(--s-2); min-width: 0; }
+  .filter-bar .wrap > * { min-width: 0; }
+  .filter-row .chips--scroll { flex: 1; min-width: 0; }
+  .chip--outline { background: transparent; box-shadow: inset 0 0 0 1.5px var(--line-strong); }
+  .chip--outline:hover { background: var(--mist); }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sunset-orange); }
+  .filters { display: none; gap: var(--s-4); padding: var(--s-4) 0 var(--s-2); }
+  .filters[data-open="true"] { display: grid; }
+  .filters .group { display: grid; gap: var(--s-2); }
+  .filters .group > span { font-size: var(--fs-label); font-weight: 500; }
+  .sort { display: flex; align-items: center; gap: var(--s-2); color: var(--text-2); font-size: var(--fs-small); white-space: nowrap; }
+  .sort select { height: 44px; border-radius: var(--r-pill); border: 0; background: var(--mist); padding: 0 36px 0 16px; font: inherit; font-size: var(--fs-label); color: var(--text); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d3835' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
+
+  @media (max-width: 639px) { .filter-bar .sort { display: none; } }
+  .split { display: grid; gap: var(--s-6); padding-top: var(--s-5); }
+  .res-count { color: var(--text-2); font-size: var(--fs-small); margin-bottom: var(--s-4); }
+  .res-count b { color: var(--text); font-weight: 600; }
+  .results { display: grid; gap: var(--s-4); }
+  .more-row { display: grid; justify-items: center; gap: var(--s-2); margin-top: var(--s-6); color: var(--text-2); font-size: var(--fs-small); }
+  .mapcol { display: none; }
+  .map-fab { position: fixed; left: 50%; bottom: 20px; translate: -50% 0; z-index: 30; box-shadow: var(--lift); }
+  @media (min-width: 640px) { .results { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) {
+    .split { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+    .mapcol { display: block; position: sticky; top: 190px; height: calc(100vh - 210px); border-radius: var(--r-xl); overflow: hidden; box-shadow: var(--float); }
+    .map-fab { display: none; }
+  }
+  .mapcol .map { position: absolute; inset: 0; }
+  .map-legend { position: absolute; left: 12px; bottom: 12px; z-index: 2; display: flex; gap: var(--s-3); align-items: center; padding: 8px 14px; border-radius: var(--r-pill); background: var(--surface); box-shadow: var(--float); font-size: var(--fs-small); color: var(--text-2); }
+  .map-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--chiang-mai-green); border: 2px solid #fffcfa; box-shadow: 0 0 0 1px var(--line-strong); vertical-align: -1px; margin-right: 4px; }
+  .map-legend i.a { background: var(--sunset-orange); }
+  .empty { grid-column: 1 / -1; text-align: center; padding: var(--s-8) var(--s-4); display: grid; gap: var(--s-3); justify-items: center; color: var(--text-2); }
+</style>
+</head>
+<body>
+<main id="main">
+  <div class="wrap">
+    <div class="ex-head">
+      <h1>สำรวจเชียงใหม่</h1>
+      <p>สถานที่ <span class="num">204</span> แห่งที่เราคัดมาเอง กรองตามประเภท ตำแหน่ง งบ หรือช่วงเวลา</p>
+      <form class="search ex-search" role="search" onsubmit="event.preventDefault()">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/></svg>
+        <label for="q" class="sr-only">ค้นหาสถานที่</label>
+        <input id="q" name="q" type="search" placeholder="ค้นหาชื่อสถานที่หรือย่าน…" autocomplete="off">
+      </form>
+    </div>
+  </div>
+  <div class="filter-bar"><div class="wrap" style="display:grid;gap:12px">
+    <div class="filter-row"><div class="chips chips--scroll" id="cats" role="group" aria-label="ประเภทสถานที่"></div></div>
+    <div class="filter-row">
+      <div class="chips chips--scroll" id="refine"></div>
+      <label class="sort"><span class="sr-only">เรียงตาม</span><select aria-label="เรียงตาม"><option>แนะนำ</option><option>ใกล้ที่สุดก่อน</option><option>ใช้เวลาน้อยสุด</option></select></label>
+    </div>
+    <div class="filters" id="filters"></div>
+  </div></div>
+
+  <div class="wrap split">
+    <section aria-labelledby="h-res">
+      <h2 id="h-res" class="sr-only">ผลการค้นหา</h2>
+      <p class="res-count" id="count" aria-live="polite"></p>
+      <div class="results" id="results"></div>
+      <div class="more-row" id="more"></div>
+    </section>
+    <aside class="mapcol" aria-label="แผนที่สถานที่">
+      <div class="map" id="map"></div>
+      <div class="map-legend"><span><i></i>สถานที่</span><span><i class="a"></i>ที่ชี้อยู่</span></div>
+    </aside>
+  </div>
+  <button class="btn btn--primary map-fab" id="fab"></button>
+</main>
+<script src="/vendor/maplibre-gl.js"></script>
+<script src="assets/catalogue.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/map.js"></script>
+<script>
+  const { icon, placeCard, CAT, CAT_ORDER, ZONE, C } = UI;
+  UI.mount("explore");
+  const params = new URLSearchParams(location.search);
+  const state = { cat: params.get("category") || "all", q: params.get("q") || "", zone: null, price: null, shown: 24 };
+  document.getElementById("q").value = state.q;
+
+  // Category chips with true counts
+  const cats = document.getElementById("cats");
+  const catChip = (k, label, n, ic) => `<button class="chip" data-cat="${k}" aria-pressed="${state.cat === k}">${ic ? icon(ic, "i--sm") : ""}${label} <span class="count num">${n}</span></button>`;
+  cats.innerHTML = catChip("all", "ทั้งหมด", C.places.length) + CAT_ORDER.map((k) => catChip(k, CAT[k].th, C.places.filter((p) => p.c === k).length, CAT[k].icon)).join("");
+
+  // Refine row: filters button + quick filters
+  document.getElementById("refine").innerHTML = `
+    <button class="chip chip--outline" id="filters-btn" aria-expanded="false">${icon("sliders", "i--sm")} ตัวกรอง</button>
+    <button class="chip chip--outline" data-open-filters>ตำแหน่งในเมือง ${icon("down", "i--sm")}</button>
+    <button class="chip chip--outline" data-open-filters>งบ ${icon("down", "i--sm")}</button>
+    <button class="chip chip--outline" data-open-filters>ช่วงเวลา ${icon("down", "i--sm")}</button>
+    <button class="chip chip--outline">${icon("nav", "i--sm")} ใกล้ฉัน</button>
+    <button class="chip chip--outline">${icon("wind", "i--sm")} คุณภาพอากาศ</button>`;
+  const zoneKeys = ["inside", "wall", "north", "east", "south", "west", "beyond"];
+  document.getElementById("filters").innerHTML = `
+    <div class="group"><span>ตำแหน่งในเมือง</span><div class="chips">${zoneKeys.map((z) => `<button class="chip" data-zone="${z}" aria-pressed="false">${ZONE[z]} <span class="count num">${C.places.filter((p) => p.zone === z).length}</span></button>`).join("")}</div></div>
+    <div class="group"><span>งบต่อคน</span><div class="chips">${[[1, "฿ ต่ำกว่า 300"], [2, "฿฿ 300–1,000"], [3, "฿฿฿ มากกว่า 1,000"]].map(([v, l]) => `<button class="chip" data-price="${v}" aria-pressed="false">${l}</button>`).join("")}</div></div>`;
+  const filtersEl = document.getElementById("filters"), filtersBtn = document.getElementById("filters-btn");
+  const toggleFilters = () => { const o = filtersEl.dataset.open !== "true"; filtersEl.dataset.open = o; filtersBtn.setAttribute("aria-expanded", o); };
+  filtersBtn.onclick = toggleFilters;
+  document.querySelectorAll("[data-open-filters]").forEach((b) => (b.onclick = () => { if (filtersEl.dataset.open !== "true") toggleFilters(); }));
+
+  let map;
+  const list = () => C.places.filter((p) =>
+    (state.cat === "all" || p.c === state.cat) &&
+    (!state.zone || p.zone === state.zone) &&
+    (!state.price || p.price === state.price) &&
+    (!state.q || (p.th + p.en + p.d).toLowerCase().includes(state.q.toLowerCase())));
+
+  function render() {
+    const all = list(), show = all.slice(0, state.shown);
+    document.getElementById("count").innerHTML = `พบ <b class="num">${all.length}</b> แห่ง${state.cat !== "all" ? ` ในหมวด${CAT[state.cat].th}` : ""}`;
+    document.getElementById("results").innerHTML = show.length ? show.map((p) => placeCard(p, { stack: true }).replace("<article", `<article data-s="${p.s}"`)).join("")
+      : `<div class="empty"><span class="icon-btn" aria-hidden="true">${icon("search")}</span><p>ไม่พบสถานที่ตามตัวกรองนี้</p><button class="btn btn--secondary" id="clear">ล้างตัวกรอง</button></div>`;
+    document.getElementById("more").innerHTML = all.length > state.shown ? `<span class="num">แสดง ${show.length} จาก ${all.length}</span><button class="btn btn--secondary" id="loadmore">ดูสถานที่เพิ่ม</button>` : "";
+    document.getElementById("fab").innerHTML = `${icon("map", "i--sm")} ดูบนแผนที่ (${all.length})`;
+    if (map && map.getSource("dots")) map.getSource("dots").setData({ type: "FeatureCollection", features: all.map((p, i) => ({ type: "Feature", id: C.places.indexOf(p), properties: { s: p.s }, geometry: { type: "Point", coordinates: [p.lng, p.lat] } })) });
+  }
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.cat) { state.cat = b.dataset.cat; cats.querySelectorAll("[data-cat]").forEach((c) => c.setAttribute("aria-pressed", c === b)); state.shown = 24; render(); }
+    if (b.dataset.zone) { const on = b.getAttribute("aria-pressed") !== "true"; document.querySelectorAll("[data-zone]").forEach((c) => c.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", on); state.zone = on ? b.dataset.zone : null; render(); }
+    if (b.dataset.price) { const on = b.getAttribute("aria-pressed") !== "true"; document.querySelectorAll("[data-price]").forEach((c) => c.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", on); state.price = on ? +b.dataset.price : null; render(); }
+    if (b.id === "loadmore") { state.shown += 24; render(); }
+    if (b.id === "clear") { state.cat = "all"; state.q = ""; state.zone = null; state.price = null; document.getElementById("q").value = ""; render(); }
+  });
+  document.getElementById("q").addEventListener("input", (e) => { state.q = e.target.value.trim(); render(); });
+  document.getElementById("results").addEventListener("mouseover", (e) => {
+    const a = e.target.closest("[data-s]"); if (!a || !map) return;
+    C.places.forEach((p, i) => setDotActive(map, i, p.s === a.dataset.s));
+  });
+
+  render();
+  const pts = C.places.filter((p) => p.zone !== "beyond");
+  map = brandMap(document.getElementById("map"), {
+    bounds: [[Math.min(...pts.map((p) => p.lng)), Math.min(...pts.map((p) => p.lat))], [Math.max(...pts.map((p) => p.lng)), Math.max(...pts.map((p) => p.lat))]],
+    padding: 40,
+    dots: list().map((p) => ({ id: C.places.indexOf(p), s: p.s, name: p.th, lng: p.lng, lat: p.lat })),
+    onDot: (s) => (location.href = "place.html?s=" + s),
+  });
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { isLocale, getDictionary } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
-import { PlannerBoard } from "@/components/planner/planner-board";
+import { PlannerWorkspace } from "@/components/plan/planner-workspace";
 import { isAiPlannerConfigured } from "@/lib/ai/plan-trip";
 
 export async function generateMetadata({
@@ -37,8 +37,8 @@ export default async function PlannerPage({ params }: { params: Promise<{ locale
         )}
       />
       {/* Read on the server so the API key never has to be probed from the
-          client — without a key the panel simply never renders. */}
-      <PlannerBoard aiEnabled={isAiPlannerConfigured()} />
+          client — without a key the AI dialog simply never renders. */}
+      <PlannerWorkspace aiEnabled={isAiPlannerConfigured()} />
     </>
   );
 }

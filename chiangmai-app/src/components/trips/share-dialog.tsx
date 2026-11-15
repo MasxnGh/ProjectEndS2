@@ -1,8 +1,11 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Check, Copy, Link2Off, RefreshCw } from "lucide-react";
-import { Modal } from "@/components/ui/modal";
+import { Check, Copy, Link2Off, RefreshCw, X } from "lucide-react";
+import { Button } from "@/components/brand/button";
+import { Dialog } from "@/components/brand/dialog";
+import { IconButton } from "@/components/brand/icon-button";
+import { ICON_STROKE } from "@/components/brand/icons";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import type { SerializedTrip } from "@/lib/db/types";
@@ -69,63 +72,64 @@ export function ShareDialog({
   }
 
   return (
-    <Modal open onClose={onClose} titleId={titleId} closeLabel={dict.nav.close}>
-      <h2 id={titleId} className="font-serif-display text-xl">
-        {t.title}
-      </h2>
-      <p className="mt-2 text-sm leading-relaxed text-foreground/75 text-pretty">{t.description}</p>
+    <Dialog open onClose={onClose} labelledBy={titleId}>
+      <div className="flex items-start justify-between gap-3">
+        <h2 id={titleId} className="text-title text-brand">
+          {t.title}
+        </h2>
+        <IconButton label={dict.nav.close} tone="plain" size="sm" onClick={onClose} className="-mt-1.5 -mr-2">
+          <X aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+        </IconButton>
+      </div>
+      <p className="mt-2 text-body text-pretty text-ink-soft">{t.description}</p>
 
       {isShared ? (
         <>
-          <p className="mt-5 break-all rounded-md border border-border bg-surface-muted p-3 font-mono text-xs">
-            {shareUrl}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              type="button"
+          <p className="mt-5 rounded-md bg-well p-3 text-small break-all text-ink select-all">{shareUrl}</p>
+          <div className="mt-4 grid gap-2">
+            <Button
               onClick={copyLink}
-              className="flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-95"
+              icon={
+                justCopied ? (
+                  <Check aria-hidden strokeWidth={2} className="size-5" />
+                ) : (
+                  <Copy aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+                )
+              }
+              data-autofocus
             >
-              {justCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               {t.copyLink}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="secondary"
               disabled={busy}
               onClick={async () => {
                 const updated = await patchMeta({ regenerateShareToken: true });
                 if (updated) showToast({ message: t.regenerated });
               }}
-              className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm hover:border-accent hover:text-accent-text disabled:opacity-50"
+              icon={<RefreshCw aria-hidden strokeWidth={ICON_STROKE} className="size-5" />}
             >
-              <RefreshCw className="h-4 w-4" />
               {t.regenerate}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="ghost"
               disabled={busy}
               onClick={() => patchMeta({ visibility: "private" })}
-              className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm hover:border-destructive hover:text-destructive disabled:opacity-50"
+              icon={<Link2Off aria-hidden strokeWidth={ICON_STROKE} className="size-5" />}
             >
-              <Link2Off className="h-4 w-4" />
               {t.disable}
-            </button>
+            </Button>
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">{t.regenerateHint}</p>
+          <p className="mt-3 text-small text-pretty text-ink-soft">{t.regenerateHint}</p>
         </>
       ) : (
         <>
-          <p className="mt-5 text-sm text-muted-foreground">{t.disabledNotice}</p>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => patchMeta({ visibility: "unlisted" })}
-            className="mt-4 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-95 disabled:opacity-50"
-          >
+          <p className="mt-5 text-body text-pretty text-ink-soft">{t.disabledNotice}</p>
+          <Button disabled={busy} onClick={() => patchMeta({ visibility: "unlisted" })} data-autofocus className="mt-4 w-full">
             {t.enable}
-          </button>
+          </Button>
         </>
       )}
-    </Modal>
+    </Dialog>
   );
 }

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 1 ออกแบบ · Chiangmai Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+  .ix-head { padding-block: var(--s-7) var(--s-6); display: grid; gap: var(--s-3); }
+  .ix-head h1 { font-size: var(--fs-headline); }
+  .ix-head p { color: var(--text-2); max-width: 70ch; }
+  .pages { display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .pages a { padding: var(--s-4) var(--s-5); display: flex; align-items: center; gap: var(--s-3); }
+  .pages a b { font-weight: 600; color: var(--brand); display: block; }
+  .pages a small { color: var(--text-2); font-size: var(--fs-small); }
+  .pages a .i:last-child { margin-left: auto; color: var(--brand); }
+  .sheet-grid { display: grid; gap: var(--s-6); }
+  .sheet-grid > * { min-width: 0; }
+  @media (min-width: 1024px) { .sheet-grid { grid-template-columns: 1fr 1fr; } }
+  .card-pad { padding: var(--s-6); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-4); align-content: start; }
+  .card-pad h3 { font-size: var(--fs-title); }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--s-4); }
+  .sw { display: grid; gap: 6px; font-size: 0.8125rem; color: var(--text-2); }
+  .sw i { width: 64px; height: 64px; border-radius: 50%; box-shadow: inset 0 0 0 1px var(--line); }
+  .sw b { color: var(--text); font-weight: 500; font-size: var(--fs-small); }
+  .type-row { display: grid; gap: 4px; padding-bottom: var(--s-3); border-bottom: 1px solid var(--line); }
+  .type-row small { color: var(--text-2); font-size: 0.8125rem; }
+  .row-wrap { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; }
+  .note { font-size: var(--fs-small); color: var(--text-2); }
+  .ctiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); }
+  @media (max-width: 639px) { .ctiles { grid-template-columns: 1fr 1fr; } }
+  .board { border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<main id="main" class="wrap">
+  <header class="ix-head">
+    <h1>Phase 1 — ออกแบบใหม่ทั้งหมด</h1>
+    <p>ทุกหน้าสร้างจากบอร์ดแบรนด์ของเจ้าของและ DESIGN.md เท่านั้น ข้อมูล ภาพ เวลาเดินทาง และสภาพอากาศเป็นของจริงจากแอป ไม่มีตัวเลขแต่งขึ้น ปุ่ม Tweaks มุมขวาล่างสลับธีมมืดและเกรดสีภาพได้</p>
+  </header>
+
+  <section aria-labelledby="h-pages">
+    <div class="sec-head"><h2 id="h-pages">หน้าที่ออกแบบ</h2><span class="rule"></span></div>
+    <div class="pages" id="pages"></div>
+  </section>
+
+  <section style="padding-top:var(--s-9)" aria-labelledby="h-sys">
+    <div class="sec-head"><h2 id="h-sys">ระบบดีไซน์</h2><span class="rule"></span></div>
+    <div class="sheet-grid">
+      <div class="box card-pad"><h3>สี</h3><div class="swatches" id="sw"></div><p class="note">สีรองทั้งสี่ใช้เป็นพื้นและเครื่องหมายเท่านั้น ตัวอักษรบนพื้นสว่างเป็นเขียวหรือหมึกเสมอ (สีรองบนกระดาษได้แค่ 1.3–2.5:1)</p></div>
+      <div class="box card-pad"><h3>ตัวอักษร · Prompt</h3>
+        <div class="type-row"><small>Display 600 · 44–88px</small><span class="t-display" style="font-size:3rem;color:var(--brand)">Aa เชียงใหม่</span></div>
+        <div class="type-row"><small>Headline 600 · 28–40px</small><span class="t-headline" style="color:var(--brand)">ที่ที่เรากลับไปเอง</span></div>
+        <div class="type-row"><small>Title 500 · 20px</small><span class="t-title">วัดพระธาตุดอยสุเทพ</span></div>
+        <div class="type-row"><small>Body 400 · 17px · line-height 1.7</small><span>เชียงใหม่ใจดีกับคนที่ไม่รีบ ไปไม่กี่ที่ แต่ไปให้ถึงจริงๆ</span></div>
+        <div class="type-row"><small>Tagline ละตินเท่านั้น · tracking 0.18em</small><span class="t-latin-caps" lang="en">Explore • Experience • Enjoy</span></div>
+        <div class="type-row" style="border:0"><small>Script ละตินเท่านั้น หน้าละครั้ง</small><span class="t-script" style="font-size:2.25rem;color:var(--brand)" lang="en">a journey that stays with you</span></div>
+      </div>
+      <div class="box card-pad"><h3>ปุ่ม ชิป และช่องค้นหา</h3>
+        <div class="row-wrap" id="btns"></div>
+        <div class="row-wrap" id="icons"></div>
+        <div class="chips" id="chips"></div>
+        <form class="search" onsubmit="event.preventDefault()"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/></svg><label class="sr-only" for="s1">ค้นหา</label><input id="s1" placeholder="ค้นหาวัด น้ำตก คาเฟ่…"><button class="icon-btn icon-btn--brand" aria-label="ค้นหา"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button></form>
+      </div>
+      <div class="box card-pad"><h3>การ์ดสถานที่ · มีภาพ / ยังไม่มีภาพ</h3><div style="display:grid;gap:16px" id="cards"></div><p class="note">บรรทัดล่างแสดงหมวด เวลาที่ใช้ และระดับราคาที่เป็นข้อมูลจริง แทนคะแนนรีวิวในบอร์ด</p></div>
+      <div class="box card-pad" style="grid-column:1/-1"><h3>หมวดหมู่ · ภาพจริงสี่หมวด ลายสีสำหรับหมวดที่ยังไม่มีภาพ</h3><div class="ctiles" id="tiles"></div></div>
+      <div class="box card-pad" style="grid-column:1/-1"><h3>บอร์ดต้นฉบับ</h3><div class="board"><img src="/brand-board.webp" alt="บอร์ดแบรนด์ Chiangmai Journey ที่เจ้าของเลือก" loading="lazy"></div></div>
+    </div>
+  </section>
+</main>
+<script src="assets/catalogue.js"></script>
+<script src="assets/shell.js"></script>
+<script>
+  const { icon, placeCard, catTile, bySlug } = UI;
+  UI.mount("");
+  document.getElementById("pages").innerHTML = [
+    ["home.html", "หน้าแรก", "ภาพเปิด ค้นหา หมวดหมู่ ทริปตัวอย่าง"],
+    ["explore.html", "สำรวจ", "ค้นหา กรอง รายการ + แผนที่"],
+    ["place.html?s=wat-phra-that-doi-suthep", "หน้าสถานที่ · มีภาพ", "วัดพระธาตุดอยสุเทพ"],
+    ["place.html?s=khao-soi-khun-yai", "หน้าสถานที่ · ยังไม่มีภาพ", "ข้าวซอยคุณยาย"],
+    ["planner.html", "วางแผนทริป", "ทริปตัวอย่างจากตัวคำนวณจริง"],
+    ["guides.html", "คู่มือ", "รายการเรื่อง"],
+    ["guide.html?s=temples-of-the-old-city", "บทความคู่มือ", "ทริปวัดในเมืองเก่า"],
+    ["about.html", "เกี่ยวกับเรา", "แบรนด์ คุณค่า ที่มาของข้อมูล"],
+  ].map(([h, t, d]) => `<a class="box" href="${h}"><div><b>${t}</b><small>${d}</small></div>${icon("arrow")}</a>`).join("");
+  document.getElementById("sw").innerHTML = [
+    ["#1d3835", "Chiang Mai Green"], ["#8aa189", "Nature Leaf"], ["#efd3b1", "Lanna Sand"], ["#eb9d56", "Sunset Orange"], ["#bdadd9", "Sky Lavender"], ["#17221f", "Ink"], ["#f9f3f0", "Paper"], ["#ece6e3", "Mist"],
+  ].map(([c, n]) => `<div class="sw"><i style="background:${c}"></i><b>${n}</b><span>${c.toUpperCase()}</span></div>`).join("");
+  document.getElementById("btns").innerHTML = `<button class="btn btn--primary">วางแผนทริป ${icon("arrow", "i--sm i--arrow")}</button><button class="btn btn--secondary">ดูเพิ่มเติม ${icon("arrow", "i--sm i--arrow")}</button><button class="btn btn--ghost">ดูทั้งหมด</button><button class="btn btn--primary" disabled>ปิดใช้งาน</button>`;
+  document.getElementById("icons").innerHTML = ["pin", "calendar", "camera", "heart", "share"].map((i) => `<button class="icon-btn" aria-label="${i}">${icon(i)}</button>`).join("");
+  document.getElementById("chips").innerHTML = ["ธรรมชาติ", "วัฒนธรรม", "อาหาร", "ไลฟ์สไตล์", "คู่มือเที่ยว"].map((c, i) => `<button class="chip" aria-pressed="${i === 0}">${i === 0 ? icon("check", "i--sm") : ""}${c}</button>`).join("");
+  document.getElementById("cards").innerHTML = placeCard(bySlug("wat-phra-that-doi-suthep")) + placeCard(bySlug("khao-soi-khun-yai"));
+  document.getElementById("tiles").innerHTML = ["temple", "nature", "cafe", "restaurant", "village", "market", "museum", "activity"].map(catTile).join("");
+</script>
+</body>
+</html>

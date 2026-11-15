@@ -1,79 +1,89 @@
-import Link from "next/link";
-import { Check, Clock, Plus, Star } from "lucide-react";
-import type { Place } from "@/data/types";
-import type { Locale, Dictionary } from "@/i18n";
-import type { AirQualityResponse } from "@/lib/weather/types";
-import { AqiDot } from "@/components/weather/aqi-meter";
-import { AQI_LABELS } from "@/lib/weather/aqi";
-import { PlaceImage } from "@/components/place-image";
-import { getPlacePhoto } from "@/data/photo-manifest";
-import { cn } from "@/lib/utils";
+"use client";
 
+import Link from "next/link";
+import { ArrowRight, X } from "lucide-react";
+import type { Place } from "@/data/types";
+import type { Dictionary, Locale } from "@/i18n";
+import type { AirQualityResponse } from "@/lib/weather/types";
+import { AqiNote } from "@/components/brand/aqi";
+import { cx, focusRing } from "@/components/brand/cx";
+import { categoryIcon, ICON_STROKE } from "@/components/brand/icons";
+import { NoPhoto, PlacePhoto } from "@/components/brand/place-photo";
+import { PlanToggle, type PlannerDay } from "@/components/brand/plan-toggle";
+import { fill, placeMeta, placeWhere } from "@/components/brand/place-text";
+import { ThaiName } from "@/components/brand/thai-name";
+
+/**
+ * What a dot opens: the place in small — photo, name, where, the same true
+ * meta the card shows (no rating), air quality when that layer is on — with
+ * add-to-plan and a link to the page.
+ */
 export function ExplorePopupCard({
   place,
   locale,
   dict,
-  isPlanned,
-  onAdd,
-  onRemove,
   airQuality = null,
+  plannerDay = null,
+  onClose,
 }: {
   place: Place;
   locale: Locale;
   dict: Dictionary;
-  isPlanned: boolean;
-  onAdd: () => void;
-  onRemove: () => void;
   airQuality?: AirQualityResponse | null;
+  plannerDay?: PlannerDay | null;
+  onClose: () => void;
 }) {
+  const name = place.name[locale];
+  const where = placeWhere(place, dict);
   return (
-    <div className="w-48 font-sans">
-      <PlaceImage
-        category={place.category}
-        paletteSeed={place.paletteSeed}
-        photoSrc={getPlacePhoto(place.slug)}
-        sizes="192px"
-        quality={70}
-        className="-mx-3 -mt-3 mb-2 h-20 rounded-t-md"
-      />
-      <p className="font-serif-display text-sm leading-snug text-foreground">{place.name[locale]}</p>
-      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-        <span className="flex items-center gap-0.5">
-          <Star className="h-3 w-3 fill-accent text-accent-text" />
-          {place.rating}
-        </span>
-        <span className="flex items-center gap-0.5">
-          <Clock className="h-3 w-3" />
-          {place.durationMinutes} {dict.common.minutes}
-        </span>
+    <div className="grid w-[244px] gap-2.5 p-2.5 font-brand text-ink">
+      <div className="relative aspect-[16/9] overflow-hidden rounded-md">
+        <PlacePhoto
+          slug={place.slug}
+          alt=""
+          sizes="244px"
+          fallback={
+            <NoPhoto
+              icon={categoryIcon[place.category]}
+              size="sm"
+              label={fill(dict.ui.noPhotoLabel, { category: dict.common.categories[place.category], where })}
+            />
+          }
+        />
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={dict.browse.close}
+          title={dict.browse.close}
+          className={cx(
+            "absolute top-1.5 right-1.5 grid size-9 cursor-pointer place-items-center rounded-full bg-cmj-surface/92 text-cmj-green",
+            focusRing,
+          )}
+        >
+          <X aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+        </button>
       </div>
-      {airQuality ? (
-        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-          <AqiDot level={airQuality.level} />
-          {dict.weather.pm25} {Math.round(airQuality.pm2_5)} {dict.weather.pm25Unit} ·{" "}
-          {AQI_LABELS[airQuality.level][locale]}
+      <div className="grid gap-1 px-1">
+        <p className="text-[1rem] leading-[1.4] font-semibold text-pretty">
+          <ThaiName text={name} />
         </p>
-      ) : null}
-      <button
-        type="button"
-        onClick={isPlanned ? onRemove : onAdd}
-        aria-pressed={isPlanned}
-        className={cn(
-          "mt-2 flex w-full items-center justify-center gap-1 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-          isPlanned
-            ? "border-accent bg-accent text-accent-foreground"
-            : "border-border-strong hover:border-accent hover:text-accent-text"
-        )}
-      >
-        {isPlanned ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-        {isPlanned ? dict.common.addedToPlan : dict.common.addToPlan}
-      </button>
-      <Link
-        href={`/${locale}/place/${place.slug}`}
-        className="mt-1.5 block text-center text-xs font-medium text-accent-text hover:underline"
-      >
-        {dict.common.viewDetails}
-      </Link>
+        <p className="text-small text-ink-soft">{where}</p>
+        <p className="text-small text-ink-soft tabular-nums">{placeMeta(place, dict)}</p>
+        {airQuality ? <AqiNote reading={airQuality} locale={locale} dict={dict} className="text-small" /> : null}
+      </div>
+      <div className="flex items-center justify-between gap-2 px-1 pb-0.5">
+        <Link
+          href={`/${locale}/place/${place.slug}`}
+          className={cx(
+            "inline-flex min-h-11 items-center gap-1.5 rounded-full text-label text-brand underline-offset-4 hover:underline",
+            focusRing,
+          )}
+        >
+          {dict.browse.popupView}
+          <ArrowRight aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+        </Link>
+        <PlanToggle slug={place.slug} placeName={name} plannerDay={plannerDay} />
+      </div>
     </div>
   );
 }

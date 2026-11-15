@@ -26,15 +26,21 @@ export interface PhotoCredit {
 }
 
 /**
- * Photos not sourced from Commons, kept by hand.
+ * Photos outside the place pipeline, kept by hand.
  *
  * Each one needs a reason it can be trusted to show the place it is captioned
  * with, written down here, because nothing automatic checked it.
  */
 const MANUAL_CREDITS: Record<string, PhotoCredit> = {
-  // Empty at present. Wat Umong was the one survivor of the old Pexels set — a
-  // visitor posing in the tunnel — and has been replaced by a Commons
-  // photograph of the tunnel itself, credited below like the rest.
+  // The home page hero (data/home-hero.ts), chosen by the owner on 2026-11-15
+  // from five Commons options. The file page files it under Doi Inthanon
+  // (Thai natural heritage site 1006), taken 2019-03-09 at 18:25; the two royal
+  // pagodas stand in silhouette on the ridge. Downloaded at 1920px like the rest.
+  "home-hero": {
+    artist: "Samfotograf",
+    licence: "CC BY-SA 4.0",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Doi_Inthanon_at_sunset.jpg",
+  },
 };
 
 const photoCredits: Record<string, PhotoCredit> = {
@@ -73,12 +79,6 @@ const photoCredits: Record<string, PhotoCredit> = {
     artist: "Suriya.saeng",
     licence: "CC BY-SA 4.0",
     sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B9%81%E0%B8%AA%E0%B8%87%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%97%E0%B9%89%E0%B8%B2%E0%B8%A2_%E0%B8%94%E0%B8%AD%E0%B8%A2%E0%B8%AB%E0%B8%A5%E0%B8%A7%E0%B8%87%E0%B9%80%E0%B8%8A%E0%B8%B5%E0%B8%A2%E0%B8%87%E0%B8%94%E0%B8%B2%E0%B8%A7_(Sunset_at_Doi_Luang_Chiang_Dao).jpg",
-  },
-  "kad-suan-kaew": {
-    artist: "Vano111ru",
-    licence: "CC BY-SA 4.0",
-    sourceUrl: "https://commons.wikimedia.org/wiki/File:%E0%B8%AD%E0%B8%B8%E0%B8%97%E0%B8%A2%E0%B8%B2%E0%B8%99%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%B2%E0%B8%94%E0%B8%AA%E0%B8%A7%E0%B8%99%E0%B9%81%E0%B8%81%E0%B9%89%E0%B8%A7.jpg",
-    entity: "Q13024177",
   },
   // Title names the trail; file sits in Commons category "Doi Inthanon". Shows the boardwalk steps on the ridge. Checked by eye.
   "kew-mae-pan-nature-trail": {
@@ -387,6 +387,16 @@ const allCredits: Record<string, PhotoCredit> = { ...photoCredits, ...MANUAL_CRE
 
 export function getPhotoCredit(slug: string): PhotoCredit | undefined {
   return allCredits[slug];
+}
+
+/** Where a credit's photo lives, as a credit line names it: "Wikimedia Commons", or the site's host. */
+export function creditSourceName(url: string): string {
+  try {
+    const host = new URL(url).hostname;
+    return host.endsWith("commons.wikimedia.org") ? "Wikimedia Commons" : host.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
 }
 
 /** Every credited photo, for the credits page. */
