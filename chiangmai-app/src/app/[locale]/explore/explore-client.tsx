@@ -1,136 +1,127 @@
 "use client";
 
-import { InfoHint } from "@/components/ui/info-hint";
-import { Suspense, useMemo, useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import {
   ArrowLeft,
   Check,
   ChevronDown,
-  LayoutGrid,
+  List,
   LocateFixed,
   Map as MapIcon,
   MapPin,
+  MousePointerClick,
   Search,
   SlidersHorizontal,
   Wind,
   X,
 } from "lucide-react";
 import type { BestTime, District, Place, PlaceCategory, PriceLevel } from "@/data/types";
-import { PlaceCard } from "@/components/place-card";
-import { ExploreMapLoader } from "@/components/map/explore-map-loader";
-import { ExploreViewUrlSync } from "./explore-view-url-sync";
-import { SectionHeading } from "@/components/section-heading";
-import { Reveal } from "@/components/reveal";
-import { motion, useReducedMotion } from "motion/react";
-import { EASE } from "@/lib/motion";
-import { Section } from "@/components/ui/section";
-import { ExploreResultsBar, type ActiveFilterChip } from "@/components/explore/explore-results-bar";
-import { ZoneFilter } from "@/components/explore/zone-filter";
-import { locateInSquare, type SquareBucket } from "@/lib/city-square";
-import { sortPlaces, type ExploreSort } from "@/lib/explore/sort";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
-import { distanceBucketFrom, type DistanceBucket } from "@/lib/geo";
+import type { SquareBucket } from "@/lib/city-square";
+import type { DistanceBucket } from "@/lib/geo";
 import { findNearby } from "@/lib/geo/nearby";
 import { computeBoundingBox, boundingBoxCenter } from "@/lib/geo/bbox";
 import { estimateTravelMinutes } from "@/lib/geo/travelTime";
 import type { LatLng } from "@/lib/geo/distance";
+import { mixCategories, sortPlaces, isSortAvailable, type ExploreSort } from "@/lib/explore/sort";
+import {
+  EMPTY_FILTERS,
+  matchesFilters,
+  placeFacts,
+  queryTerms,
+  type ExploreFilterKey,
+  type ExploreFilters,
+} from "@/lib/explore/filter";
 import { useAirQualityLayer } from "@/lib/weather/use-air-quality-layer";
-import { AqiDot } from "@/components/weather/aqi-meter";
-import { AQI_LABELS } from "@/lib/weather/aqi";
-import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/lib/use-media-query";
+import { ExploreMapLoader } from "@/components/map/explore-map-loader";
+import { AqiNote } from "@/components/brand/aqi";
+import { Button, ButtonLink } from "@/components/brand/button";
+import { Chip, ChipRow } from "@/components/brand/chip";
+import { cx, focusRing } from "@/components/brand/cx";
+import { FavoriteToggle } from "@/components/brand/favorite-toggle";
+import { CATEGORY_ORDER, categoryIcon, ICON_STROKE } from "@/components/brand/icons";
+import { PlaceCardFor } from "@/components/brand/place-card";
+import { fill, formatDistance, priceSymbol } from "@/components/brand/place-text";
+import { PlanToggle, type PlannerDay } from "@/components/brand/plan-toggle";
+import { Select } from "@/components/brand/select";
+import { Box, Wrap } from "@/components/brand/surface";
+import { ExploreViewUrlSync } from "./explore-view-url-sync";
 
 const RADIUS_STEPS_KM = [1, 3, 5, 10, 25] as const;
-/** How many cards the grid renders before the visitor asks for more. */
 /**
- * How many cards the grid mounts before asking for more.
- *
- * Raising this to fit more of the 193-place catalogue per page was tried and
- * reverted: on a phone each card is ~450px tall, so 36 cards meant a
- * 23-screen page. The answer to a long catalogue is a denser card and a
- * result bar that says how far through you are, not a taller page.
+ * How many cards mount before the visitor asks for more. A taller first page
+ * was tried and reverted: the answer to a long catalogue is a compact card and
+ * a line that says how far through you are, not a longer page.
  */
 const GRID_PAGE_SIZE = 24;
+
+const ZONES: SquareBucket[] = ["inside", "wall", "north", "east", "south", "west", "beyond"];
+const PRICES: PriceLevel[] = [1, 2, 3];
+const TIMES: BestTime[] = ["morning", "afternoon", "evening", "anytime"];
+const DISTANCES: DistanceBucket[] = ["walkable", "short-ride", "day-trip"];
+/** "Sort by rating" is gone: the ratings were never measured, so the site no longer shows or sorts by them. */
+const SORTS: ExploreSort[] = ["recommended", "nearest", "shortest"];
+
+type Panel = "filters" | "near" | null;
+type FilterGroup = "zone" | "price" | "time";
 
 interface ProximityReference {
   source: "geolocation" | "map-click" | "district";
   coords: LatLng;
 }
 
-const categories: PlaceCategory[] = [
-  "temple",
-  "nature",
-  "village",
-  "cafe",
-  "restaurant",
-  "market",
-  "museum",
-  "activity",
-];
-const districts: District[] = [
-  "old-city",
-  "nimman",
-  "santitham",
-  "riverside",
-  "chang-klan",
-  "chiang-mai-city",
-  "doi-suthep",
-  "doi-inthanon",
-  "mae-rim",
-  "mae-kampong",
-  "san-kamphaeng",
-  "san-sai",
-  "chiang-dao",
-  "chom-thong",
-  "saraphi",
-  "mae-wang",
-  "hang-dong",
-  "samoeng",
-  "mae-ai",
-  "fang",
-  "chai-prakan",
-  "wiang-haeng",
-  "phrao",
-  "mae-taeng",
-  "doi-saket",
-  "mae-on",
-  "galyani-vadhana",
-  "san-pa-tong",
-  "hot",
-  "omkoi",
-  "doi-tao",
-];
-const prices: PriceLevel[] = [1, 2, 3];
-const times: BestTime[] = ["morning", "afternoon", "evening", "anytime"];
-const distanceBuckets: DistanceBucket[] = ["walkable", "short-ride", "day-trip"];
+/** A labelled group of chips inside the filter panel. */
+function Group({ id, label, children }: { id: string; label: string; children: ReactNode }) {
+  return (
+    <div role="group" aria-labelledby={id} className="grid gap-2">
+      <span id={id} className="text-label text-ink">
+        {label}
+      </span>
+      <ChipRow>{children}</ChipRow>
+    </div>
+  );
+}
 
-function FilterPill({
+/** The quick chips in the bar: outlined, and showing the value once one is chosen. */
+function BarChip({
   active,
-  label,
+  expanded,
+  icon,
   onClick,
+  controls,
+  children,
 }: {
-  active: boolean;
-  label: string;
-  onClick: () => void;
+  active?: boolean;
+  expanded?: boolean;
+  icon?: ReactNode;
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
+  controls?: string;
+  children: ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={cn(
-        // min-h-11 is 44px, the smallest target a finger hits reliably.
-        "flex min-h-11 shrink-0 items-center rounded-full border px-4 text-sm transition-colors duration-200",
+      aria-expanded={expanded}
+      aria-controls={controls}
+      className={cx(
+        "inline-flex min-h-11 flex-none cursor-pointer items-center gap-2 rounded-full px-4 font-brand text-label whitespace-nowrap",
+        "transition-[background-color,color,box-shadow] duration-150 ease-brand",
         active
-          ? "border-accent bg-accent text-accent-foreground"
-          : "border-border text-foreground/80 hover:border-accent hover:text-accent-text"
+          ? "bg-brand text-on-brand"
+          : "bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--cmj-line-strong)] hover:bg-well",
+        focusRing,
       )}
     >
-      {label}
+      {icon}
+      {children}
     </button>
   );
 }
+
 
 export function ExploreClient({
   places,
@@ -148,27 +139,41 @@ export function ExploreClient({
   plannerDayNumber: number | null;
 }) {
   const { locale, dict } = useLocale();
-  const router = useRouter();
+  const t = dict.browse;
   const pathname = usePathname();
-  const plannerDayId = plannerDayNumber ? `day-${plannerDayNumber}` : null;
-  const plannerDayCount = useTripStore((s) => (plannerDayId ? (s.containers[plannerDayId]?.length ?? 0) : 0));
+  const plannerDay: PlannerDay | null = plannerDayNumber
+    ? { id: `day-${plannerDayNumber}`, number: plannerDayNumber }
+    : null;
+  const plannerDayCount = useTripStore((s) => (plannerDay ? (s.containers[plannerDay.id]?.length ?? 0) : 0));
 
-  const [query, setQuery] = useState(initialQuery);
-  const [category, setCategory] = useState<PlaceCategory | null>(initialCategory);
-  const [zone, setZone] = useState<SquareBucket | null>(initialZone);
-  const [district, setDistrict] = useState<District | null>(null);
-  const [price, setPrice] = useState<PriceLevel | null>(null);
-  const [time, setTime] = useState<BestTime | null>(null);
-  const [distance, setDistance] = useState<DistanceBucket | null>(null);
+  const [filters, setFilters] = useState<ExploreFilters>({
+    ...EMPTY_FILTERS,
+    query: initialQuery,
+    category: initialCategory,
+    zone: initialZone,
+  });
+  const set = <K extends ExploreFilterKey>(key: K, value: ExploreFilters[K]) =>
+    setFilters((current) => ({ ...current, [key]: value }));
+  const toggle = <K extends ExploreFilterKey>(key: K, value: ExploreFilters[K]) =>
+    setFilters((current) => ({ ...current, [key]: current[key] === value ? null : value }));
+
+  // A link to explore?category=… from the header, followed while already on
+  // this page, re-renders it with new props but keeps this state; take the
+  // link's values when they change. (Adjusted during render, not in an effect.)
+  const incoming = `${initialQuery}|${initialCategory}|${initialZone}`;
+  const [prevIncoming, setPrevIncoming] = useState(incoming);
+  if (incoming !== prevIncoming) {
+    setPrevIncoming(incoming);
+    setFilters({ ...EMPTY_FILTERS, query: initialQuery, category: initialCategory, zone: initialZone });
+  }
+
   const [view, setView] = useState<"grid" | "map">(initialView);
-  const [compareSlugs, setCompareSlugs] = useState<string[]>([]);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [panel, setPanel] = useState<Panel>(null);
   const [sort, setSort] = useState<ExploreSort>("recommended");
-  const reducedMotion = useReducedMotion();
   const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(GRID_PAGE_SIZE);
+  const [compareSlugs, setCompareSlugs] = useState<string[]>([]);
 
-  const [proximityOpen, setProximityOpen] = useState(false);
   const [reference, setReference] = useState<ProximityReference | null>(null);
   const [radiusIndex, setRadiusIndex] = useState(2);
   const [geoStatus, setGeoStatus] = useState<"idle" | "loading" | "denied" | "error">("idle");
@@ -177,15 +182,38 @@ export function ExploreClient({
   const radiusKm = RADIUS_STEPS_KM[radiusIndex];
   const [airQualityOn, setAirQualityOn] = useState(false);
 
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  // The map only mounts where it is seen: always beside the list on a wide
+  // screen, and on a phone only once the visitor asks for it.
+  const showMap = isDesktop || view === "map";
+
+  // ── The URL is the state worth sharing ──────────────────────────────────
+  // Search, category and zone go into the address as they change (replace, so
+  // typing does not fill the history), which makes a result list linkable and
+  // brings it back after visiting a place and pressing Back.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const put = (key: string, value: string | null) => (value ? params.set(key, value) : params.delete(key));
+    put("q", filters.query.trim() || null);
+    put("category", filters.category);
+    put("zone", filters.zone);
+    const next = params.toString();
+    const url = next ? `${pathname}?${next}` : pathname;
+    if (url !== `${window.location.pathname}${window.location.search}`) window.history.replaceState(null, "", url);
+  }, [filters.query, filters.category, filters.zone, pathname]);
+
+  // The phone's map view is a place you go to, so it gets a history entry: Back returns to the list.
   function handleSetView(next: "grid" | "map") {
     setView(next);
     const params = new URLSearchParams(window.location.search);
     if (next === "map") params.set("view", "map");
     else params.delete("view");
-    const nextQuery = params.toString();
-    router.push(nextQuery ? `${pathname}?${nextQuery}` : pathname, { scroll: false });
+    const query = params.toString();
+    window.history.pushState(null, "", query ? `${pathname}?${query}` : pathname);
+    window.scrollTo({ top: 0 });
   }
 
+  // ── Near a point ────────────────────────────────────────────────────────
   function requestGeolocation() {
     if (!navigator.geolocation) {
       setGeoStatus("error");
@@ -194,16 +222,11 @@ export function ExploreClient({
     setGeoStatus("loading");
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setReference({
-          source: "geolocation",
-          coords: { lat: position.coords.latitude, lng: position.coords.longitude },
-        });
+        setReference({ source: "geolocation", coords: { lat: position.coords.latitude, lng: position.coords.longitude } });
         setGeoStatus("idle");
       },
-      (error) => {
-        setGeoStatus(error.code === error.PERMISSION_DENIED ? "denied" : "error");
-      },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 }
+      (error) => setGeoStatus(error.code === error.PERMISSION_DENIED ? "denied" : "error"),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 5 * 60 * 1000 },
     );
   }
 
@@ -213,13 +236,12 @@ export function ExploreClient({
     const districtPlaces = places.filter((p) => p.district === value);
     const box = computeBoundingBox(districtPlaces.map((p) => p.coordinates));
     const coords = box ? boundingBoxCenter(box) : districtPlaces[0]?.coordinates;
-    if (!coords) return;
-    setReference({ source: "district", coords });
+    if (coords) setReference({ source: "district", coords });
   }
 
   function startPickingOnMap() {
     setPickingOnMap(true);
-    if (view !== "map") handleSetView("map");
+    if (!isDesktop && view !== "map") handleSetView("map");
   }
 
   function handleMapPick(coords: LatLng) {
@@ -234,750 +256,685 @@ export function ExploreClient({
     setDistrictRef("");
   }
 
-  /**
-   * Each place's position relative to the old city wall, computed once.
-   *
-   * Derived rather than stored: it comes from the coordinates the catalogue
-   * already holds, so it cannot fall out of step with the map the way the
-   * hand-typed `district` field can.
-   */
-  const bucketBySlug = useMemo(() => {
-    const map = new Map<string, SquareBucket>();
-    for (const place of places) map.set(place.slug, locateInSquare(place.coordinates).bucket);
-    return map;
-  }, [places]);
+  // Choosing a point means "what is near here", so the list follows by distance;
+  // clearing it puts the editorial order back.
+  const hasReference = Boolean(reference);
+  const [prevHasReference, setPrevHasReference] = useState(hasReference);
+  if (hasReference !== prevHasReference) {
+    setPrevHasReference(hasReference);
+    if (hasReference && sort === "recommended") setSort("nearest");
+    if (!hasReference && !isSortAvailable(sort, null)) setSort("recommended");
+  }
 
-  const filteredBase = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return places.filter((place) => {
-      if (q) {
-        // Tags carry the dish/theme words a visitor actually types ("khao soi",
-        // "ข้าวซอย", "vegetarian", "waterfall") that rarely appear verbatim in
-        // the editorial copy — without them, most searches miss.
-        const haystack =
-          `${place.name.en} ${place.name.th} ${place.shortDescription.en} ${place.shortDescription.th} ${place.tags.join(" ")}`.toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
-      if (category && place.category !== category) return false;
-      if (zone && bucketBySlug.get(place.slug) !== zone) return false;
-      if (district && place.district !== district) return false;
-      if (price && place.priceLevel !== price) return false;
-      if (time && !place.bestTime.includes(time)) return false;
-      if (distance && distanceBucketFrom(place.coordinates) !== distance) return false;
-      return true;
-    });
-  }, [places, query, category, zone, bucketBySlug, district, price, time, distance]);
+  // ── Filtering ───────────────────────────────────────────────────────────
+  const factsBySlug = useMemo(() => new Map(places.map((p) => [p.slug, placeFacts(p, dict)])), [places, dict]);
+  const terms = useMemo(() => queryTerms(filters.query), [filters.query]);
 
-  /**
-   * How many results each zone would return under everything *except* the zone
-   * filter — so a region that would empty the grid is shown as unavailable
-   * before it is clicked, rather than after.
-   */
-  const zoneCounts = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const counts: Partial<Record<SquareBucket, number>> = {};
-    for (const place of places) {
-      if (q) {
-        const haystack =
-          `${place.name.en} ${place.name.th} ${place.shortDescription.en} ${place.shortDescription.th} ${place.tags.join(" ")}`.toLowerCase();
-        if (!haystack.includes(q)) continue;
-      }
-      if (category && place.category !== category) continue;
-      if (district && place.district !== district) continue;
-      if (price && place.priceLevel !== price) continue;
-      if (time && !place.bestTime.includes(time)) continue;
-      if (distance && distanceBucketFrom(place.coordinates) !== distance) continue;
-      const bucket = bucketBySlug.get(place.slug);
-      if (bucket) counts[bucket] = (counts[bucket] ?? 0) + 1;
-    }
-    return counts;
-  }, [places, query, category, district, price, time, distance, bucketBySlug]);
-
-  const proximityResults = useMemo(() => {
+  /** Distance from the chosen point, for the places inside the radius only. */
+  const nearby = useMemo(() => {
     if (!reference) return null;
-    return findNearby(reference.coords, filteredBase, radiusKm, (p) => p.coordinates);
-  }, [reference, filteredBase, radiusKm]);
+    return new Map(findNearby(reference.coords, places, radiusKm, (p) => p.coordinates).map((r) => [r.item.slug, r.distanceKm]));
+  }, [reference, places, radiusKm]);
 
-  const filtered = proximityResults ? proximityResults.map((r) => r.item) : filteredBase;
+  // Memoised as one unit: the map frames whatever this returns, so a fresh
+  // array on every render (a hover, say) would re-aim the camera each time.
+  const { filtered, categoryCounts, zoneCounts } = useMemo(() => {
+    const passes = (place: Place, skip?: ExploreFilterKey) =>
+      (!nearby || nearby.has(place.slug)) && matchesFilters(place, factsBySlug.get(place.slug)!, filters, terms, skip);
+    /** How many results each choice would give under everything else that is on. */
+    const countBy = (key: "category" | "zone", value: (place: Place) => string) => {
+      const counts = new Map<string, number>();
+      for (const place of places) {
+        if (!passes(place, key)) continue;
+        const k = value(place);
+        counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
+      return counts;
+    };
+    return {
+      filtered: places.filter((place) => passes(place)),
+      categoryCounts: countBy("category", (p) => p.category),
+      zoneCounts: countBy("zone", (p) => factsBySlug.get(p.slug)!.zone),
+    };
+  }, [places, nearby, factsBySlug, filters, terms]);
+  const categoryTotal = [...categoryCounts.values()].reduce((a, b) => a + b, 0);
 
-  const proximityDetailsBySlug = useMemo(() => {
-    if (!proximityResults || !reference) return new Map<string, { distanceKm: number; travelMinutes: number }>();
-    return new Map(
-      proximityResults.map((r) => [
-        r.item.slug,
-        { distanceKm: r.distanceKm, travelMinutes: estimateTravelMinutes(reference.coords, r.item.coordinates) },
-      ])
-    );
-  }, [proximityResults, reference]);
+  const sorted = useMemo(() => {
+    const ordered = sortPlaces(filtered, sort, reference?.coords ?? null);
+    return sort === "recommended" && !filters.category ? mixCategories(ordered) : ordered;
+  }, [filtered, sort, reference, filters.category]);
 
-  // With ~100 places an unfiltered grid would mount ~100 PlaceCards (each with
-  // its own image and reveal animation) on first paint. Render a page at a time
-  // and let the visitor ask for more.
-  const filterKey = [
-    query,
-    category,
-    zone,
-    district,
-    price,
-    time,
-    distance,
-    reference ? `${reference.coords.lat},${reference.coords.lng}` : "",
-    reference ? radiusKm : "",
-  ].join("|");
+  // A new set of filters starts the list from the top again.
+  const filterKey = JSON.stringify([filters, reference?.coords ?? null, reference ? radiusKm : null, sort]);
   const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
   if (filterKey !== prevFilterKey) {
-    // Adjusted during render rather than in an effect, per
-    // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
     setPrevFilterKey(filterKey);
     setVisibleCount(GRID_PAGE_SIZE);
   }
-  const sorted = useMemo(
-    () => sortPlaces(filtered, sort, reference?.coords ?? null),
-    [filtered, sort, reference]
-  );
+  const visible = sorted.slice(0, visibleCount);
 
-  const visiblePlaces = sorted.slice(0, visibleCount);
-  const hasMore = sorted.length > visiblePlaces.length;
-
-  const hasFilters = Boolean(query || category || zone || district || price || time || distance);
-
-  // What is actually applied, spelled out and individually removable. Before
-  // this the only signal was a count badge on a collapsed panel, so you could
-  // see that three filters were on without being told which three.
-  const activeChips = useMemo<ActiveFilterChip[]>(() => {
-    const chips: ActiveFilterChip[] = [];
-    if (query) chips.push({ id: "query", label: `"${query}"`, onClear: () => setQuery("") });
-    if (category)
-      chips.push({
-        id: "category",
-        label: dict.common.categories[category],
-        onClear: () => setCategory(null),
-      });
-    if (zone)
-      chips.push({
-        id: "zone",
-        label: dict.square.zones[zone],
-        onClear: () => setZone(null),
-      });
-    if (district)
-      chips.push({
-        id: "district",
-        label: dict.common.districts[district],
-        onClear: () => setDistrict(null),
-      });
-    if (price)
-      chips.push({ id: "price", label: "\u0e3f".repeat(price), onClear: () => setPrice(null) });
-    if (time)
-      chips.push({
-        id: "time",
-        label: dict.common.bestTime[time],
-        onClear: () => setTime(null),
-      });
-    if (distance)
-      chips.push({
-        id: "distance",
-        label: dict.common.distance[distance],
-        onClear: () => setDistance(null),
-      });
-    return chips;
-  }, [query, category, zone, district, price, time, distance, dict]);
-
-  /**
-   * Re-staggers the grid when the *filters* change, but deliberately not when
-   * the search box changes: re-keying on every keystroke would restart the
-   * animation on each letter typed and make the grid strobe.
-   */
-  const filterSignature = [category, zone, district, price, time, distance, sort].join("|");
-  const secondaryActiveCount = [district, price, time, distance].filter(Boolean).length;
   const comparePlaces = useMemo(
-    () => compareSlugs.map((slug) => places.find((p) => p.slug === slug)).filter((p): p is NonNullable<typeof p> => Boolean(p)),
-    [places, compareSlugs]
+    () => compareSlugs.map((slug) => places.find((p) => p.slug === slug)).filter((p): p is Place => Boolean(p)),
+    [places, compareSlugs],
   );
   const mapPlaces = compareSlugs.length > 0 ? comparePlaces : filtered;
+
+  // With nothing chosen, frame the city rather than the province: the far
+  // north would otherwise shrink the old city to one cluster.
+  const hasNarrowing =
+    Boolean(terms.length || filters.category || filters.zone || filters.district || filters.price || filters.time || filters.distance) ||
+    Boolean(reference) ||
+    compareSlugs.length > 0;
+  const framePlaces = useMemo(
+    () => (hasNarrowing ? mapPlaces : mapPlaces.filter((p) => factsBySlug.get(p.slug)?.zone !== "beyond")),
+    [hasNarrowing, mapPlaces, factsBySlug],
+  );
+
   const aqiPoints = useMemo(() => mapPlaces.map((p) => ({ slug: p.slug, coordinates: p.coordinates })), [mapPlaces]);
   const aqiLayer = useAirQualityLayer(aqiPoints, airQualityOn);
 
-  function clearFilters() {
-    setQuery("");
-    setCategory(null);
-    setZone(null);
-    setDistrict(null);
-    setPrice(null);
-    setTime(null);
-    setDistance(null);
+  function clearAll() {
+    setFilters(EMPTY_FILTERS);
+    clearProximity();
   }
 
   function toggleCompare(slug: string) {
     setCompareSlugs((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
   }
 
+  // ── What is on, spelled out and removable one by one ────────────────────
+  const activeChips: { id: string; label: string; clear: () => void }[] = [];
+  if (filters.query.trim()) activeChips.push({ id: "q", label: `“${filters.query.trim()}”`, clear: () => set("query", "") });
+  if (filters.zone) activeChips.push({ id: "zone", label: dict.square.zones[filters.zone], clear: () => set("zone", null) });
+  if (filters.price)
+    activeChips.push({
+      id: "price",
+      label: `${priceSymbol(filters.price)} ${t.priceOption[filters.price]}`,
+      clear: () => set("price", null),
+    });
+  if (filters.time) activeChips.push({ id: "time", label: dict.common.bestTime[filters.time], clear: () => set("time", null) });
+  if (filters.distance)
+    activeChips.push({ id: "distance", label: dict.common.distance[filters.distance], clear: () => set("distance", null) });
+  if (filters.district)
+    activeChips.push({ id: "district", label: dict.common.districts[filters.district], clear: () => set("district", null) });
+  if (reference)
+    activeChips.push({ id: "near", label: `${t.nearActive} · ${fill(t.radius, { km: radiusKm })}`, clear: clearProximity });
+
+  // ── The sticky bar, and keeping the map clear of it ──────────────────────
+  const rootRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const bar = barRef.current;
+    const root = rootRef.current;
+    if (!bar || !root) return;
+    const observer = new ResizeObserver(() => root.style.setProperty("--bar-h", `${bar.offsetHeight}px`));
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, []);
+
+  const panelId = "explore-panel";
+  const groupRefs = useRef<Partial<Record<FilterGroup, HTMLDivElement | null>>>({});
+  const pendingFocus = useRef<FilterGroup | null>(null);
+  /** Whatever opened the panel gets focus back when Esc closes it. */
+  const openerRef = useRef<HTMLElement | null>(null);
+  function openPanel(next: Panel, opener: HTMLElement, group?: FilterGroup) {
+    openerRef.current = opener;
+    if (group && panel === "filters") {
+      // Already open: nothing will re-render, so move focus now.
+      groupRefs.current[group]?.querySelector<HTMLElement>("button:not(:disabled)")?.focus();
+      return;
+    }
+    setPanel((current) => (current === next && !group ? null : next));
+    pendingFocus.current = group ?? null;
+  }
+  // Once the panel has rendered, take focus to the group the quick chip named.
+  useEffect(() => {
+    const group = pendingFocus.current;
+    if (!group || panel !== "filters") return;
+    pendingFocus.current = null;
+    groupRefs.current[group]?.querySelector<HTMLElement>("button:not(:disabled)")?.focus();
+  });
+
+  const secondaryCount = [filters.zone, filters.price, filters.time, filters.distance, filters.district].filter(Boolean).length;
+  const countLine = filters.category
+    ? fill(t.countIn, { count: sorted.length, category: dict.common.categories[filters.category] })
+    : fill(t.count, { count: sorted.length });
+
   return (
-    <Section width="wide" rhythm="tight" as="div" className="lg:py-20">
+    <div ref={rootRef} data-brand className="bg-page pb-24 font-brand text-ink lg:pb-16">
       <Suspense fallback={null}>
         <ExploreViewUrlSync view={view} onViewChangeFromUrl={setView} />
       </Suspense>
 
-      {plannerDayId && plannerDayNumber ? (
-        <div className="no-print sticky top-20 z-30 -mx-6 mb-8 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/95 px-6 py-3 backdrop-blur-md lg:-mx-10 lg:px-10">
-          <Link
-            href={`/${locale}/planner`}
-            className="flex items-center gap-1.5 text-sm font-medium hover:text-accent-text"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {dict.explore.plannerContext.backToPlan}
-          </Link>
-          <span className="text-sm font-medium text-accent-text">
-            {dict.explore.plannerContext.addingToDay.replace("{day}", String(plannerDayNumber))}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {dict.explore.plannerContext.addedCount.replace("{count}", String(plannerDayCount))}
-          </span>
-        </div>
-      ) : null}
-
-      <Reveal>
-        <SectionHeading as="h1" kicker={dict.nav.explore} title={dict.explore.title} subtitle={dict.explore.subtitle} />
-      </Reveal>
-
-      {/*
-        * Search and the zone square share the row.
-        *
-        * The search box is capped at max-w-md, so on a wide display two thirds
-        * of this row was empty while the site's most distinctive control sat
-        * folded inside the "Filters" panel. Putting them side by side spends
-        * the width on something and makes the square the first thing offered.
-        */}
-      <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
-      <div className="space-y-4">
-        <div className="relative max-w-md">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={dict.explore.search.placeholder}
-            aria-label={dict.explore.search.ariaLabel}
-            className="w-full rounded-full border border-border bg-transparent py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-accent"
-          />
-        </div>
-
-        <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {dict.explore.filters.category}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <FilterPill
-                key={c}
-                active={category === c}
-                label={dict.common.categories[c]}
-                onClick={() => setCategory(category === c ? null : c)}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setProximityOpen((v) => !v)}
-            aria-expanded={proximityOpen}
-            className={cn(
-              "flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
-              reference
-                ? "border-accent bg-accent text-accent-foreground"
-                : "border-border hover:border-accent hover:text-accent-text"
-            )}
-          >
-            <LocateFixed className="h-3.5 w-3.5" />
-            {dict.explore.nearMe.button}
-            {reference ? (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-background/30 px-1 text-xs font-semibold">
-                {proximityResults?.length ?? 0}
-              </span>
-            ) : null}
-          </button>
-
-          {reference ? (
-            <button
-              type="button"
-              onClick={clearProximity}
-              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive"
-            >
-              <X className="h-3.5 w-3.5" />
-              {dict.explore.nearMe.clear}
-            </button>
-          ) : null}
-
-          <button
-            type="button"
-            onClick={() => setAirQualityOn((v) => !v)}
-            aria-pressed={airQualityOn}
-            className={cn(
-              "flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors",
-              airQualityOn
-                ? "border-accent bg-accent text-accent-foreground"
-                : "border-border hover:border-accent hover:text-accent-text"
-            )}
-          >
-            <Wind className="h-3.5 w-3.5" />
-            {dict.explore.airQuality.toggle}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setFiltersOpen((v) => !v)}
-            aria-expanded={filtersOpen}
-            className="flex min-h-11 items-center gap-2 rounded-full border border-border px-4 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            {dict.explore.filters.moreFilters}
-            {secondaryActiveCount > 0 ? (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
-                {secondaryActiveCount}
-              </span>
-            ) : null}
-            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", filtersOpen && "rotate-180")} />
-          </button>
-
-          {hasFilters ? (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-accent-text"
-            >
-              <X className="h-3.5 w-3.5" />
-              {dict.explore.filters.clear}
-            </button>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="lg:border-l lg:border-border lg:pl-12">
-        <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {dict.explore.filters.zone}
-        </p>
-        <ZoneFilter value={zone} onChange={setZone} counts={zoneCounts} />
-      </div>
-      </div>
-
-      <div className="mt-4 space-y-4">
-
-        {proximityOpen ? (
-          <div className="space-y-4 rounded-lg border border-border bg-surface-muted/40 p-4">
-            <p className="text-xs text-muted-foreground">{dict.explore.nearMe.explain}</p>
-
-            {!reference ? (
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={requestGeolocation}
-                  disabled={geoStatus === "loading"}
-                  className="flex items-center gap-1.5 rounded-full border border-accent bg-accent px-4 py-2 text-xs font-medium text-accent-foreground disabled:opacity-60"
-                >
-                  <LocateFixed className="h-3.5 w-3.5" />
-                  {geoStatus === "loading" ? dict.explore.nearMe.locating : dict.explore.nearMe.useMyLocation}
-                </button>
-                <span className="text-xs text-muted-foreground">{dict.explore.nearMe.or}</span>
-                <button
-                  type="button"
-                  onClick={startPickingOnMap}
-                  className="rounded-full border border-border-strong px-4 py-2 text-xs font-medium hover:border-accent hover:text-accent-text"
-                >
-                  {dict.explore.nearMe.pickOnMap}
-                </button>
-                <select
-                  value={districtRef}
-                  onChange={(e) => handlePickDistrict(e.target.value as District | "")}
-                  aria-label={dict.explore.nearMe.pickDistrict}
-                  className="rounded-full border border-border-strong bg-background px-3 py-2 text-xs font-medium outline-none focus-visible:border-accent"
-                >
-                  <option value="">{dict.explore.nearMe.pickDistrict}</option>
-                  {districts.map((d) => (
-                    <option key={d} value={d}>
-                      {dict.common.districts[d]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-
-            {geoStatus === "denied" ? (
-              <p className="text-xs text-destructive">{dict.explore.nearMe.denied}</p>
-            ) : geoStatus === "error" ? (
-              <p className="text-xs text-destructive">{dict.explore.nearMe.error}</p>
-            ) : null}
-
-            {pickingOnMap ? <p className="text-xs text-accent-text">{dict.explore.nearMe.pickingHint}</p> : null}
-
-            {reference ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>
-                    {dict.explore.nearMe.radius}: {radiusKm} km
-                  </span>
-                  <span>
-                    {proximityResults?.length ?? 0} {dict.explore.filters.results}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={RADIUS_STEPS_KM.length - 1}
-                  step={1}
-                  value={radiusIndex}
-                  onChange={(e) => setRadiusIndex(Number(e.target.value))}
-                  aria-label={dict.explore.nearMe.radius}
-                  aria-valuetext={`${radiusKm} km`}
-                  className="w-full accent-accent"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  {RADIUS_STEPS_KM.map((km) => (
-                    <span key={km}>{km} km</span>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
-        {filtersOpen ? (
-          <div className="space-y-4 rounded-lg border border-border bg-surface-muted/40 p-4">
-            <div>
-              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {dict.explore.filters.district}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {districts.map((d) => (
-                  <FilterPill
-                    key={d}
-                    active={district === d}
-                    label={dict.common.districts[d]}
-                    onClick={() => setDistrict(district === d ? null : d)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-x-8 gap-y-4">
-              <div>
-                <p className="mb-2 flex items-center gap-1 text-xs uppercase tracking-wide text-muted-foreground">
-                  {dict.explore.filters.price}
-                  <InfoHint
-                    label={dict.common.hints.priceLevel.label}
-                    text={dict.common.hints.priceLevel.text}
-                  />
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {prices.map((p) => (
-                    <FilterPill
-                      key={p}
-                      active={price === p}
-                      label={"฿".repeat(p)}
-                      onClick={() => setPrice(price === p ? null : p)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-                  {dict.explore.filters.time}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {times.map((t) => (
-                    <FilterPill
-                      key={t}
-                      active={time === t}
-                      label={dict.common.bestTime[t]}
-                      onClick={() => setTime(time === t ? null : t)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <p className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-                  {dict.explore.filters.distance}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {distanceBuckets.map((d) => (
-                    <FilterPill
-                      key={d}
-                      active={distance === d}
-                      label={dict.common.distance[d]}
-                      onClick={() => setDistance(distance === d ? null : d)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
-        {airQualityOn ? (
-          <div className="space-y-3 rounded-lg border border-border bg-surface-muted/40 p-4">
-            <p className="text-xs text-muted-foreground">{dict.explore.airQuality.explain}</p>
-            {aqiLayer.isLoading ? (
-              <p className="text-xs text-muted-foreground">{dict.explore.airQuality.loading}</p>
-            ) : (
-              <ul className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-                {mapPlaces.map((place) => {
-                  const reading = aqiLayer.dataBySlug.get(place.slug);
-                  if (!reading) return null;
-                  return (
-                    <li key={place.slug} className="flex items-center gap-1.5 text-xs">
-                      <AqiDot level={reading.level} />
-                      <span className="truncate">{place.name[locale]}</span>
-                      <span className="ml-auto shrink-0 text-muted-foreground">
-                        {AQI_LABELS[reading.level][locale]} · {Math.round(reading.pm2_5)} {dict.weather.pm25Unit}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            {!aqiLayer.isLoading && aqiLayer.dataBySlug.size === 0 ? (
-              <p className="text-xs text-muted-foreground">{dict.explore.airQuality.unavailable}</p>
-            ) : null}
-            <p className="text-xs text-muted-foreground/70">{dict.weather.attribution}</p>
-          </div>
-        ) : null}
-      </div>
-
-      <div className="mt-8">
-        <ExploreResultsBar
-          total={sorted.length}
-          shown={visiblePlaces.length}
-          sort={sort}
-          onSortChange={setSort}
-          hasReference={Boolean(reference)}
-          chips={activeChips}
-          viewToggle={
-            <div className="flex items-center gap-1 rounded-full border border-border p-1">
-              <button
-                type="button"
-                onClick={() => handleSetView("grid")}
-                className={cn(
-                  "flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors sm:min-h-0 sm:py-1.5",
-                  view === "grid" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )}
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                {dict.explore.view.grid}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSetView("map")}
-                className={cn(
-                  "flex min-h-11 items-center gap-1.5 rounded-full px-3 text-xs font-medium transition-colors sm:min-h-0 sm:py-1.5",
-                  view === "map" ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )}
-              >
-                <MapIcon className="h-3.5 w-3.5" />
-                {dict.explore.view.map}
-              </button>
-            </div>
-          }
-        />
-      </div>
-
-      {filtered.length === 0 ? (
-        <p className="py-24 text-center text-muted-foreground">{dict.explore.filters.noResults}</p>
-      ) : view === "grid" ? (
-        <>
-        {/* The results are a section of the page, so they get a name. Without
-            one the outline jumped straight from the page title to the h3 on
-            each card, and a screen-reader user moving by heading arrived in a
-            list of places with nothing saying what the list was. */}
-        <h2 className="sr-only">
-          {dict.explore.filters.results} ({sorted.length})
-        </h2>
-        <motion.div
-          // Re-keyed on the filters only, never on the query: keying on the
-          // search text too would restart this animation on every keystroke
-          // and make the grid strobe while someone types.
-          key={filterSignature}
-          // One column on a phone, because each entry is a row there rather
-          // than a card — see PlaceCard. Two columns of 156px cards was the
-          // earlier answer to a one-column page being sixteen screens long, but
-          // it bought that by squeezing the place name into 65px of measure.
-          className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3"
-          initial="hidden"
-          animate="visible"
-          transition={{ staggerChildren: reducedMotion ? 0 : 0.04 }}
+      <Wrap className="grid gap-4 pt-8 pb-5 sm:pt-10">
+        <h1 className="text-headline text-balance text-brand">{dict.explore.title}</h1>
+        <p className="max-w-[62ch] text-body text-pretty text-ink-soft">{fill(t.lead, { count: places.length })}</p>
+        <form
+          role="search"
+          onSubmit={(event) => {
+            event.preventDefault();
+            // Enter on a phone should put the keyboard away and show the results.
+            (event.currentTarget.querySelector("input") as HTMLInputElement | null)?.blur();
+          }}
+          className={cx(
+            "flex h-14 max-w-[640px] min-w-0 items-center gap-3 rounded-full border border-line bg-panel pr-1.5 pl-5 text-ink",
+            "transition-[box-shadow,border-color] duration-150 ease-brand dark:border-line-strong",
+            "focus-within:border-brand focus-within:shadow-[0_0_0_3px_color-mix(in_oklab,var(--cmj-brand)_18%,transparent)]",
+          )}
         >
-          {visiblePlaces.map((place) => {
-            const selected = compareSlugs.includes(place.slug);
-            const proximity = proximityDetailsBySlug.get(place.slug);
-            return (
-              <motion.div
-                key={place.slug}
-                className="relative"
-                // Transform only, deliberately no opacity. An entrance that
-                // starts at `opacity: 0` hides its content until the animation
-                // runs, and a background tab throttles requestAnimationFrame to
-                // nothing — which left every card in this grid invisible. A
-                // card that has not animated yet should look slightly low, not
-                // absent.
-                variants={{
-                  hidden: { y: reducedMotion ? 0 : 12 },
-                  visible: {
-                    y: 0,
-                    transition: { duration: reducedMotion ? 0 : 0.45, ease: EASE },
-                  },
-                }}
+          <Search aria-hidden strokeWidth={ICON_STROKE} className="size-5 flex-none text-ink-soft" />
+          <label className="flex h-full min-w-0 flex-1">
+            <span className="sr-only">{dict.ui.search.label}</span>
+            <input
+              type="search"
+              name="q"
+              value={filters.query}
+              onChange={(event) => set("query", event.target.value)}
+              placeholder={t.searchPlaceholder}
+              autoComplete="off"
+              enterKeyHint="search"
+              className="h-full min-w-0 flex-1 bg-transparent text-body text-ink outline-none placeholder:text-ink-soft placeholder:opacity-100 [&::-webkit-search-cancel-button]:hidden"
+            />
+          </label>
+          {filters.query ? (
+            <button
+              type="button"
+              onClick={() => set("query", "")}
+              aria-label={t.clearSearch}
+              title={t.clearSearch}
+              className={cx("grid size-11 flex-none cursor-pointer place-items-center rounded-full text-ink-soft hover:bg-well", focusRing)}
+            >
+              <X aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+            </button>
+          ) : null}
+        </form>
+      </Wrap>
+
+      {/* ── Sticky filter bar ── */}
+      <div
+        ref={barRef}
+        className="no-print sticky top-[72px] z-30 border-b border-line bg-page"
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && panel) {
+            openerRef.current?.focus();
+            setPanel(null);
+          }
+        }}
+      >
+        <Wrap className="grid gap-3 py-3">
+          {plannerDay ? (
+            <div className="flex items-center gap-2 rounded-full bg-sand-fill py-1 pr-1 pl-1 sm:pl-2">
+              <ButtonLink
+                href={`/${locale}/planner`}
+                variant="ghost"
+                size="sm"
+                icon={<ArrowLeft aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+                className="hidden sm:inline-flex"
               >
-                <PlaceCard
-                  // `h-full` makes the card fill the cell, and the bottom
-                  // padding reserves the band the Compare pill sits in so it
-                  // cannot cover the district/duration/price row. No band on a
-                  // phone, where the pill is not shown.
-                  className="h-full sm:pb-14"
-                  place={place}
-                  plannerDayId={plannerDayId ?? undefined}
-                  plannerDayNumber={plannerDayNumber ?? undefined}
-                  distanceKm={proximity?.distanceKm}
-                  travelMinutes={proximity?.travelMinutes}
-                  // Handed to the card rather than rendered beside it: as a
-                  // sibling in this cell the pill stayed put while the card
-                  // rose 4px on hover, and the two visibly came apart.
-                  overlay={
-                    <button
-                      type="button"
-                      onClick={() => toggleCompare(place.slug)}
-                      aria-pressed={selected}
-                      aria-label={selected ? dict.explore.compare.remove : dict.explore.compare.add}
-                      className={cn(
-                        /* Not on a phone. Compare puts several places on one
-                           map to weigh them against each other, which needs
-                           room the phone map does not have — and the reserved
-                           band cost 44px on every row of the main browse list.
-                           Explore's map view is the better tool at that size. */
-                        "absolute bottom-3 left-3 z-10 hidden h-9 items-center gap-1.5 rounded-full border px-3 text-xs font-medium backdrop-blur-sm transition-colors sm:flex",
-                        selected
-                          ? "border-secondary bg-secondary text-secondary-foreground"
-                          : "border-border-strong bg-background/85 text-foreground hover:border-secondary"
-                      )}
+                {t.plannerBack}
+              </ButtonLink>
+              <p className="min-w-0 flex-1 truncate pl-3 text-label text-brand sm:pl-0">
+                {fill(t.plannerAdding, { day: plannerDay.number })}
+                <span className="font-normal text-ink-soft"> · {fill(t.plannerAdded, { count: plannerDayCount })}</span>
+              </p>
+              <ButtonLink
+                href={`/${locale}/planner?highlight=${plannerDay.id}`}
+                size="sm"
+                icon={<Check aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+              >
+                {t.plannerDone}
+              </ButtonLink>
+            </div>
+          ) : null}
+
+          <ChipRow scroll label={dict.explore.filters.category} className="-mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+            <Chip pressed={!filters.category} onClick={() => set("category", null)} count={categoryTotal}>
+              {t.all}
+            </Chip>
+            {CATEGORY_ORDER.map((category) => {
+              const Icon = categoryIcon[category];
+              return (
+                <Chip
+                  key={category}
+                  pressed={filters.category === category}
+                  onClick={() => toggle("category", category)}
+                  icon={<Icon aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+                  count={categoryCounts.get(category) ?? 0}
+                >
+                  {dict.common.categories[category]}
+                </Chip>
+              );
+            })}
+          </ChipRow>
+
+          <ChipRow scroll className="-mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0">
+            <BarChip
+                expanded={panel === "filters"}
+                controls={panelId}
+                onClick={(event) => openPanel("filters", event.currentTarget)}
+                icon={<SlidersHorizontal aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+              >
+                {t.filters}
+                {secondaryCount ? <span className="tabular-nums">({secondaryCount})</span> : null}
+              </BarChip>
+            <BarChip active={Boolean(filters.zone)} onClick={(event) => openPanel("filters", event.currentTarget, "zone")} controls={panelId}>
+              {filters.zone ? dict.square.zones[filters.zone] : t.zone}
+              <ChevronDown aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+            </BarChip>
+            <BarChip active={Boolean(filters.price)} onClick={(event) => openPanel("filters", event.currentTarget, "price")} controls={panelId}>
+              {filters.price ? `${priceSymbol(filters.price)} ${t.priceOption[filters.price]}` : t.budget}
+              <ChevronDown aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+            </BarChip>
+            <BarChip active={Boolean(filters.time)} onClick={(event) => openPanel("filters", event.currentTarget, "time")} controls={panelId}>
+              {filters.time ? dict.common.bestTime[filters.time] : t.time}
+              <ChevronDown aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+            </BarChip>
+            <BarChip
+                active={Boolean(reference)}
+                expanded={panel === "near"}
+                controls={panelId}
+                onClick={(event) => openPanel("near", event.currentTarget)}
+                icon={<LocateFixed aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+              >
+                {dict.explore.nearMe.button}
+                {nearby ? <span className="tabular-nums">({filtered.length})</span> : null}
+              </BarChip>
+            <button
+              type="button"
+              onClick={() => setAirQualityOn((on) => !on)}
+              aria-pressed={airQualityOn}
+              className={cx(
+                "inline-flex min-h-11 flex-none cursor-pointer items-center gap-2 rounded-full px-4 font-brand text-label whitespace-nowrap",
+                "bg-transparent text-ink shadow-[inset_0_0_0_1.5px_var(--cmj-line-strong)] transition-colors duration-150 ease-brand hover:bg-well",
+                "aria-pressed:bg-brand aria-pressed:text-on-brand aria-pressed:shadow-none",
+                focusRing,
+              )}
+            >
+              {airQualityOn ? (
+                <Check aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+              ) : (
+                <Wind aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+              )}
+              {dict.explore.airQuality.toggle}
+            </button>
+          </ChipRow>
+
+          {panel ? (
+            <div
+              id={panelId}
+              data-lenis-prevent
+              className="max-h-[min(52vh,440px)] overflow-y-auto overscroll-contain border-t border-line pt-4 pb-1"
+            >
+              {panel === "filters" ? (
+                <div className="grid gap-5 lg:grid-cols-2 lg:gap-x-10">
+                  <div ref={(node) => void (groupRefs.current.zone = node)} className="lg:col-span-2">
+                    <Group id="g-zone" label={t.zone}>
+                      {ZONES.map((zone) => (
+                        <Chip
+                          key={zone}
+                          pressed={filters.zone === zone}
+                          onClick={() => toggle("zone", zone)}
+                          count={zoneCounts.get(zone) ?? 0}
+                          disabled={!zoneCounts.get(zone) && filters.zone !== zone}
+                          className="disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {dict.square.zones[zone]}
+                        </Chip>
+                      ))}
+                    </Group>
+                  </div>
+                  <div ref={(node) => void (groupRefs.current.price = node)}>
+                    <Group id="g-price" label={t.budget}>
+                      {PRICES.map((price) => (
+                        <Chip key={price} pressed={filters.price === price} onClick={() => toggle("price", price)}>
+                          <span aria-hidden>{priceSymbol(price)}</span>
+                          <span className="sr-only">{dict.common.price[price]},</span>
+                          {t.priceOption[price]}
+                        </Chip>
+                      ))}
+                    </Group>
+                  </div>
+                  <div ref={(node) => void (groupRefs.current.time = node)}>
+                    <Group id="g-time" label={t.time}>
+                      {TIMES.map((time) => (
+                        <Chip key={time} pressed={filters.time === time} onClick={() => toggle("time", time)}>
+                          {dict.common.bestTime[time]}
+                        </Chip>
+                      ))}
+                    </Group>
+                  </div>
+                  <Group id="g-distance" label={dict.explore.filters.distance}>
+                    {DISTANCES.map((distance) => (
+                      <Chip key={distance} pressed={filters.distance === distance} onClick={() => toggle("distance", distance)}>
+                        {dict.common.distance[distance]}
+                      </Chip>
+                    ))}
+                  </Group>
+                  <label className="grid content-start gap-2">
+                    <span className="text-label">{dict.explore.filters.district}</span>
+                    <Select
+                      value={filters.district ?? ""}
+                      onChange={(event) => set("district", (event.target.value || null) as District | null)}
+                      wrapperClassName="w-full max-w-sm"
                     >
-                      {selected ? <Check className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}
-                      {dict.explore.compare.pill}
-                    </button>
-                  }
-                />
-              </motion.div>
-            );
-          })}
-        </motion.div>
-        {hasMore ? (
-          <div className="mt-12 flex flex-col items-center gap-3">
-            <p className="text-sm text-muted-foreground">
-              {dict.explore.filters.showing
-                .replace("{shown}", String(visiblePlaces.length))
-                .replace("{total}", String(filtered.length))}
+                      <option value="">{t.all}</option>
+                      {(Object.keys(dict.common.districts) as District[]).map((district) => (
+                        <option key={district} value={district}>
+                          {dict.common.districts[district]}
+                        </option>
+                      ))}
+                    </Select>
+                  </label>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  <div className="grid gap-1">
+                    <p className="text-label text-ink">{t.nearTitle}</p>
+                    <p className="max-w-[70ch] text-small text-pretty text-ink-soft">{dict.explore.nearMe.explain}</p>
+                  </div>
+                  {!reference ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={requestGeolocation}
+                        disabled={geoStatus === "loading"}
+                        icon={<LocateFixed aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+                      >
+                        {geoStatus === "loading" ? dict.explore.nearMe.locating : dict.explore.nearMe.useMyLocation}
+                      </Button>
+                      <span className="px-1 text-small text-ink-soft">{dict.explore.nearMe.or}</span>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={startPickingOnMap}
+                        aria-pressed={pickingOnMap}
+                        icon={<MousePointerClick aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+                      >
+                        {dict.explore.nearMe.pickOnMap}
+                      </Button>
+                      <label className="min-w-0">
+                        <span className="sr-only">{dict.explore.nearMe.pickDistrict}</span>
+                        <Select
+                          value={districtRef}
+                          onChange={(event) => handlePickDistrict(event.target.value as District | "")}
+                          wrapperClassName="max-w-[16rem]"
+                        >
+                          <option value="">{dict.explore.nearMe.pickDistrict}</option>
+                          {(Object.keys(dict.common.districts) as District[]).map((district) => (
+                            <option key={district} value={district}>
+                              {dict.common.districts[district]}
+                            </option>
+                          ))}
+                        </Select>
+                      </label>
+                      {pickingOnMap ? (
+                        <Button size="sm" variant="ghost" onClick={() => setPickingOnMap(false)}>
+                          {t.cancel}
+                        </Button>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="grid max-w-xl gap-2">
+                      <div className="flex items-center justify-between gap-3">
+                        <label htmlFor="radius" className="text-label">
+                          {fill(t.radius, { km: radiusKm })}
+                        </label>
+                        <Button size="sm" variant="ghost" onClick={clearProximity} icon={<X aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}>
+                          {dict.explore.nearMe.clear}
+                        </Button>
+                      </div>
+                      <input
+                        id="radius"
+                        type="range"
+                        min={0}
+                        max={RADIUS_STEPS_KM.length - 1}
+                        step={1}
+                        value={radiusIndex}
+                        onChange={(event) => setRadiusIndex(Number(event.target.value))}
+                        aria-valuetext={fill(t.km, { km: radiusKm })}
+                        className={cx("h-11 w-full cursor-pointer accent-brand", focusRing)}
+                      />
+                      <div aria-hidden className="flex justify-between text-small text-ink-soft tabular-nums">
+                        {RADIUS_STEPS_KM.map((km) => (
+                          <span key={km}>{fill(t.km, { km })}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {geoStatus === "denied" || geoStatus === "error" ? (
+                    <p role="alert" className="text-small text-ink">
+                      {geoStatus === "denied" ? dict.explore.nearMe.denied : dict.explore.nearMe.error}
+                    </p>
+                  ) : null}
+                  {pickingOnMap ? <p className="text-small text-brand">{dict.explore.nearMe.pickingHint}</p> : null}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </Wrap>
+      </div>
+
+      {/* ── Results and map ── */}
+      <Wrap className="grid gap-6 pt-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-8">
+        <section aria-labelledby="results-heading" className={cx(view === "map" && "hidden lg:block")}>
+          <h2 id="results-heading" className="sr-only">
+            {t.resultsHeading}
+          </h2>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <p aria-live="polite" className="text-small text-ink-soft tabular-nums">
+              {countLine}
+            </p>
+            <label className="flex items-center gap-2 text-small text-ink-soft">
+              {t.sortLabel}
+              <Select value={sort} onChange={(event) => setSort(event.target.value as ExploreSort)}>
+                {SORTS.map((option) => (
+                  <option key={option} value={option} disabled={!isSortAvailable(option, reference?.coords ?? null)}>
+                    {dict.explore.sort[option as Exclude<ExploreSort, "rating">]}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          </div>
+
+          {activeChips.length ? (
+            <div role="group" aria-label={t.activeFilters} className="mb-5 flex flex-wrap items-center gap-2">
+              {activeChips.map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={chip.clear}
+                  aria-label={fill(t.removeFilter, { filter: chip.label })}
+                  className={cx(
+                    "inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-full bg-leaf-fill pr-2.5 pl-3.5 text-small font-medium text-brand",
+                    "relative before:absolute before:-inset-y-1 before:inset-x-0 before:content-['']",
+                    "transition-colors duration-150 hover:bg-[color-mix(in_oklab,var(--cmj-leaf-fill)_80%,var(--cmj-brand))]",
+                    focusRing,
+                  )}
+                >
+                  {chip.label}
+                  <X aria-hidden strokeWidth={ICON_STROKE} className="size-3.5" />
+                </button>
+              ))}
+              <Button variant="ghost" size="sm" onClick={clearAll}>
+                {t.clearAll}
+              </Button>
+            </div>
+          ) : null}
+
+          {sorted.length === 0 ? (
+            <Box className="grid justify-items-center gap-3 px-6 py-14 text-center">
+              <span aria-hidden className="grid size-14 place-items-center rounded-full bg-well text-brand">
+                <Search strokeWidth={ICON_STROKE} className="size-6" />
+              </span>
+              <p className="text-title text-brand">{t.emptyTitle}</p>
+              <p className="max-w-[40ch] text-body text-pretty text-ink-soft">{t.emptyBody}</p>
+              <Button variant="secondary" onClick={clearAll} className="mt-2">
+                {t.clearAll}
+              </Button>
+            </Box>
+          ) : (
+            <ul role="list" className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+              {visible.map((place) => {
+                const name = place.name[locale];
+                const km = nearby?.get(place.slug);
+                const reading = airQualityOn ? aqiLayer.dataBySlug.get(place.slug) : undefined;
+                const comparing = compareSlugs.includes(place.slug);
+                const note =
+                  km !== undefined || reading ? (
+                    <span className="grid gap-0.5">
+                      {km !== undefined && reference ? (
+                        <span>
+                          {fill(t.away, {
+                            distance: formatDistance(km, dict),
+                            minutes: estimateTravelMinutes(reference.coords, place.coordinates),
+                          })}
+                        </span>
+                      ) : null}
+                      {reading ? <AqiNote reading={reading} locale={locale} dict={dict} className="text-ink-soft" /> : null}
+                    </span>
+                  ) : null;
+                return (
+                  <li key={place.slug} className="min-w-0">
+                    <PlaceCardFor
+                      place={place}
+                      locale={locale}
+                      dict={dict}
+                      layout="auto"
+                      className="h-full"
+                      active={hoveredSlug === place.slug}
+                      onPointerEnter={isDesktop ? () => setHoveredSlug(place.slug) : undefined}
+                      onPointerLeave={isDesktop ? () => setHoveredSlug(null) : undefined}
+                      onFocus={isDesktop ? () => setHoveredSlug(place.slug) : undefined}
+                      onBlur={isDesktop ? () => setHoveredSlug(null) : undefined}
+                      favorite={<FavoriteToggle slug={place.slug} placeName={name} />}
+                      note={note}
+                      footer={
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => toggleCompare(place.slug)}
+                            aria-pressed={comparing}
+                            aria-label={fill(comparing ? t.compareRemove : t.compareAdd, { place: name })}
+                            className={cx(
+                              // Not on a phone: comparing means looking at several
+                              // places on one map, which needs a screen's room.
+                              "mr-auto hidden min-h-11 cursor-pointer items-center gap-1.5 rounded-full px-3.5 text-small font-medium sm:inline-flex",
+                              "text-ink-soft shadow-[inset_0_0_0_1.5px_var(--cmj-line-strong)] transition-colors duration-150 hover:bg-well hover:text-ink",
+                              "aria-pressed:bg-leaf-fill aria-pressed:text-brand aria-pressed:shadow-[inset_0_0_0_1.5px_var(--cmj-brand)]",
+                              focusRing,
+                            )}
+                          >
+                            {comparing ? (
+                              <Check aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+                            ) : (
+                              <MapPin aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+                            )}
+                            {t.compare}
+                          </button>
+                          <PlanToggle slug={place.slug} placeName={name} plannerDay={plannerDay} />
+                        </>
+                      }
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          {sorted.length > visible.length ? (
+            <div className="mt-8 grid justify-items-center gap-3">
+              <p className="text-small text-ink-soft tabular-nums">
+                {fill(t.showing, { shown: visible.length, total: sorted.length })}
+              </p>
+              <Button variant="secondary" onClick={() => setVisibleCount((n) => n + GRID_PAGE_SIZE)}>
+                {t.loadMore}
+              </Button>
+            </div>
+          ) : null}
+
+          {airQualityOn ? (
+            <p className="mt-8 text-credit text-ink-soft">
+              {aqiLayer.isLoading
+                ? dict.explore.airQuality.loading
+                : aqiLayer.dataBySlug.size === 0
+                  ? dict.explore.airQuality.unavailable
+                  : dict.explore.airQuality.explain}{" "}
+              · {dict.weather.attribution}
+            </p>
+          ) : null}
+        </section>
+
+        <aside
+          aria-label={t.mapLabel}
+          className={cx(
+            "no-print overflow-hidden rounded-xl shadow-float",
+            "h-[calc(100dvh_-_72px_-_var(--bar-h,124px)_-_2.5rem)] min-h-[360px]",
+            "lg:sticky lg:top-[calc(72px_+_var(--bar-h,124px)_+_1.25rem)] lg:h-[calc(100dvh_-_72px_-_var(--bar-h,124px)_-_2.5rem)]",
+            view === "map" ? "block" : "hidden lg:block",
+          )}
+        >
+          {showMap ? (
+            <ExploreMapLoader
+              className="size-full"
+              places={mapPlaces}
+              framePlaces={framePlaces}
+              highlightSlugs={compareSlugs}
+              hoveredSlug={hoveredSlug}
+              onHoverPlace={setHoveredSlug}
+              reference={reference?.coords ?? null}
+              radiusKm={reference ? radiusKm : null}
+              pickingOnMap={pickingOnMap}
+              onMapPick={handleMapPick}
+              airQualityBySlug={airQualityOn ? aqiLayer.dataBySlug : null}
+              plannerDay={plannerDay}
+            />
+          ) : null}
+        </aside>
+      </Wrap>
+
+      {/* ── Bottom bars ── */}
+      {compareSlugs.length > 0 ? (
+        <div className="no-print fixed inset-x-0 bottom-5 z-40 flex justify-center px-4">
+          <div className="flex max-w-full items-center gap-2 rounded-full bg-forest py-1.5 pr-1.5 pl-5 text-on-forest shadow-lift dark:ring-1 dark:ring-line-strong">
+            <p className="min-w-0 truncate text-label">
+              {fill(t.compareBar, { count: compareSlugs.length })}
+              <span className="hidden text-on-forest-soft sm:inline"> · {t.compareHint}</span>
             </p>
             <button
               type="button"
-              onClick={() => setVisibleCount((n) => n + GRID_PAGE_SIZE)}
-              className="rounded-full border border-border-strong px-6 py-3 text-sm font-medium transition-colors hover:border-accent hover:text-accent-text"
-            >
-              {dict.explore.filters.loadMore}
-            </button>
-          </div>
-        ) : null}
-        </>
-      ) : (
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1.3fr]">
-          <div className="max-h-[600px] space-y-2 overflow-y-auto pr-1 lg:max-h-[720px]">
-            {filtered.map((place) => {
-              const selected = compareSlugs.includes(place.slug);
-              return (
-                <div
-                  key={place.slug}
-                  onMouseEnter={() => setHoveredSlug(place.slug)}
-                  onMouseLeave={() => setHoveredSlug(null)}
-                  className={cn(
-                    "flex items-center gap-3 rounded-md border p-3 transition-colors",
-                    selected
-                      ? "border-secondary bg-secondary/10"
-                      : hoveredSlug === place.slug
-                        ? "border-accent bg-accent/10"
-                        : "border-border"
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleCompare(place.slug)}
-                    aria-pressed={selected}
-                    aria-label={selected ? dict.explore.compare.remove : dict.explore.compare.add}
-                    className={cn(
-                      "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border",
-                      selected ? "border-secondary bg-secondary text-secondary-foreground" : "border-border-strong"
-                    )}
-                  >
-                    {selected ? <Check className="h-3.5 w-3.5" /> : null}
-                  </button>
-                  <a href={`/${locale}/place/${place.slug}`} className="flex flex-1 items-center gap-3">
-                    <span className="font-serif-display text-base">{place.name[locale]}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
-                      {dict.common.districts[place.district]}
-                    </span>
-                  </a>
-                </div>
-              );
-            })}
-          </div>
-          <ExploreMapLoader
-            places={mapPlaces}
-            highlightSlugs={compareSlugs}
-            hoveredSlug={hoveredSlug}
-            onHoverPlace={setHoveredSlug}
-            reference={reference?.coords ?? null}
-            radiusKm={reference ? radiusKm : null}
-            pickingOnMap={pickingOnMap}
-            onMapPick={handleMapPick}
-            airQualityBySlug={airQualityOn ? aqiLayer.dataBySlug : null}
-          />
-        </div>
-      )}
-
-      {compareSlugs.length > 0 ? (
-        <div className="no-print fixed inset-x-0 bottom-6 z-40 flex justify-center px-6">
-          <div className="flex items-center gap-4 rounded-full border border-border bg-background px-5 py-3 shadow-elevated">
-            <span className="text-sm font-medium">
-              {compareSlugs.length} {dict.explore.compare.selected}
-            </span>
-            <button
-              type="button"
               onClick={() => handleSetView("map")}
-              className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-medium text-accent-foreground"
+              className="inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 rounded-full bg-cmj-sand px-4 text-label text-cmj-green hover:bg-cmj-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cmj-sand lg:hidden"
             >
-              <MapIcon className="h-3.5 w-3.5" />
-              {dict.explore.compare.viewOnMap}
+              <MapIcon aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+              {t.compareShow}
             </button>
             <button
               type="button"
               onClick={() => setCompareSlugs([])}
-              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-destructive"
+              className="inline-flex min-h-11 flex-none cursor-pointer items-center gap-1.5 rounded-full px-4 text-label text-on-forest-soft hover:bg-cmj-paper/12 hover:text-on-forest focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cmj-sand"
             >
-              <X className="h-3.5 w-3.5" />
-              {dict.explore.compare.clear}
+              <X aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
+              {t.compareClear}
             </button>
           </div>
         </div>
-      ) : null}
-
-      {plannerDayId && plannerDayNumber && compareSlugs.length === 0 ? (
-        <div className="no-print fixed inset-x-0 bottom-6 z-40 flex justify-center px-6 sm:hidden">
-          <Link
-            href={`/${locale}/planner?highlight=${plannerDayId}`}
-            className="flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground shadow-elevated"
+      ) : (
+        <div className="no-print fixed inset-x-0 bottom-5 z-40 flex justify-center px-4 lg:hidden">
+          <Button
+            onClick={() => handleSetView(view === "map" ? "grid" : "map")}
+            icon={
+              view === "map" ? (
+                <List aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+              ) : (
+                <MapIcon aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+              )
+            }
+            className="shadow-lift"
           >
-            <Check className="h-4 w-4" />
-            {dict.explore.plannerContext.doneCta.replace("{count}", String(plannerDayCount))}
-          </Link>
+            {view === "map" ? t.listFab : fill(t.mapFab, { count: mapPlaces.length })}
+          </Button>
         </div>
-      ) : null}
-    </Section>
+      )}
+    </div>
   );
 }

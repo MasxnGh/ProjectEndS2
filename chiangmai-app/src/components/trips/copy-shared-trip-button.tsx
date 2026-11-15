@@ -1,18 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
-import { SignInPromptModal } from "@/components/auth/sign-in-prompt-modal";
+import { Button, ButtonLink } from "@/components/brand/button";
+import { ICON_STROKE } from "@/components/brand/icons";
+import { SignInPrompt } from "@/components/brand/sign-in-prompt";
 import type { Locale } from "@/i18n";
 
 /**
  * Copying needs an account (a trip has to belong to someone), but *reading*
  * the shared page does not — so this is the only gated thing here, and the
- * gate is the same inviting modal used elsewhere rather than a redirect that
+ * gate is the same inviting prompt used elsewhere rather than a redirect that
  * would throw away the page the visitor is looking at.
  */
 export function CopySharedTripButton({ token, locale }: { token: string; locale: Locale }) {
@@ -48,37 +49,39 @@ export function CopySharedTripButton({ token, locale }: { token: string; locale:
 
   if (done) {
     return (
-      <p className="flex flex-wrap items-center gap-3 text-sm">
-        <span className="flex items-center gap-2 text-accent-text">
-          <Check className="h-4 w-4" aria-hidden="true" />
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2" role="status">
+        <span className="inline-flex items-center gap-2 text-label font-semibold text-brand">
+          <Check aria-hidden strokeWidth={2} className="size-5" />
           {t.copied}
         </span>
-        <Link href={`/${locale}/my-trips`} className="underline hover:text-accent-text">
+        <ButtonLink href={`/${locale}/my-trips`} variant="secondary" size="sm" arrow>
           {t.viewMyTrips}
-        </Link>
-      </p>
+        </ButtonLink>
+      </div>
     );
   }
 
   const signedIn = status === "authenticated";
+  const iconClass = "size-5";
 
   return (
     <>
-      <button
-        type="button"
+      <Button
         disabled={busy}
+        aria-busy={busy || undefined}
         onClick={() => (signedIn ? copyTrip() : setPromptOpen(true))}
-        className="flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-accent-foreground hover:brightness-95 disabled:opacity-60"
+        icon={
+          busy ? (
+            <Loader2 aria-hidden strokeWidth={ICON_STROKE} className={`${iconClass} animate-spin motion-reduce:animate-none`} />
+          ) : (
+            <Copy aria-hidden strokeWidth={ICON_STROKE} className={iconClass} />
+          )
+        }
       >
-        {busy ? (
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-        ) : (
-          <Copy className="h-4 w-4" aria-hidden="true" />
-        )}
         {busy ? t.copying : signedIn ? t.copyCta : t.copySignedOut}
-      </button>
+      </Button>
 
-      <SignInPromptModal open={promptOpen} onClose={() => setPromptOpen(false)} />
+      <SignInPrompt open={promptOpen} onClose={() => setPromptOpen(false)} variant="plan" />
     </>
   );
 }

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>เกี่ยวกับเรา · Chiangmai Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+  .ab-hero { display: grid; gap: var(--s-7); padding-block: var(--s-7) var(--s-8); align-items: center; }
+  .ab-brand { display: grid; justify-items: center; text-align: center; gap: var(--s-3); color: var(--brand); }
+  .ab-brand svg.markbig { width: 150px; height: auto; }
+  .ab-brand .wm { font-size: clamp(2.5rem, 2rem + 2.4vw, 3.75rem); font-weight: 600; line-height: 1.05; }
+  .ab-brand .t-latin-caps { color: var(--text); font-size: 0.9375rem; }
+  .ab-brand hr { width: 56px; border: 0; height: 1.5px; background: var(--line-strong); margin: var(--s-3) 0; }
+  .ab-brand .th { font-size: 1.25rem; color: var(--text); line-height: 1.6; }
+  .ab-hero .photo { aspect-ratio: 4 / 5; border-radius: var(--r-xl); }
+  @media (min-width: 900px) { .ab-hero { grid-template-columns: 1fr 1fr; } }
+  .idea { display: grid; gap: var(--s-4); max-width: 760px; padding-block: var(--s-8); }
+  .idea h2 { font-size: var(--fs-headline); line-height: 1.35; }
+  .idea p { font-size: 1.125rem; line-height: 1.8; }
+  .values { display: grid; gap: var(--s-5); }
+  @media (min-width: 768px) { .values { grid-template-columns: repeat(3, 1fr); } }
+  .value { padding: var(--s-6) var(--s-5); display: grid; gap: var(--s-3); justify-items: start; }
+  .value .i--xl { color: var(--brand); }
+  .value h3 { font-size: var(--fs-title); }
+  .value p { color: var(--text-2); }
+  .value .en { font-size: var(--fs-small); color: var(--text-2); letter-spacing: 0.04em; }
+  .sources { display: grid; gap: var(--s-3); }
+  .sources li { display: grid; grid-template-columns: 44px 1fr; gap: var(--s-4); align-items: start; padding: var(--s-4) 0; border-bottom: 1px solid var(--line); }
+  .sources ul { list-style: none; margin: 0; padding: 0; }
+  .sources b { font-weight: 600; display: block; }
+  .sources span { color: var(--text-2); }
+  .maker { margin-top: var(--s-8); padding: var(--s-6); display: grid; gap: var(--s-3); background: var(--sand-fill); border-radius: var(--r-xl); }
+  .maker h2 { font-size: var(--fs-title); }
+  .todo-mark { display: inline-block; padding: 2px 10px; border-radius: var(--r-pill); border: 1.5px dashed var(--chiang-mai-green); font-size: var(--fs-small); }
+</style>
+</head>
+<body>
+<main id="main" class="wrap">
+  <section class="ab-hero" aria-label="แบรนด์">
+    <div class="ab-brand" id="brand"></div>
+    <figure style="margin:0"><div class="photo graded"><img id="ab-img" alt=""></div><figcaption class="credit" id="ab-cap" style="margin-top:8px"></figcaption></figure>
+  </section>
+
+  <section class="idea" aria-labelledby="h-idea">
+    <h2 id="h-idea">ไม่ใช่ลิสต์ให้ไล่ติ๊ก แต่เป็นบทหนึ่งของการเดินทาง</h2>
+    <p>เชียงใหม่ใจดีกับคนที่ไม่รีบ — กาแฟอีกแก้วในซอยนิมมาน อีกชั่วโมงใต้เจดีย์อายุเก้าร้อยปี อีกโค้งถนนก่อนถึงดอยอินทนนท์ เว็บนี้ทำขึ้นเพื่อคนที่อยากไปไม่กี่ที่ แต่ไปให้ถึงจริงๆ ตั้งแต่ตรอกในเมืองเก่า ไปจนถึงสันเขาที่หมอกลงของแม่ริม</p>
+  </section>
+
+  <section aria-labelledby="h-val">
+    <div class="sec-head"><h2 id="h-val">สิ่งที่เรายึดไว้</h2><span class="rule"></span></div>
+    <div class="values" id="values"></div>
+  </section>
+
+  <section class="block" style="padding-top:var(--s-9)" aria-labelledby="h-src">
+    <div class="sec-head"><h2 id="h-src">ข้อมูลมาจากไหน</h2><span class="rule"></span></div>
+    <div class="sources"><ul id="sources"></ul></div>
+  </section>
+
+  <section class="maker" aria-labelledby="h-mk">
+    <h2 id="h-mk">ผู้จัดทำ</h2>
+    <p>โปรเจกต์จบการศึกษา วิทยาลัยเทคนิคเชียงใหม่</p>
+    <p><span class="todo-mark">ใส่ชื่อผู้จัดทำและอาจารย์ที่ปรึกษา</span></p>
+  </section>
+</main>
+<script src="assets/catalogue.js"></script>
+<script src="assets/shell.js"></script>
+<script>
+  const { icon, mark, brush, bySlug, img, C } = UI;
+  UI.mount("about");
+  document.getElementById("brand").innerHTML = `
+    ${mark().replace("<svg ", '<svg class="markbig" ')}
+    <div class="wm">Chiangmai<br>Journey</div>
+    <div class="t-latin-caps" lang="en">Explore • Experience • Enjoy</div>
+    <hr>
+    <p class="th">ออกเดินทางไปเชียงใหม่<br>ในแบบที่เป็นคุณ</p>${brush}`;
+  const ph = bySlug("wat-phan-tao");
+  document.getElementById("ab-img").src = img(ph.s);
+  document.getElementById("ab-img").alt = ph.th;
+  document.getElementById("ab-cap").textContent = `${ph.th} — ภาพ: ${ph.credit.by} · ${ph.credit.lic} · Wikimedia Commons`;
+  document.getElementById("values").innerHTML = [
+    ["mountain", "ของจริงจากคนที่ไป", "Local, authentic", `สถานที่ ${C.places.length} แห่งที่เราคัดและเขียนเอง รูปทุกรูปต้องพิสูจน์ได้ว่าเป็นที่นั้นจริง ถ้าไม่มีก็ไม่ใส่`],
+    ["compass", "สำรวจได้ง่าย", "Easy to explore", "ค้นหาก่อน หมวดหมู่ห่างไปแตะเดียว ทุกปุ่มกดได้ด้วยนิ้วโป้ง และตัววางแผนอยู่ในทุกหน้า"],
+    ["heart", "การเดินทางที่อยู่ในใจ", "Inspiring journey", "แผนที่ต่อกันได้จริง เวลาเดินทางจริง และเรื่องเล่าที่ทำให้อยากออกไปตอนแสงเย็น"],
+  ].map(([i, t, en, d]) => `<div class="box value">${icon(i, "i--xl")}<h3>${t}</h3><span class="en" lang="en">${en}</span><p>${d}</p></div>`).join("");
+  const withPhoto = C.places.filter((p) => p.photo).length;
+  document.getElementById("sources").innerHTML = [
+    ["pin", "สถานที่", `${C.places.length} แห่ง ใน 8 หมวด คัดและเขียนโดยผู้จัดทำ เวลาเปิด-ปิดบางส่วนตรวจกับ OpenStreetMap ที่เหลือเป็นค่าประมาณและระบุไว้`],
+    ["camera", "ภาพถ่าย", `${withPhoto} ภาพจาก Wikimedia Commons ภายใต้สัญญาอนุญาต CC พร้อมชื่อช่างภาพทุกภาพ ที่ที่ยังไม่มีภาพที่ยืนยันได้จะแสดงเป็นลายแทน`],
+    ["sun", "สภาพอากาศและคุณภาพอากาศ", "Open-Meteo อัปเดตตามเวลาจริง"],
+    ["map", "แผนที่", "MapTiler และ OpenStreetMap"],
+    ["route", "เส้นทางและเวลาเดินทาง", "OpenRouteService ถ้าเรียกไม่ได้จะใช้ค่าประมาณจากระยะทางและบอกไว้ว่าเป็นค่าประมาณ"],
+  ].map(([i, t, d]) => `<li><span class="icon-btn" aria-hidden="true">${icon(i)}</span><div><b>${t}</b><span>${d}</span></div></li>`).join("");
+</script>
+</body>
+</html>

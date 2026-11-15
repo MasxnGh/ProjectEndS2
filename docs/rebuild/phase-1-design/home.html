@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>หน้าแรก · Chiangmai Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+  /* ---- Hero: framed photograph, words on the quiet left ---- */
+  .hero { padding-top: var(--s-4); }
+  .hero-frame {
+    position: relative; overflow: hidden; border-radius: var(--r-xl); isolation: isolate;
+    min-height: clamp(560px, 78svh, 760px); display: grid; grid-template-rows: 1fr auto; align-items: end;
+    color: var(--paper-raw);
+  }
+  .hero-frame .photo { position: absolute; inset: 0; z-index: -2; }
+  .hero-frame .photo img { object-position: 60% 40%; }
+  .hero-frame::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background:
+      linear-gradient(90deg, rgba(20, 42, 39, 0.9) 0%, rgba(20, 42, 39, 0.84) 40%, rgba(20, 42, 39, 0.36) 60%, rgba(20, 42, 39, 0) 76%),
+      linear-gradient(0deg, rgba(20, 42, 39, 0.55) 0%, rgba(20, 42, 39, 0) 40%);
+  }
+  .hero-copy { padding: var(--s-7) var(--s-5) var(--s-6); max-width: 640px; min-width: 0; display: grid; gap: var(--s-4); }
+  .hero-copy .search input { width: 100%; }
+  .hero-copy h1 { color: var(--paper-raw); font-size: var(--fs-display); line-height: 1.02; letter-spacing: -0.01em; }
+  .hero-copy .sub { font-size: clamp(1.125rem, 1rem + 0.6vw, 1.375rem); font-weight: 400; line-height: 1.6; max-width: 30ch; }
+  .hero-copy .search { margin-top: var(--s-3); max-width: 520px; border-color: transparent; }
+  .hero-copy .quick { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+  .hero-copy .quick span { font-size: var(--fs-small); opacity: 0.9; margin-right: 4px; flex: none; white-space: nowrap; }
+  .hero-copy .quick .chip { min-height: 40px; background: rgba(255, 252, 250, 0.16); color: var(--paper-raw); border: 1px solid rgba(255, 252, 250, 0.32); }
+  .hero-copy .quick .chip:hover { background: rgba(255, 252, 250, 0.28); }
+  .hero-caption { position: absolute; right: var(--s-4); bottom: var(--s-4); font-size: 0.8125rem; color: rgba(249, 243, 240, 0.92); text-align: right; max-width: 46ch; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+  .hero .sparkle-mark { position: absolute; top: var(--s-6); left: var(--s-5); width: 22px; height: 22px; color: var(--sunset-orange); }
+  @media (min-width: 1024px) {
+    .hero-copy { padding: var(--s-9) var(--s-8) var(--s-8); }
+  }
+  @media (max-width: 639px) {
+    .hero { padding-top: var(--s-3); }
+    .hero-frame { min-height: 620px; border-radius: var(--r-lg); }
+    .hero-frame::before { background: linear-gradient(0deg, rgba(20,42,39,.92) 0%, rgba(20,42,39,.84) 62%, rgba(20,42,39,.35) 100%); }
+    .hero-copy { padding: var(--s-6) var(--s-4) var(--s-3); }
+    .hero-copy .quick { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: calc(-1 * var(--s-4)); padding-right: var(--s-4); }
+    .hero-copy .quick::-webkit-scrollbar { display: none; }
+    .hero-caption { position: static; text-align: left; padding: 0 var(--s-4) var(--s-4); max-width: none; }
+    .hero-frame .photo img { object-position: 70% 30%; }
+  }
+
+  section.block { padding-top: var(--s-9); }
+  @media (max-width: 639px) { section.block { padding-top: var(--s-8); } }
+
+  /* ---- Category rail ---- */
+  .rail-wrap { position: relative; }
+  .rail { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 4 * var(--s-4)) / 5.3); gap: var(--s-4); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 4px; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail > * { scroll-snap-align: start; }
+  .rail-next { position: absolute; right: -10px; top: 50%; translate: 0 -50%; box-shadow: var(--lift); background: var(--surface); }
+  @media (max-width: 1023px) { .rail { grid-auto-columns: 30%; } }
+  @media (max-width: 639px) { .rail { grid-auto-columns: 44%; } .rail-next { display: none; } }
+
+  /* ---- Featured: one large, four in a list ---- */
+  .featured { display: grid; gap: var(--s-5); }
+  .feature-big { display: grid; gap: var(--s-4); align-content: start; }
+  .feature-big .photo { aspect-ratio: 4 / 3; border-radius: var(--r-xl); }
+  .feature-big .cap { display: flex; justify-content: space-between; gap: var(--s-4); align-items: flex-start; }
+  .feature-big h3 { font-size: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem); line-height: 1.35; }
+  .feature-big p { color: var(--text-2); max-width: 52ch; }
+  .feature-list { display: grid; gap: var(--s-4); align-content: start; }
+  .feature-list .pcard .media { aspect-ratio: 4 / 3; min-height: 0; }
+  @media (min-width: 1024px) { .featured { grid-template-columns: 1.08fr 1fr; gap: var(--s-7); } }
+  .lead { color: var(--text-2); margin: calc(-1 * var(--s-4)) 0 var(--s-6); max-width: 60ch; }
+
+  /* ---- Planner band ---- */
+  .band { background: var(--band); color: var(--on-band); border-radius: var(--r-xl); padding: var(--s-7) var(--s-5); display: grid; gap: var(--s-7); position: relative; overflow: hidden; }
+  .band h2 { color: var(--on-band); font-size: var(--fs-headline); line-height: 1.3; max-width: 16ch; }
+  .band .copy { display: grid; gap: var(--s-5); align-content: start; }
+  .band .copy p { color: var(--on-band-2); max-width: 44ch; }
+  .band .btn--primary { background: var(--lanna-sand); color: var(--chiang-mai-green-deep); }
+  .band .btn--primary:hover { background: #f6e2c9; }
+  .tools { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-5); }
+  .tools div { display: flex; align-items: center; gap: var(--s-3); font-size: var(--fs-small); color: var(--on-band-2); }
+  .tools .icon-btn { background: rgba(249, 243, 240, 0.1); color: var(--lanna-sand); cursor: default; }
+  .band .ridge { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; opacity: 0.08; pointer-events: none; }
+  @media (min-width: 1024px) { .band { grid-template-columns: 0.9fr 1.1fr; padding: var(--s-8); align-items: center; } }
+  @media (max-width: 639px) {
+    .band { padding: var(--s-6) var(--s-4) var(--s-5); gap: var(--s-6); border-radius: var(--r-lg); margin-inline: calc(-1 * var(--s-2)); }
+    .day { padding: var(--s-4); }
+    .day-head { flex-direction: column; gap: 2px; }
+    .stop { grid-template-columns: 28px 56px 1fr; gap: 10px; }
+    .stop .photo, .stop .noimg { width: 56px; height: 48px; }
+    .tools { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+  }
+
+  .day { background: var(--surface); color: var(--text); border-radius: var(--r-lg); padding: var(--s-5); box-shadow: var(--lift); position: relative; z-index: 1; }
+  .day-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s-3); margin-bottom: var(--s-4); }
+  .day-head h3 { font-size: var(--fs-title); color: var(--brand); }
+  .day-head span { color: var(--text-2); font-size: var(--fs-small); }
+  .stop { display: grid; grid-template-columns: 28px 64px 1fr; gap: var(--s-3); align-items: center; }
+  .stop .n { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: var(--on-brand); font-size: 0.8125rem; font-weight: 600; }
+  .stop .photo, .stop .noimg { width: 64px; height: 52px; border-radius: var(--r-sm); }
+  .stop b { display: block; font-weight: 500; font-size: 1rem; line-height: 1.4; }
+  .stop small { color: var(--text-2); font-size: var(--fs-small); }
+  .leg { display: flex; align-items: center; gap: var(--s-2); margin: 6px 0 6px 13px; padding: 6px 0 6px 27px; border-left: 2px dashed var(--line-strong); color: var(--text-2); font-size: var(--fs-small); }
+  .day-foot { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--line); font-size: var(--fs-small); color: var(--text-2); }
+  .day-foot b { color: var(--text); font-weight: 600; }
+
+  /* ---- Guides ---- */
+  .guides { display: grid; gap: var(--s-5); }
+  @media (min-width: 768px) { .guides { grid-template-columns: repeat(3, 1fr); } }
+  .gcard { display: grid; gap: var(--s-3); }
+  .gcard .media { aspect-ratio: 3 / 2; border-radius: var(--r-lg); }
+  .gcard h3 { font-size: var(--fs-title); color: var(--text); line-height: 1.4; }
+  .gcard p { color: var(--text-2); font-size: 1rem; }
+  .gcard .read { display: flex; align-items: center; gap: 6px; font-size: var(--fs-small); color: var(--text-2); }
+  .gcard:hover h3 { color: var(--brand); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
+
+  /* ---- Closing: the board's last line ---- */
+  .closing { position: relative; overflow: hidden; border-radius: var(--r-xl); min-height: 420px; display: grid; align-items: center; color: var(--paper-raw); isolation: isolate; }
+  .closing .photo { position: absolute; inset: 0; z-index: -2; }
+  .closing::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(20,42,39,.9) 0%, rgba(20,42,39,.84) 48%, rgba(20,42,39,.3) 78%, rgba(20,42,39,.1)); }
+  @media (max-width: 639px) { .closing::before { background: rgba(20,42,39,.84); } }
+  .closing .inner { padding: var(--s-7) var(--s-5); display: grid; gap: var(--s-4); max-width: 760px; align-self: center; }
+  .closing .t-script { font-size: clamp(2.5rem, 1.9rem + 2.6vw, 4rem); color: var(--paper-raw); }
+  .closing p { font-size: 1.125rem; max-width: 34ch; }
+  .closing { grid-template-rows: 1fr auto; }
+  .closing .credit { color: rgba(249,243,240,.85); padding: 0 var(--s-5) var(--s-4); justify-self: end; text-align: right; }
+  @media (max-width: 639px) { .closing .credit { justify-self: start; text-align: left; padding: 0 var(--s-4) var(--s-4); } .closing .inner { padding: var(--s-7) var(--s-4) var(--s-4); } }
+  @media (min-width: 1024px) { .closing .inner { padding: var(--s-8); } }
+</style>
+</head>
+<body>
+<main id="main">
+  <section class="hero wrap" aria-label="เริ่มต้น">
+    <div class="hero-frame">
+      <div class="photo graded golden"><img id="hero-img" alt="พระมหาธาตุนภเมทนีดลและนภพลภูมิสิริ บนดอยอินทนนท์ กับสวนดอกไม้รอบองค์เจดีย์" fetchpriority="high"></div>
+      <div class="hero-copy">
+        <h1>Chiangmai<br>Journey</h1>
+        <p class="sub">ออกเดินทางไปเชียงใหม่ ในแบบที่เป็นคุณ — วัด หุบเขา และคาเฟ่เงียบๆ ที่เราคัดมาเอง <span class="num">204</span> แห่ง</p>
+        <form class="search" action="explore.html" role="search">
+          <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7.5"/><path d="m21 21-4.3-4.3"/></svg>
+          <label for="q" class="sr-only">ค้นหาสถานที่</label>
+          <input id="q" name="q" type="search" placeholder="ค้นหาวัด น้ำตก คาเฟ่…" autocomplete="off">
+          <button class="icon-btn icon-btn--brand" aria-label="ค้นหา"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+        </form>
+        <div class="quick" id="quick"><span>ลองดู</span></div>
+      </div>
+      <p class="hero-caption" id="hero-cap"></p>
+    </div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="h-cat">
+    <div class="sec-head"><h2 id="h-cat">เที่ยวแบบไหนดี</h2><span class="rule"></span><a class="btn btn--ghost more" href="explore.html">ดูทั้งหมด <svg class="i i--sm i--arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
+    <div class="rail-wrap"><div class="rail" id="rail"></div><button class="icon-btn rail-next" id="rail-next" aria-label="เลื่อนดูหมวดถัดไป"></button></div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="h-feat">
+    <div class="sec-head"><h2 id="h-feat">ที่ที่เรากลับไปเอง</h2><span class="rule"></span></div>
+    <p class="lead">ไม่ใช่เพราะดัง แต่เพราะไปแล้วอยากไปอีก</p>
+    <div class="featured" id="featured"></div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="h-plan">
+    <div class="band">
+      <div class="copy">
+        <h2 id="h-plan">จัดทริปทีละวัน ให้มันต่อกันได้จริง</h2>
+        <p>เลือกที่ที่อยากไป แล้วตัววางแผนจะเรียงลำดับให้ใช้เวลาเดินทางน้อยที่สุด บอกเวลาขับระหว่างจุด เวลาเปิด-ปิด และงบโดยประมาณของแต่ละวัน</p>
+        <div><a class="btn btn--primary" href="planner.html">เปิดทริปตัวอย่าง <svg class="i i--sm i--arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
+        <div class="tools" id="tools"></div>
+      </div>
+      <div class="day" id="day"></div>
+      <svg class="ridge" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 90V60l160-40 120 30 200-50 180 45 140-25 200 40 200-20v50z" fill="#f9f3f0"/></svg>
+    </div>
+  </section>
+
+  <section class="block wrap" aria-labelledby="h-guide">
+    <div class="sec-head"><h2 id="h-guide">เรื่องที่ควรอ่านก่อนไป</h2><span class="rule"></span><a class="btn btn--ghost more" href="guides.html">คู่มือทั้งหมด <svg class="i i--sm i--arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
+    <div class="guides" id="guides"></div>
+  </section>
+
+  <section class="block wrap" aria-label="ปิดท้าย">
+    <div class="closing">
+      <div class="photo graded"><img id="close-img" alt="" loading="lazy"></div>
+      <div class="inner">
+        <p class="t-script" lang="en">Chiang Mai… a journey that stays with you</p>
+        <p>เชียงใหม่ใจดีกับคนที่ไม่รีบ ไปไม่กี่ที่ แต่ไปให้ถึงจริงๆ</p>
+        <div><a class="btn btn--on-photo" href="planner.html">เริ่มวางแผนทริป <svg class="i i--sm i--arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a></div>
+      </div>
+      <p class="credit" id="close-cap"></p>
+    </div>
+  </section>
+</main>
+
+<script src="assets/catalogue.js"></script>
+<script src="assets/sample-trip.js"></script>
+<script src="assets/shell.js"></script>
+<script>
+  const { icon, bySlug, img, placeCard, catTile, CAT_ORDER, CAT, dur, km, baht, price, ZONE, DISTRICT, media, C } = UI;
+  UI.mount("home");
+
+  const credit = (p) => `ภาพ: ${p.credit.by} · ${p.credit.lic} · Wikimedia Commons`;
+
+  // Hero
+  const hero = bySlug("twin-royal-pagodas-inthanon");
+  document.getElementById("hero-img").src = img(hero.s);
+  document.getElementById("hero-cap").textContent = `${hero.th} · ดอยอินทนนท์ — ${credit(hero)}`;
+  document.getElementById("quick").insertAdjacentHTML("beforeend",
+    [["nature", "ธรรมชาติ"], ["temple", "วัด"], ["cafe", "คาเฟ่"], ["market", "ตลาด"]]
+      .map(([c, l]) => `<a class="chip" href="explore.html?category=${c}">${l}</a>`).join(""));
+
+  // Categories
+  document.getElementById("rail").innerHTML = CAT_ORDER.map(catTile).join("");
+  const rail = document.getElementById("rail"), next = document.getElementById("rail-next");
+  next.innerHTML = icon("right");
+  next.addEventListener("click", () => rail.scrollBy({ left: rail.clientWidth * 0.6, behavior: "smooth" }));
+
+  // Featured (the site's own five picks)
+  const picks = ["wat-phra-that-doi-suthep", "wat-pha-lat", "mae-sa-waterfall", "wat-ban-den", "tha-phae-gate"].map(bySlug);
+  const big = picks[0];
+  document.getElementById("featured").innerHTML = `
+    <article class="feature-big">
+      <a href="place.html?s=${big.s}" class="photo graded"><img src="${img(big.s)}" alt="${big.th}" loading="lazy"></a>
+      <div class="cap">
+        <div style="display:grid;gap:8px">
+          <h3><a href="place.html?s=${big.s}">${big.th}</a></h3>
+          <p>${big.short}</p>
+          <p class="t-small num">${CAT[big.c].th} · ${DISTRICT[big.d]} · อยู่ราว ${dur(big.dur)} · ${price(big.price)}</p>
+          <p class="credit">${credit(big)}</p>
+        </div>
+        <a class="icon-btn icon-btn--brand" href="place.html?s=${big.s}" aria-label="ดู ${big.th}">${icon("arrow")}</a>
+      </div>
+    </article>
+    <div class="feature-list">${picks.slice(1).map((p) => placeCard(p)).join("")}</div>`;
+
+  // Planner band — the app's own example trip, timed by its own scheduler
+  const T = SAMPLE_TRIP.day1;
+  const stops = T.stops.map(([slug, mins, arr, dep]) => ({ p: bySlug(slug), mins, arr, dep }));
+  document.getElementById("day").innerHTML = `
+    <div class="day-head"><h3>วันที่ 1 · ดอยสุเทพ ลงมาเมืองเก่า</h3><span>ทริปตัวอย่าง</span></div>
+    ${stops.map(({ p, mins, arr, dep }, i) => `
+      ${mins ? `<div class="leg num">${icon("car", "i--sm")} ขับรถราว ${dur(mins)}</div>` : ""}
+      <div class="stop"><span class="n">${i + 1}</span>${media(p)}<div><b>${p.th}</b><small class="num">${arr}–${dep} · ${DISTRICT[p.d]}</small></div></div>`).join("")}
+    <div class="day-foot num"><span>เดินทางรวม <b>${dur(T.travel)}</b></span><span>อยู่ในสถานที่ <b>${dur(T.visit)}</b></span><span>ค่าใช้จ่ายราว <b>${baht(T.budgetPerPerson)}</b> ต่อคน</span></div>`;
+  document.getElementById("tools").innerHTML = [["calendar", "จัดทีละวัน"], ["map", "แผนที่เส้นทาง"], ["share", "แชร์ลิงก์ / QR"], ["printer", "พิมพ์เป็น PDF"]]
+    .map(([i, l]) => `<div><span class="icon-btn" aria-hidden="true">${icon(i)}</span>${l}</div>`).join("");
+
+  // Guides — covers use a credited photo of a place the guide visits; no photo → the designed sand art
+  const gMedia = { "temples-of-the-old-city": "wat-chedi-luang" };
+  document.getElementById("guides").innerHTML = C.guides.map((g) => {
+    const ph = gMedia[g.s];
+    const m = ph ? `<div class="photo graded media"><img src="${img(ph)}" alt="" loading="lazy"></div>`
+      : `<div class="noimg media" aria-hidden="true"><span class="ring">${icon(g.s.includes("cafe") ? "coffee" : "pin", "i--lg")}</span><span class="zone">${g.s.includes("nimman") ? "นิมมานเหมินท์" : "เมืองเก่า · นิมมาน · ริมปิง"}</span></div>`;
+    return `<a class="gcard" href="guide.html?s=${g.s}">${m}<h3>${g.title}</h3><p>${g.dek}</p><span class="read num">${icon("book", "i--sm")} อ่าน ${g.read} นาที</span></a>`;
+  }).join("");
+
+  // Closing
+  const close = bySlug("kew-mae-pan-nature-trail");
+  document.getElementById("close-img").src = img(close.s);
+  document.getElementById("close-cap").textContent = `${close.th} — ${credit(close)}`;
+</script>
+</body>
+</html>

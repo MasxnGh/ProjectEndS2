@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ทิศทาง C · เพลต — หน้าแรก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chonburi&family=Noto+Serif+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* เพลต — the press sheet before it is trimmed. The page is set on a centre
+     axis the way a plate is laid out: registration crosses at the corners, a
+     masthead between two rules, a colour bar carrying the three inks, and
+     flat ink fields only. Nothing on this page is shaded or blurred, because
+     a plate cannot print that. */
+  :root {
+    --stock: #f7f7f4;        /* กระดาษพิมพ์ */
+    --stock-2: #eeeee9;
+    --ink: #17181c;          /* หมึกดำ */
+    --ink-2: #5c5f68;
+    --marigold: #d99a1e;     /* ขมิ้น — second ink */
+    --marigold-pale: #f6e8c9;
+    --blue: #35538c;         /* น้ำเงิน — third ink */
+    --blue-pale: #dee4ef;
+    --rule: #cdcdc6;
+    --display: "Chonburi", serif;
+    --text: "Noto Serif Thai", serif;
+    --gutter: clamp(18px, 4vw, 58px);
+    --shell: 1300px;
+    --pica: 12px;            /* the plate's measure; spacing is multiples of it */
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; }
+  body { background: var(--stock); color: var(--ink); font: 400 17px/1.78 var(--text); -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--marigold); color: var(--ink); }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+  svg { display: block; }
+  .shell { max-width: var(--shell); margin-inline: auto; padding-inline: var(--gutter); }
+
+  /* Registration crosses: where the plate would be pinned. */
+  .reg { position: fixed; width: 17px; height: 17px; z-index: 5; color: var(--ink-2); pointer-events: none; }
+  .reg.tl { top: 9px; left: 9px; } .reg.tr { top: 9px; right: 9px; }
+  .reg.bl { bottom: 9px; left: 9px; } .reg.br { bottom: 9px; right: 9px; }
+
+  header.mast { padding: calc(var(--pica) * 1.4) 0 0; text-align: center; }
+  .mast-rule { border-top: 3px solid var(--ink); border-bottom: 1px solid var(--ink); height: 4px; }
+  .wordmark { display: block; font: 400 clamp(26px, 3.3vw, 46px)/1.12 var(--display); letter-spacing: -0.01em; text-decoration: none; padding: calc(var(--pica) * 1.1) 0 calc(var(--pica) * 0.9); }
+  .wordmark small { display: block; font: 400 11px/1.6 var(--text); font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-2); }
+  nav.main { display: flex; align-items: center; justify-content: center; gap: 2px; flex-wrap: wrap; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  nav.main a { font-weight: 600; font-size: 16px; text-decoration: none; min-height: 46px; display: inline-flex; align-items: center; padding: 0 17px; }
+  nav.main a:hover { background: var(--marigold-pale); }
+  nav.main .plan { background: var(--ink); color: var(--stock); }
+  nav.main .plan:hover { background: var(--blue); }
+  .lang { position: absolute; }
+  .mast-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13.5px; color: var(--ink-2); padding-bottom: calc(var(--pica) * 0.7); }
+  .mast-top button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; min-height: 44px; padding: 0 6px; display: inline-flex; align-items: center; gap: 7px; }
+  .mast-top button:hover { color: var(--ink); }
+
+  /* The plate's own layout: a headline on the centre axis, then equal
+     columns either side of the image window. */
+  .lead { padding: clamp(24px, 4.6vh, 58px) 0 0; text-align: center; }
+  h1 { font: 400 clamp(32px, 4.2vw, 60px)/1.2 var(--display); margin: 0 auto; max-width: 20em; text-wrap: balance; }
+  .stand { margin: calc(var(--pica) * 1.6) auto 0; max-width: 44ch; font-size: clamp(16.5px, 1.15vw, 18.5px); color: var(--ink-2); text-wrap: pretty; }
+
+  .forme { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 5fr) minmax(0, 4fr); gap: clamp(18px, 2.6vw, 42px); align-items: start; padding: clamp(22px, 4vh, 46px) 0 clamp(24px, 4.4vh, 52px); }
+  .col h2 { font: 600 13px/1.4 var(--text); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); margin: 0 0 calc(var(--pica) * 0.8); padding-bottom: calc(var(--pica) * 0.6); border-bottom: 1px solid var(--ink); }
+  .col p { margin: 0 0 calc(var(--pica) * 1.1); font-size: 16.5px; }
+  .col p:last-child { margin-bottom: 0; }
+  .toc { list-style: none; margin: 0; padding: 0; }
+  .toc a { display: flex; align-items: baseline; gap: 8px; text-decoration: none; min-height: 40px; font-size: 16px; }
+  .toc a:hover { color: var(--blue); }
+  .toc .dots { flex: 1; border-bottom: 1.5px dotted var(--rule); transform: translateY(-4px); }
+  .toc b { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  /* The image window, cropped square to the plate with its own corner marks. */
+  .window { position: relative; margin: 0; }
+  .window img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 42%; }
+  .window::before, .window::after { content: ""; position: absolute; width: 13px; height: 13px; border: 1px solid var(--ink); }
+  .window::before { top: -6px; left: -6px; border-right: 0; border-bottom: 0; }
+  .window::after { bottom: 24px; right: -6px; border-left: 0; border-top: 0; }
+  .window figcaption { padding-top: calc(var(--pica) * 0.7); font-size: 14px; line-height: 1.55; color: var(--ink-2); text-align: left; }
+  .window figcaption b { color: var(--ink); font-weight: 600; }
+
+  /* The colour bar: the three inks this plate prints, and the day it carries. */
+  .bar { border-top: 3px solid var(--ink); background: var(--stock-2); }
+  .bar-in { padding: calc(var(--pica) * 1.8) 0 calc(var(--pica) * 2); }
+  .inks { display: flex; align-items: center; gap: 0; margin-bottom: calc(var(--pica) * 1.5); }
+  .inks i { height: 13px; flex: 1; }
+  .inks span { font-size: 12.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); margin-right: 14px; white-space: nowrap; }
+  .sched-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px 26px; flex-wrap: wrap; margin-bottom: calc(var(--pica) * 1.2); }
+  .sched-top h2 { font: 400 clamp(21px, 2vw, 29px)/1.3 var(--display); margin: 0; }
+  .sched-top .tot { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .sched { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 0 clamp(14px, 1.8vw, 28px); border-top: 1px solid var(--ink); }
+  .sched > * { padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .sched time { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sched .no { width: 24px; height: 24px; display: grid; place-items: center; background: var(--marigold); color: var(--ink); font-weight: 700; font-size: 13.5px; border-radius: 0; align-self: center; padding: 0; border-bottom: 0; }
+  .sched .no-cell { border-bottom: 1px solid var(--rule); display: flex; align-items: center; }
+  .sched .nm { font-weight: 600; font-size: 17px; }
+  .sched .lg { color: var(--ink-2); font-size: 15px; white-space: nowrap; }
+  .acts { display: flex; align-items: center; justify-content: center; gap: 12px 26px; flex-wrap: wrap; margin-top: calc(var(--pica) * 1.8); }
+  .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 28px; background: var(--ink); color: var(--stock); font-weight: 600; font-size: 17px; text-decoration: none; transition: background 170ms cubic-bezier(.2,.7,.3,1); }
+  .btn:hover { background: var(--blue); }
+  .alt { font-size: 16px; text-underline-offset: 5px; }
+
+  /* The verso: the long-form idea, set as a printed page would set it. */
+  .verso { padding: clamp(42px, 7vh, 86px) 0 clamp(46px, 8vh, 94px); }
+  .verso h2 { font: 400 clamp(26px, 2.8vw, 40px)/1.26 var(--display); margin: 0 auto calc(var(--pica) * 2.2); max-width: 24em; text-align: center; text-wrap: balance; }
+  .measure { columns: 2; column-gap: clamp(26px, 4vw, 64px); column-rule: 1px solid var(--rule); max-width: 980px; margin-inline: auto; }
+  .measure p { margin: 0 0 calc(var(--pica) * 1.2); font-size: 17px; }
+  .measure p:first-child::first-letter { float: left; font: 400 56px/0.84 var(--display); color: var(--marigold); padding: 4px 9px 0 0; }
+  .zones { list-style: none; margin: calc(var(--pica) * 2.6) auto 0; padding: 0; max-width: 980px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: clamp(26px, 4vw, 64px); }
+  .zones a { display: flex; align-items: baseline; gap: 8px; text-decoration: none; min-height: 42px; border-bottom: 1px solid var(--rule); font-size: 16.5px; }
+  .zones a:hover { color: var(--blue); }
+  .zones .dots { flex: 1; border-bottom: 1.5px dotted var(--rule); transform: translateY(-5px); }
+  .zones b { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+
+  @media (max-width: 1000px) {
+    .forme { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .window { grid-column: 1 / -1; grid-row: 1; max-width: 560px; margin-inline: auto; }
+    .window img { aspect-ratio: 3 / 2; }
+  }
+  @media (max-width: 720px) {
+    body { font-size: 16.5px; }
+    .reg { width: 13px; height: 13px; }
+    .mast-top { font-size: 13px; }
+    .wordmark { padding-block: 9px 7px; }
+    nav.main a { padding: 0 12px; font-size: 15px; }
+    nav.main a:not(.plan):not(.nav-keep) { display: none; }
+    .lead { padding-top: 22px; }
+    h1 { max-width: 15em; }
+    .forme { grid-template-columns: minmax(0, 1fr); gap: 26px; padding-block: 20px 24px; }
+    .window { grid-row: auto; }
+    .sched { grid-template-columns: auto auto minmax(0, 1fr); }
+    .sched .lg { display: none; }
+    .measure { columns: 1; column-rule: 0; }
+    .zones { grid-template-columns: minmax(0, 1fr); }
+    .btn { width: 100%; justify-content: center; }
+    .alt { width: 100%; text-align: center; }
+    .inks span { display: none; }
+  }
+</style>
+</head>
+<body>
+<svg class="reg tl" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/><path d="M10 0v20M0 10h20"/></svg>
+<svg class="reg tr" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/><path d="M10 0v20M0 10h20"/></svg>
+<svg class="reg bl" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/><path d="M10 0v20M0 10h20"/></svg>
+<svg class="reg br" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><circle cx="10" cy="10" r="5.5"/><path d="M10 0v20M0 10h20"/></svg>
+
+<header class="mast">
+  <div class="shell">
+    <div class="mast-top">
+      <button type="button"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 3 2.6 15 0 18M12 3c-2.6 3-2.6 15 0 18"/></svg>ภาษาไทย · English</button>
+      <button type="button">เมนู ธีม และบัญชี<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+    <div class="mast-rule"></div>
+    <a class="wordmark" href="#">เชียงใหม่ เจอร์นีย์<small lang="en">Chiangmai Journey</small></a>
+    <nav class="main" aria-label="เมนูหลัก">
+      <a class="nav-keep" href="#">สำรวจ</a>
+      <a href="#">คู่มือ</a>
+      <a href="#">ที่ที่เรากลับไปเอง</a>
+      <a class="plan" href="planner.html">วางแผนทริป</a>
+    </nav>
+  </div>
+</header>
+
+<section class="lead shell">
+  <h1>เชียงใหม่ใจดีกับคนที่ไม่รีบ</h1>
+  <p class="stand">204 ที่ที่เราคัดมาเอง เขียนเอง ไปเอง แล้วจัดลงทีละวันตามเวลาเดินทางจริง ไม่ใช่ลิสต์ให้ไล่ติ๊ก แต่เป็นบทหนึ่งของการเดินทาง</p>
+</section>
+
+<div class="shell forme">
+  <div class="col">
+    <h2>เริ่มที่ไหนก็ได้</h2>
+    <p>เราไม่ได้เรียงที่เที่ยวตามความดัง แต่เรียงตามว่าวันหนึ่งไปได้จริงแค่ไหน คุณเลือกที่ที่อยากไป เราคิดเวลาเดินทางระหว่างจุดให้ แล้วเรียงวันใหม่ให้อยู่ใกล้กันที่สุด</p>
+    <p>ถ้าวันไหนแน่นเกินไป หรือมีที่ปิดอยู่ ตัววางแผนจะบอกก่อนที่คุณจะออกเดินทาง ไม่ใช่ตอนไปถึงหน้าประตู</p>
+  </div>
+
+  <figure class="window">
+    <img src="/images/places/wat-phra-that-doi-suthep.jpg" alt="พระธาตุดอยสุเทพปิดทอง มีฉัตรและระเบียงรอบองค์พระธาตุ">
+    <figcaption><b>วัดพระธาตุดอยสุเทพ</b> ตะวันตก ทางดอยสุเทพ · ภาพ: เทวประภาส มากคล้าย · CC BY 3.0</figcaption>
+  </figure>
+
+  <div class="col">
+    <h2>สารบัญคลัง</h2>
+    <ul class="toc">
+      <li><a href="#">ธรรมชาติ<i class="dots"></i><b>44</b></a></li>
+      <li><a href="#">วัดวาอาราม<i class="dots"></i><b>37</b></a></li>
+      <li><a href="#">ร้านอาหาร<i class="dots"></i><b>27</b></a></li>
+      <li><a href="#">หมู่บ้าน &amp; วัฒนธรรม<i class="dots"></i><b>25</b></a></li>
+      <li><a href="#">คาเฟ่ &amp; ย่านฮิป<i class="dots"></i><b>24</b></a></li>
+      <li><a href="#">ตลาด &amp; ของกิน<i class="dots"></i><b>20</b></a></li>
+      <li><a href="#">พิพิธภัณฑ์ &amp; ศิลปะ<i class="dots"></i><b>15</b></a></li>
+      <li><a href="#">กิจกรรม<i class="dots"></i><b>12</b></a></li>
+    </ul>
+  </div>
+</div>
+
+<section class="bar" aria-labelledby="sample">
+  <div class="shell bar-in">
+    <div class="inks" aria-hidden="true">
+      <span>หมึกของฉบับนี้</span>
+      <i style="background:#17181c"></i><i style="background:#d99a1e"></i><i style="background:#35538c"></i><i style="background:#eeeee9"></i>
+    </div>
+    <div class="sched-top">
+      <h2 id="sample">ทริปตัวอย่างหนึ่งวัน: ดอยสุเทพแล้วลงมาในเวียง</h2>
+      <span class="tot">4 ชม. 30 นาที · ประมาณ ฿1,000 ต่อคน</span>
+    </div>
+    <div class="sched">
+      <time>09:00–11:00</time><span class="no-cell"><span class="no">1</span></span><span class="nm">วัดพระธาตุดอยสุเทพ</span><span class="lg">ต่อไป: ขับรถ 29 นาที · 16.6 กม.</span>
+      <time>11:29–12:29</time><span class="no-cell"><span class="no">2</span></span><span class="nm">วัดเจดีย์หลวง</span><span class="lg">ต่อไป: 1 นาที · 0.6 กม.</span>
+      <time>12:30–13:30</time><span class="no-cell"><span class="no">3</span></span><span class="nm">วัดพระสิงห์</span><span class="lg">จบวัน</span>
+    </div>
+    <div class="acts">
+      <a class="btn" href="planner.html">เปิดทริปนี้แล้วแก้ต่อ
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="alt" href="planner.html">หรือเริ่มจากแผนว่าง</a>
+    </div>
+  </div>
+</section>
+
+<section class="verso shell">
+  <h2>เมืองนี้เป็นสี่เหลี่ยม</h2>
+  <div class="measure">
+    <p>เวียงเชียงใหม่คือจัตุรัสกว้างด้านละ 1.6 กิโลเมตร มีประตูอยู่กลางกำแพงทุกด้านและแจ่งอยู่ทุกมุม คนที่นี่ไม่ได้บอกทางด้วยชื่อถนน แต่บอกด้วยสี่เหลี่ยมนี้</p>
+    <p>นิมมานคือฝั่งตะวันตกของคูเมือง ริมปิงคือฝั่งตะวันออก ดอยสุเทพอยู่หลังนิมมานขึ้นไป พอจับสี่เหลี่ยมนี้ได้ ที่เที่ยวทุกที่ในคลังก็มีตำแหน่งของมันทันที</p>
+    <p>เราเลยวาง 204 ที่ลงบนผังเดียวกัน แล้วให้ตัววางแผนเรียงวันจากระยะจริงระหว่างจุด ไม่ใช่จากลำดับที่คุณกดเลือก</p>
+  </div>
+  <ul class="zones" aria-label="สำรวจตามโซน">
+    <li><a href="#">ในกำแพงเมือง<i class="dots"></i><b>31</b></a></li>
+    <li><a href="#">ตะวันตก ทางดอยสุเทพ<i class="dots"></i><b>38</b></a></li>
+    <li><a href="#">ริมคูเมือง<i class="dots"></i><b>19</b></a></li>
+    <li><a href="#">ตะวันออก ทางแม่น้ำปิง<i class="dots"></i><b>29</b></a></li>
+    <li><a href="#">เหนือคูเมือง<i class="dots"></i><b>10</b></a></li>
+    <li><a href="#">ใต้คูเมือง<i class="dots"></i><b>8</b></a></li>
+    <li><a href="#">ไกลออกไป<i class="dots"></i><b>69</b></a></li>
+  </ul>
+</section>
+</body>
+</html>

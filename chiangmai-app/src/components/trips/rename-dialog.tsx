@@ -1,8 +1,11 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Modal } from "@/components/ui/modal";
 import { useLocale } from "@/components/providers/locale-provider";
+import { Button } from "@/components/brand/button";
+import { cx } from "@/components/brand/cx";
+import { Dialog } from "@/components/brand/dialog";
+import { textFieldStyles } from "@/components/brand/text-field";
 
 const MAX_TITLE = 80;
 
@@ -27,8 +30,8 @@ export function RenameDialog({
   const canSave = trimmed.length > 0 && trimmed !== initialTitle.trim();
 
   return (
-    <Modal open onClose={onCancel} titleId={titleId} closeLabel={dict.nav.close}>
-      <h2 id={titleId} className="font-serif-display text-xl">
+    <Dialog open onClose={onCancel} labelledBy={titleId}>
+      <h2 id={titleId} className="text-title text-brand">
         {t.title}
       </h2>
       <form
@@ -37,7 +40,7 @@ export function RenameDialog({
           if (canSave) onSave(trimmed);
         }}
       >
-        <label htmlFor={inputId} className="mt-4 block text-sm text-muted-foreground">
+        <label htmlFor={inputId} className="mt-4 block text-small text-ink-soft">
           {t.label}
         </label>
         <input
@@ -45,26 +48,18 @@ export function RenameDialog({
           value={value}
           onChange={(event) => setValue(event.target.value)}
           maxLength={MAX_TITLE}
-          autoFocus
-          className="mt-1.5 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          data-autofocus
+          className={cx("mt-1.5", textFieldStyles)}
         />
-        <div className="mt-6 flex flex-wrap gap-3">
-          <button
-            type="submit"
-            disabled={!canSave}
-            className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-95 disabled:opacity-50"
-          >
+        <div className="mt-6 grid gap-2">
+          <Button type="submit" disabled={!canSave}>
             {t.save}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-full border border-border px-5 py-2.5 text-sm hover:border-accent hover:text-accent-text"
-          >
+          </Button>
+          <Button variant="ghost" onClick={onCancel}>
             {t.cancel}
-          </button>
+          </Button>
         </div>
       </form>
-    </Modal>
+    </Dialog>
   );
 }

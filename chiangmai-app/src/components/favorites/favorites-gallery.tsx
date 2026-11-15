@@ -1,12 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Map as MapIcon, Plus } from "lucide-react";
+import { Heart, Map as MapIcon, Plus } from "lucide-react";
 import { getPlaceBySlug } from "@/data/places";
 import type { PlaceCategory } from "@/data/types";
-import { PlaceCard } from "@/components/place-card";
-import { PlannerMapLoader } from "@/components/planner/planner-map-loader";
+import { Button, ButtonLink } from "@/components/brand/button";
+import { Chip, ChipRow } from "@/components/brand/chip";
+import { cx } from "@/components/brand/cx";
+import { FavoriteToggle } from "@/components/brand/favorite-toggle";
+import { CATEGORY_ORDER, categoryIcon, ICON_STROKE } from "@/components/brand/icons";
+import { PlaceCardFor } from "@/components/brand/place-card";
+import { fill } from "@/components/brand/place-text";
+import { PlanToggle } from "@/components/brand/plan-toggle";
+import { ExploreMapLoader } from "@/components/map/explore-map-loader";
 import { useFavorites } from "@/lib/favorites/favorites-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { useToast } from "@/components/toast/toast-provider";
@@ -34,6 +40,7 @@ export function FavoritesGallery({
 
   const [category, setCategory] = useState<PlaceCategory | "all">("all");
   const [mapOpen, setMapOpen] = useState(false);
+  const [hoveredSlug, setHoveredSlug] = useState<string | null>(null);
 
   // The server render is the source of truth until the provider has loaded;
   // after that the live set wins, so removing a heart updates this page
@@ -48,26 +55,22 @@ export function FavoritesGallery({
     [activeSlugs]
   );
 
+  // Only the kinds this list holds, in the site's usual order, each with its count.
   const categories = useMemo(() => {
-    const present = new Set<PlaceCategory>();
-    for (const place of places) present.add(place.category);
-    return [...present];
+    const counts = new Map<PlaceCategory, number>();
+    for (const place of places) counts.set(place.category, (counts.get(place.category) ?? 0) + 1);
+    return CATEGORY_ORDER.filter((value) => counts.has(value)).map((value) => ({
+      value,
+      count: counts.get(value) ?? 0,
+    }));
   }, [places]);
 
-  const visible = useMemo(
-    () => (category === "all" ? places : places.filter((place) => place.category === category)),
-    [places, category]
-  );
+  // A filter whose last place was un-hearted would show an empty grid; fall back to all.
+  const activeCategory = category !== "all" && categories.some((c) => c.value === category) ? category : "all";
 
-  // One synthetic day, so the existing planner map renders these exactly the
-  // way it renders an itinerary — no second map implementation to keep in
-  // sync. These are favourites, not a route, so the line the map draws
-  // between them is meaningless; that's the tradeoff for reusing it, and it
-  // still answers the question the brief asks — where these places sit
-  // relative to each other.
-  const mapDays = useMemo(
-    () => [{ id: "favorites", dayNumber: 1, places: visible }],
-    [visible]
+  const visible = useMemo(
+    () => (activeCategory === "all" ? places : places.filter((place) => place.category === activeCategory)),
+    [places, activeCategory]
   );
 
   function addAllToPlan() {
@@ -90,110 +93,113 @@ export function FavoritesGallery({
 
   if (places.length === 0) {
     return (
-      <section className="mt-12 rounded-lg border border-dashed border-border-strong p-10 text-center">
-        <h2 className="font-serif-display text-2xl">{t.empty.title}</h2>
-        <p className="mx-auto mt-3 max-w-md leading-relaxed text-muted-foreground text-pretty">
-          {loadFailed ? t.loadFailed : t.empty.body}
-        </p>
-        <Link
-          href={`/${locale}/explore`}
-          className="mt-6 inline-flex items-center rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-95"
-        >
+      <section className="grid justify-items-center gap-3 rounded-lg bg-well px-6 py-12 text-center">
+        <span aria-hidden className="grid size-14 place-items-center rounded-full bg-panel text-brand">
+          <Heart strokeWidth={ICON_STROKE} className="size-6" />
+        </span>
+        <h2 className="text-title font-semibold text-brand">{t.empty.title}</h2>
+        <p className="max-w-[44ch] text-body text-pretty text-ink-soft">{loadFailed ? t.loadFailed : t.empty.body}</p>
+        <ButtonLink href={`/${locale}/explore`} arrow className="mt-2">
           {t.empty.cta}
-        </Link>
+        </ButtonLink>
       </section>
     );
   }
 
   return (
     <>
-      <div className="mt-10 flex flex-wrap items-center gap-2">
-        <FilterChip active={category === "all"} onClick={() => setCategory("all")}>
-          {t.filterAll}
-        </FilterChip>
-        {categories.map((value) => (
-          <FilterChip key={value} active={category === value} onClick={() => setCategory(value)}>
-            {dict.common.categories[value]}
-          </FilterChip>
-        ))}
-      </div>
+      {categories.length > 1 ? (
+        <ChipRow scroll label={dict.explore.filters.category} className="-mx-4 px-4 sm:mx-0 sm:px-0">
+          <Chip pressed={activeCategory === "all"} onClick={() => setCategory("all")} count={places.length}>
+            {t.filterAll}
+          </Chip>
+          {categories.map(({ value, count }) => {
+            const Icon = categoryIcon[value];
+            return (
+              <Chip
+                key={value}
+                pressed={activeCategory === value}
+                onClick={() => setCategory(value)}
+                icon={<Icon aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+                count={count}
+              >
+                {dict.common.categories[value]}
+              </Chip>
+            );
+          })}
+        </ChipRow>
+      ) : null}
 
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <p className="text-sm text-muted-foreground">
-          {visible.length === 1 ? t.countOne : t.count.replace("{count}", String(visible.length))}
+      <div className={cx("flex flex-wrap items-center gap-3", categories.length > 1 ? "mt-5" : null)}>
+        {/* Its own line on a phone, so the two buttons can sit side by side under it. */}
+        <p aria-live="polite" className="w-full text-label text-ink-soft tabular-nums sm:mr-auto sm:w-auto">
+          {visible.length === 1 ? t.countOne : fill(t.count, { count: visible.length })}
         </p>
-        <button
-          type="button"
-          onClick={addAllToPlan}
-          className="flex items-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-foreground hover:brightness-95"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          {t.addAllToPlan}
-        </button>
-        <button
-          type="button"
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => setMapOpen((open) => !open)}
           aria-expanded={mapOpen}
-          className="flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm hover:border-accent hover:text-accent-text"
+          aria-controls="favorites-map"
+          icon={<MapIcon aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
         >
-          <MapIcon className="h-4 w-4" aria-hidden="true" />
           {mapOpen ? t.hideMap : t.showMap}
-        </button>
+        </Button>
+        <Button size="sm" onClick={addAllToPlan} icon={<Plus aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}>
+          {t.addAllToPlan}
+        </Button>
       </div>
 
-      {mapOpen ? (
-        <div className="mt-6">
-          <PlannerMapLoader days={mapDays} className="h-[420px] w-full rounded-lg" />
-        </div>
-      ) : null}
+      <div id="favorites-map">
+        {/* The Explore map, with these places as pins: favourites are a set, not
+            a route, so nothing is drawn between them. */}
+        {mapOpen ? (
+          <div className="no-print mt-6 h-[min(420px,60dvh)] overflow-hidden rounded-xl shadow-float">
+            <ExploreMapLoader
+              className="size-full"
+              places={visible}
+              framePlaces={visible}
+              hoveredSlug={hoveredSlug}
+              onHoverPlace={setHoveredSlug}
+            />
+          </div>
+        ) : null}
+      </div>
 
       {/* Un-hearting a place removes its card from this grid, so the exit
           animation is what tells the traveller which one left — otherwise the
           grid just reflows and it is easy to think you removed the wrong one. */}
-      <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mt-8 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
         <AnimatePresence initial={false}>
-        {visible.map((place, index) => (
-          <motion.li
-            key={place.slug}
-            layout={m.reduced ? false : "position"}
-            initial={{ opacity: 0, y: m.reduced ? 0 : 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: m.reduced ? 1 : 0.96 }}
-            transition={{ ...m.tween("base"), delay: Math.min(index, 8) * m.stagger(0.05) }}
-          >
-            {/* No `pb-14` here: that band exists on Explore to hold its Compare
-                pill, and this page has no pill — reserving the space would
-                just leave 56px of blank card under every entry. */}
-            <PlaceCard place={place} className="h-full" />
-          </motion.li>
-        ))}
+          {visible.map((place, index) => {
+            const name = place.name[locale];
+            return (
+              <motion.li
+                key={place.slug}
+                layout={m.reduced ? false : "position"}
+                initial={{ opacity: 0, y: m.reduced ? 0 : 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: m.reduced ? 1 : 0.96 }}
+                transition={{ ...m.tween("base"), delay: Math.min(index, 8) * m.stagger(0.05) }}
+                className="min-w-0"
+              >
+                <PlaceCardFor
+                  place={place}
+                  locale={locale}
+                  dict={dict}
+                  layout="auto"
+                  className="h-full"
+                  active={mapOpen && hoveredSlug === place.slug}
+                  onPointerEnter={mapOpen ? () => setHoveredSlug(place.slug) : undefined}
+                  onPointerLeave={mapOpen ? () => setHoveredSlug(null) : undefined}
+                  favorite={<FavoriteToggle slug={place.slug} placeName={name} />}
+                  footer={<PlanToggle slug={place.slug} placeName={name} />}
+                />
+              </motion.li>
+            );
+          })}
         </AnimatePresence>
       </ul>
     </>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-        active
-          ? "border-accent bg-accent text-accent-foreground"
-          : "border-border text-foreground/80 hover:border-accent hover:text-accent-text"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

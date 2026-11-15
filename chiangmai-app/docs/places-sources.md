@@ -361,7 +361,8 @@ presented as exact:
 - **`tham-tap-tao-forest-park`** uses the pin for Ban Tham Tap Tao, the village
   beside the forest park, for the same reason.
 - **`kad-suan-kaew`** matched a police service point inside the mall complex. The
-  coordinate is the mall; the OSM object's name is not.
+  coordinate is the mall; the OSM object's name is not. (Removed from the catalogue
+  on 2026-11-15: the owner confirmed the mall has closed.)
 
 ### Opening hours
 

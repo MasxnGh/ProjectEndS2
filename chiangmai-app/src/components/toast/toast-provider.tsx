@@ -58,7 +58,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {toast?.message}
       </div>
 
-      <div className="no-print pointer-events-none fixed inset-x-0 bottom-6 z-[70] flex justify-center px-6">
+      {/* Board style: the forest band as a small floating pill. It rides above
+          the bottom bars phones get on Explore and on a place page. */}
+      <div
+        data-brand
+        className="no-print pointer-events-none fixed inset-x-0 bottom-24 z-[70] flex justify-center px-4 font-brand lg:bottom-6"
+      >
         <AnimatePresence>
           {toast ? (
             <motion.div
@@ -69,9 +74,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               transition={
                 shouldReduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 420, damping: 32 }
               }
-              className="pointer-events-auto flex max-w-[calc(100vw-3rem)] flex-wrap items-center gap-3 rounded-2xl border border-border bg-background px-5 py-3 shadow-elevated"
+              className="pointer-events-auto flex max-w-[min(560px,calc(100vw-2rem))] flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-forest py-2 pr-2 pl-5 text-on-forest shadow-lift dark:ring-1 dark:ring-line-strong"
             >
-              <span className="text-sm text-foreground">{toast.message}</span>
+              <span className="min-w-0 flex-1 py-2 text-label text-pretty">{toast.message}</span>
               {toast.actions?.map((action) => (
                 <button
                   key={action.label}
@@ -80,7 +85,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                     action.onClick();
                     dismiss();
                   }}
-                  className="shrink-0 rounded-full bg-accent px-3.5 py-1.5 text-xs font-medium text-accent-foreground transition-transform duration-200 hover:scale-[1.03]"
+                  className="min-h-10 shrink-0 cursor-pointer rounded-full bg-cmj-sand px-4 text-label text-cmj-green transition-colors duration-150 hover:bg-cmj-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cmj-sand"
                 >
                   {action.label}
                 </button>
@@ -89,9 +94,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 type="button"
                 onClick={dismiss}
                 aria-label={dict.nav.close}
-                className="shrink-0 rounded-full p-1 text-muted-foreground hover:bg-surface-muted hover:text-foreground"
+                className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-on-forest-soft transition-colors duration-150 hover:bg-cmj-paper/12 hover:text-on-forest focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cmj-sand"
               >
-                <X className="h-3.5 w-3.5" />
+                <X aria-hidden strokeWidth={1.75} className="size-4" />
               </button>
             </motion.div>
           ) : null}

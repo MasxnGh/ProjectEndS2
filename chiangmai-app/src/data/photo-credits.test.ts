@@ -2,9 +2,8 @@ import { describe, expect, it } from "vitest";
 import photoManifest from "./photo-manifest";
 import { allPhotoCredits, getPhotoCredit } from "./photo-credits";
 
-const placeSlugs = Object.entries(photoManifest)
-  .filter(([, path]) => path.startsWith("/images/places/"))
-  .map(([slug]) => slug);
+/** Every photograph the site serves: each place's own and the home hero. */
+const publishedSlugs = Object.keys(photoManifest);
 
 /**
  * The site's promise about photography is that every published photo can be
@@ -14,15 +13,15 @@ const placeSlugs = Object.entries(photoManifest)
  * photo deleted leaves a credit claiming something we no longer publish.
  */
 describe("photo credits", () => {
-  it("credits every published place photo", () => {
-    const uncredited = placeSlugs.filter((slug) => !getPhotoCredit(slug));
+  it("credits every published photo", () => {
+    const uncredited = publishedSlugs.filter((slug) => !getPhotoCredit(slug));
     expect(uncredited).toEqual([]);
   });
 
   it("does not credit a photo that is no longer published", () => {
     const orphaned = allPhotoCredits()
       .map((c) => c.slug)
-      .filter((slug) => !placeSlugs.includes(slug));
+      .filter((slug) => !publishedSlugs.includes(slug));
     expect(orphaned).toEqual([]);
   });
 

@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ทิศทาง A · ซิ่น — หน้าแรก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fahkwang:wght@300;400;500;600&family=Noto+Sans+Thai+Looped:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ซิ่น — ผ้าทอที่ฟอกแล้ว. The cloth is read from the loom's own order:
+     a plain head band, the body of the cloth, a dense hem where the work is.
+     Every band runs the full width and is symmetrical about the centre thread,
+     because that is how the loom builds it. */
+  :root {
+    --cotton: #f3f0e7;        /* ฝ้ายดิบ — the ground */
+    --cotton-2: #e9e5d9;
+    --paper: #fbf9f4;         /* ฝ้ายฟอก — the bleached band */
+    --ink: #26334f;           /* ห้อมอ่อน — washed indigo, the thread that draws */
+    --ink-2: #5a6681;
+    --madder: #b2554b;        /* ครั่ง — the hem */
+    --madder-pale: #f3e0db;
+    --madder-line: #dcb3aa;
+    --turmeric: #c08a24;      /* ขมิ้น — one thread, never a field */
+    --line: #d2ccbb;
+    --display: "Fahkwang", sans-serif;
+    --text: "Noto Sans Thai Looped", sans-serif;
+    --gutter: clamp(18px, 4.6vw, 64px);
+    --shell: 1280px;
+    --warp: 10px;             /* the loom's unit; every rhythm is a multiple */
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; }
+  body {
+    background: var(--cotton); color: var(--ink);
+    font: 400 17px/1.72 var(--text);
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--turmeric); color: #fff; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  svg { display: block; }
+  .shell { max-width: var(--shell); margin-inline: auto; padding-inline: var(--gutter); }
+
+  /* The thread rule: one thick pick, two fine ones. The only divider in the system. */
+  .threads { height: 9px; border-top: 3px solid var(--turmeric); border-bottom: 1px solid var(--line); position: relative; }
+  .threads::after { content: ""; position: absolute; inset: 3px 0 auto; border-top: 1px solid var(--line); }
+
+  .cloth { min-height: 100dvh; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto; }
+
+  /* Header is woven in three equal picks, so the wordmark sits on the centre thread. */
+  header.top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding: calc(var(--warp) * 1.4) var(--gutter); }
+  nav.main { display: flex; align-items: center; gap: 30px; font-size: 16px; }
+  nav.main a { text-decoration: none; padding: 11px 0; border-bottom: 2px solid transparent; }
+  nav.main a:hover { border-bottom-color: var(--turmeric); }
+  .wordmark { font: 500 clamp(19px, 1.6vw, 23px)/1.2 var(--display); text-decoration: none; text-align: center; white-space: nowrap; }
+  .wordmark small { display: block; font: 400 11px/1.4 var(--display); color: var(--ink-2); letter-spacing: 0.14em; text-transform: uppercase; }
+  .acts-top { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+  .plan-top { display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; background: var(--ink); color: var(--paper); font-weight: 500; font-size: 16px; text-decoration: none; }
+  .plan-top:hover { background: #1b2740; }
+  .icon-top { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--line); background: var(--paper); }
+  .icon-top:hover { border-color: var(--ink); }
+
+  /* หัวซิ่น — the plain band. Centred, because a plain band has no near or far side. */
+  .head { padding: clamp(26px, 5.2vh, 66px) 0 clamp(22px, 4vh, 50px); text-align: center; }
+  h1 { font: 500 clamp(37px, 5.4vw, 78px)/1.22 var(--display); margin: 0 auto; max-width: 17em; text-wrap: balance; }
+  .stand { margin: calc(var(--warp) * 1.8) auto 0; max-width: 44ch; font-size: clamp(16.5px, 1.2vw, 19px); color: var(--ink-2); text-wrap: pretty; }
+
+  /* Categories as picks of thread: the bar's length is how many places are in it. */
+  .picks { list-style: none; margin: clamp(26px, 4.4vh, 52px) auto 0; padding: 0; max-width: 980px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: clamp(18px, 3vw, 44px); row-gap: 4px; text-align: left; }
+  .picks a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 12px; text-decoration: none; padding: 9px 0 8px; font-size: 15.5px; }
+  .picks span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .picks a::after { content: ""; grid-column: 1 / -1; height: 3px; width: calc(var(--n) / 44 * 100%); background: var(--ink); margin-top: 7px; transition: background 180ms cubic-bezier(.2,.7,.3,1); }
+  .picks a:hover::after { background: var(--madder); }
+  .picks b { font: 500 15px/1 var(--display); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+
+  /* ตัวซิ่น — a photograph is always a band, never a card. */
+  .band { position: relative; margin: 0; }
+  .band img { display: block; width: 100%; height: clamp(150px, 26vh, 262px); object-fit: cover; object-position: 50% 44%; filter: saturate(0.9); }
+  .caption { display: flex; justify-content: space-between; gap: 28px; padding: calc(var(--warp) * 0.9) 0 calc(var(--warp) * 1.1); font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+  .caption b { color: var(--ink); font-weight: 500; }
+
+  /* ตีนจก — the dense band, where the real work of the cloth is. */
+  .hem { background: var(--madder-pale); border-top: 1px solid var(--madder-line); border-bottom: 1px solid var(--madder-line); padding: calc(var(--warp) * 2) 0 calc(var(--warp) * 2.4); }
+  .hem-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px 28px; flex-wrap: wrap; }
+  .hem h2 { font: 500 clamp(21px, 1.9vw, 27px)/1.34 var(--display); margin: 0; }
+  .totals { font: 500 17px/1.4 var(--display); font-variant-numeric: tabular-nums; }
+  .strip { display: flex; align-items: stretch; margin: calc(var(--warp) * 1.6) 0 0; min-height: 70px; }
+  .stop { background: var(--paper); border: 1px solid var(--madder-line); border-right: 0; padding: 9px 14px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .stop:last-of-type { border-right: 1px solid var(--madder-line); }
+  .stop time { font: 500 15px/1.3 var(--display); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .stop span { font-size: 16.5px; line-height: 1.4; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .leg { position: relative; display: grid; place-items: center; min-width: 20px; }
+  .leg::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px dashed var(--madder); }
+  .leg em { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 13.5px; line-height: 1; color: var(--ink-2); white-space: nowrap; background: var(--madder-pale); padding: 0 5px; }
+  .route-names { display: none; margin: calc(var(--warp) * 1.2) 0 0; font-size: 16px; }
+  .acts { display: flex; align-items: center; justify-content: center; gap: 14px 28px; flex-wrap: wrap; margin-top: calc(var(--warp) * 2.2); }
+  .btn { display: inline-flex; align-items: center; gap: 11px; min-height: 52px; padding: 0 28px; background: var(--madder); color: #fff; font-weight: 600; font-size: 17px; text-decoration: none; transition: background 180ms cubic-bezier(.2,.7,.3,1); }
+  .btn:hover { background: #9c463d; }
+  .alt { font-size: 16px; text-underline-offset: 6px; }
+
+  /* The cloth before the dye: the same system, bleached. */
+  .cotton { background: var(--paper); border-top: 1px solid var(--line); padding: clamp(44px, 8vh, 96px) 0 clamp(48px, 9vh, 104px); }
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(30px, 5vw, 92px); align-items: start; }
+  h2.big { font: 500 clamp(29px, 3.4vw, 50px)/1.26 var(--display); margin: 0 0 calc(var(--warp) * 1.8); text-wrap: balance; }
+  .two p { margin: 0; max-width: 34ch; color: var(--ink-2); text-wrap: pretty; }
+  .zones { list-style: none; margin: 0; padding: 0; }
+  .zones a { display: grid; grid-template-columns: minmax(0, 13.5em) minmax(0, 1fr) 2.6em; align-items: center; gap: 18px; padding: 13px 0; border-bottom: 1px solid var(--line); text-decoration: none; font-size: 17px; }
+  .zones li:first-child a { border-top: 1px solid var(--line); }
+  .zones i { height: 14px; background: var(--ink); width: calc(var(--n) / 69 * 100%); transition: background 180ms cubic-bezier(.2,.7,.3,1); }
+  .zones a:hover i { background: var(--madder); }
+  .zones b { font: 500 16px/1 var(--display); text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+
+  @media (max-width: 1080px) {
+    .picks { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 620px; }
+  }
+  @media (max-width: 860px) {
+    .two { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  }
+  @media (max-width: 680px) {
+    body { font-size: 16.5px; }
+    header.top { grid-template-columns: auto 1fr auto; gap: 10px; padding-block: 9px; }
+    nav.main a:not(.menu) { display: none; }
+    .wordmark { font-size: 17px; text-align: left; }
+    .wordmark small { display: none; }
+    .plan-top { padding: 0 15px; font-size: 15px; }
+    .head { padding-block: 26px 22px; }
+    h1 { max-width: 14em; }
+    .picks { margin-top: 28px; column-gap: 20px; }
+    .picks a { font-size: 15px; }
+    .band img { height: 168px; }
+    .caption { flex-direction: column; gap: 2px; }
+    .strip { min-height: 58px; margin-top: 16px; }
+    .stop span { font-size: 14px; }
+    .stop time { font-size: 14px; }
+    .leg em { display: none; }
+    .route-names { display: block; }
+    .acts { margin-top: 18px; justify-content: stretch; }
+    .btn { width: 100%; justify-content: center; }
+    .alt { width: 100%; text-align: center; }
+    .zones a { grid-template-columns: minmax(0, 10em) minmax(0, 1fr) 2.3em; gap: 12px; font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="cloth">
+  <header class="top">
+    <nav class="main" aria-label="เมนูหลัก">
+      <a href="#">สำรวจ</a>
+      <a href="#">คู่มือ</a>
+    </nav>
+    <a class="wordmark" href="#">เชียงใหม่ เจอร์นีย์<small lang="en">Chiangmai Journey</small></a>
+    <div class="acts-top">
+      <a class="plan-top" href="planner.html">วางแผนทริป</a>
+      <button class="icon-top" aria-label="เมนู ภาษา ธีม และบัญชี">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="threads"></div>
+
+  <section class="head shell">
+    <h1>เชียงใหม่ใจดีกับคนที่ไม่รีบ</h1>
+    <p class="stand">204 ที่ที่เราคัดมาเอง ตั้งแต่ตรอกในเมืองเก่าไปจนถึงสันเขาที่หมอกลง จัดลงทีละวันตามเวลาเดินทางจริง</p>
+    <ul class="picks" aria-label="สำรวจตามประเภท">
+      <li><a href="#" style="--n:44"><span>ธรรมชาติ</span><b>44</b></a></li>
+      <li><a href="#" style="--n:37"><span>วัดวาอาราม</span><b>37</b></a></li>
+      <li><a href="#" style="--n:27"><span>ร้านอาหาร</span><b>27</b></a></li>
+      <li><a href="#" style="--n:25"><span>หมู่บ้าน &amp; วัฒนธรรม</span><b>25</b></a></li>
+      <li><a href="#" style="--n:24"><span>คาเฟ่ &amp; ย่านฮิป</span><b>24</b></a></li>
+      <li><a href="#" style="--n:20"><span>ตลาด &amp; ของกิน</span><b>20</b></a></li>
+      <li><a href="#" style="--n:15"><span>พิพิธภัณฑ์ &amp; ศิลปะ</span><b>15</b></a></li>
+      <li><a href="#" style="--n:12"><span>กิจกรรม</span><b>12</b></a></li>
+    </ul>
+  </section>
+
+  <figure class="band">
+    <img src="/images/places/wat-inthrawat-ton-kwen.jpg" alt="วิหารไม้และศาลาจัตุรมุขของวัดต้นเกว๋น กลางลานทราย">
+    <figcaption class="caption shell"><span><b>วัดต้นเกว๋น (อินทราวาส)</b> หางดง — วิหารไม้ล้านนาที่ยังอยู่ครบทั้งหลัง</span><span>ภาพ: Takeaway · CC BY-SA 3.0</span></figcaption>
+  </figure>
+
+  <section class="hem" aria-labelledby="sample">
+    <div class="shell">
+      <div class="hem-top">
+        <h2 id="sample">ทริปตัวอย่างหนึ่งวัน: ดอยสุเทพแล้วลงมาในเวียง</h2>
+        <span class="totals">4 ชม. 30 นาที · ประมาณ ฿1,000 ต่อคน</span>
+      </div>
+      <div class="strip" role="list" aria-label="ลำดับของวัน ความกว้างของบล็อกคือเวลาจริง">
+        <div class="stop" role="listitem" style="flex:120"><time>09:00</time><span>วัดพระธาตุดอยสุเทพ</span></div>
+        <div class="leg" style="flex:29" aria-label="เดินทาง 29 นาที"><em>29 นาที</em></div>
+        <div class="stop" role="listitem" style="flex:60"><time>11:29</time><span>วัดเจดีย์หลวง</span></div>
+        <div class="leg" style="flex:6" aria-label="เดินทาง 1 นาที"><em>1 นาที</em></div>
+        <div class="stop" role="listitem" style="flex:60"><time>12:30</time><span>วัดพระสิงห์</span></div>
+      </div>
+      <p class="route-names">ดอยสุเทพ → เจดีย์หลวง → พระสิงห์</p>
+      <div class="acts">
+        <a class="btn" href="planner.html">เปิดทริปนี้แล้วแก้ต่อ
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="alt" href="planner.html">หรือเริ่มจากแผนว่าง</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="cotton">
+  <div class="shell two">
+    <div>
+      <h2 class="big">เมืองนี้เป็นสี่เหลี่ยม</h2>
+      <p>เวียงเชียงใหม่คือจัตุรัสกว้างด้านละ 1.6 กิโลเมตร มีประตูอยู่กลางกำแพงทุกด้านและแจ่งอยู่ทุกมุม คนที่นี่บอกทางด้วยสี่เหลี่ยมนี้ — นิมมานคือฝั่งตะวันตกของคูเมือง ริมปิงคือฝั่งตะวันออก</p>
+    </div>
+    <ul class="zones" aria-label="สำรวจตามโซน">
+      <li><a href="#" style="--n:31"><span>ในกำแพงเมือง</span><i></i><b>31</b></a></li>
+      <li><a href="#" style="--n:19"><span>ริมคูเมือง</span><i></i><b>19</b></a></li>
+      <li><a href="#" style="--n:10"><span>เหนือคูเมือง</span><i></i><b>10</b></a></li>
+      <li><a href="#" style="--n:29"><span>ตะวันออก ทางแม่น้ำปิง</span><i></i><b>29</b></a></li>
+      <li><a href="#" style="--n:8"><span>ใต้คูเมือง</span><i></i><b>8</b></a></li>
+      <li><a href="#" style="--n:38"><span>ตะวันตก ทางดอยสุเทพ</span><i></i><b>38</b></a></li>
+      <li><a href="#" style="--n:69"><span>ไกลออกไป</span><i></i><b>69</b></a></li>
+    </ul>
+  </div>
+</section>
+</body>
+</html>

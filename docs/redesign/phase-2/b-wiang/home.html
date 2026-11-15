@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ทิศทาง B · ผังเวียง — หน้าแรก</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600&family=Pridi:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="/vendor/maplibre-gl.css" rel="stylesheet">
+<style>
+  /* ผังเวียง — the city sheet. The product's one unrepeatable asset is the
+     walled square, so the square is the layout: a measured sheet with the
+     plan on the centre axis and an index down each margin, the way a survey
+     sheet is drawn. Everything is symmetrical about that axis because the
+     wall is. */
+  :root {
+    --sheet: #f1f4f0;      /* กระดาษผัง */
+    --panel: #fbfcfa;
+    --ink: #1e2a2c;
+    --ink-2: #5a6a6b;
+    --brick: #a2563c;      /* อิฐกำแพง — the action colour */
+    --brick-pale: #f0e2db;
+    --moat: #2c6e70;       /* คูเมือง */
+    --moat-pale: #dceae9;
+    --rule: #c6d0c9;
+    --grid: #dfe6e0;
+    --display: "Bai Jamjuree", sans-serif;
+    --text: "Pridi", serif;
+    --gutter: clamp(16px, 3.4vw, 54px);
+    --shell: 1400px;
+    --step: 8px;           /* the sheet's smallest division */
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; }
+  body { background: var(--sheet); color: var(--ink); font: 400 17px/1.75 var(--text); -webkit-font-smoothing: antialiased; }
+  ::selection { background: var(--moat); color: #fff; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--moat); outline-offset: 3px; }
+  svg { display: block; }
+  .shell { max-width: var(--shell); margin-inline: auto; padding-inline: var(--gutter); }
+
+  /* The sheet's border: a heavy rule with a fine one inside it. */
+  .double { border-bottom: 2px solid var(--ink); position: relative; }
+  .double::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; border-bottom: 1px solid var(--rule); }
+
+  header.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: calc(var(--step) * 1.2) var(--gutter); }
+  .wordmark { display: inline-flex; align-items: center; gap: 12px; font: 600 clamp(18px, 1.5vw, 22px)/1.2 var(--display); text-decoration: none; white-space: nowrap; }
+  .mark { width: 30px; height: 30px; flex: none; }
+  nav.main { display: flex; align-items: center; gap: 8px; }
+  nav.main a { text-decoration: none; font: 500 16px/1 var(--display); min-height: 44px; display: inline-flex; align-items: center; padding: 0 14px; }
+  nav.main a:hover { background: var(--moat-pale); }
+  nav.main .plan { background: var(--brick); color: #fff; padding: 0 20px; }
+  nav.main .plan:hover { background: #8d4932; }
+  .icon-top { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--rule); background: var(--panel); margin-left: 6px; }
+  .icon-top:hover { border-color: var(--ink); }
+
+  /* The title block sits on the centre axis, like a sheet's. */
+  .titleblock { text-align: center; padding: clamp(24px, 4.4vh, 56px) 0 clamp(18px, 3vh, 36px); }
+  h1 { font: 600 clamp(34px, 4.3vw, 62px)/1.2 var(--display); margin: 0 auto; max-width: 19em; text-wrap: balance; }
+  .stand { margin: calc(var(--step) * 2) auto 0; max-width: 46ch; font-size: clamp(16.5px, 1.15vw, 18.5px); color: var(--ink-2); text-wrap: pretty; }
+
+  /* The sheet: index, plan, index — the side columns are the same width. */
+  .sheet { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr) minmax(0, 4fr); gap: clamp(16px, 2.4vw, 36px); align-items: stretch; padding-bottom: clamp(22px, 4vh, 44px); }
+  .index h2 { font: 600 13.5px/1.3 var(--display); letter-spacing: 0.08em; margin: 0 0 calc(var(--step) * 1.1); padding-bottom: calc(var(--step) * 0.9); border-bottom: 1px solid var(--ink); text-transform: uppercase; }
+  .index ul { list-style: none; margin: 0; padding: 0; }
+  .index a { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 40px; padding: 2px 0; text-decoration: none; font-size: 16px; border-bottom: 1px solid var(--grid); }
+  .index a:hover { color: var(--brick); }
+  .index a b { font: 500 15px/1 var(--display); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .index a:hover b { color: var(--brick); }
+  .index span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .index .bar { grid-column: 1 / -1; height: 2px; background: var(--moat); width: calc(var(--n) / var(--max) * 100%); }
+
+  /* The plan itself: a square frame with ticks on all four edges. */
+  .plan { position: relative; background: var(--panel); border: 1px solid var(--ink); padding: 13px; }
+  .plan-inner { position: relative; aspect-ratio: 1 / 1; min-height: 260px; }
+  #map { position: absolute; inset: 0; }
+  .ticks { position: absolute; pointer-events: none; }
+  .ticks.t, .ticks.b { left: 0; right: 0; height: 7px; background-image: repeating-linear-gradient(to right, var(--ink) 0 1px, transparent 1px 28px); }
+  .ticks.t { top: -11px; } .ticks.b { bottom: -11px; }
+  .ticks.l, .ticks.r { top: 0; bottom: 0; width: 7px; background-image: repeating-linear-gradient(to bottom, var(--ink) 0 1px, transparent 1px 28px); }
+  .ticks.l { left: -11px; } .ticks.r { right: -11px; }
+  .north { position: absolute; top: 12px; right: 12px; z-index: 2; display: grid; place-items: center; gap: 2px; background: rgb(251 252 250 / 0.92); border: 1px solid var(--rule); padding: 6px 8px 4px; }
+  .north small { font: 600 11px/1 var(--display); letter-spacing: 0.1em; }
+  .legend { position: absolute; left: 12px; bottom: 12px; z-index: 2; margin: 0; background: rgb(251 252 250 / 0.92); border: 1px solid var(--rule); padding: 7px 11px; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+  .plan-cap { display: flex; justify-content: space-between; gap: 16px; margin: 11px 0 0; font-size: 14px; line-height: 1.5; color: var(--ink-2); }
+
+  /* The bottom margin of the sheet carries the worked example. */
+  .route { background: var(--panel); border-top: 2px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .route-in { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px clamp(20px, 3vw, 48px); align-items: center; padding: calc(var(--step) * 2.2) 0 calc(var(--step) * 2.4); }
+  .route h2 { font: 600 clamp(19px, 1.7vw, 24px)/1.34 var(--display); margin: 0 0 calc(var(--step) * 1.4); }
+  .table { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; align-items: baseline; gap: 0 clamp(12px, 1.6vw, 26px); }
+  .table > * { padding: 7px 0; border-top: 1px solid var(--grid); }
+  .table .hd { font: 600 12.5px/1.3 var(--display); letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-2); border-top: 0; padding-top: 0; }
+  .table time { font: 500 16px/1.4 var(--display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .table .no { font: 500 15px/1.4 var(--display); color: var(--brick); font-variant-numeric: tabular-nums; }
+  .table .nm { font-size: 16.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .table .lg { font-size: 15px; color: var(--ink-2); white-space: nowrap; }
+  .sum { display: flex; flex-direction: column; gap: calc(var(--step) * 1.4); align-items: stretch; min-width: 0; }
+  .sum dl { display: grid; grid-template-columns: auto auto; gap: 2px 18px; margin: 0; align-items: baseline; }
+  .sum dt { font-size: 14.5px; color: var(--ink-2); }
+  .sum dd { margin: 0; font: 500 18px/1.35 var(--display); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 52px; padding: 0 26px; background: var(--brick); color: #fff; font: 500 17px/1 var(--display); text-decoration: none; transition: background 180ms cubic-bezier(.2,.7,.3,1); }
+  .btn:hover { background: #8d4932; }
+  .alt { font-size: 15.5px; text-align: center; text-underline-offset: 5px; }
+
+  /* Below the sheet: three plates, each a photograph that was checked. */
+  .plates { padding: clamp(42px, 7vh, 88px) 0 clamp(46px, 8vh, 96px); }
+  .plates h2 { font: 600 clamp(25px, 2.6vw, 38px)/1.26 var(--display); margin: 0 0 calc(var(--step) * 3); text-align: center; }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(16px, 2.4vw, 34px); }
+  .plate { margin: 0; }
+  .plate a { text-decoration: none; display: block; }
+  .plate img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid var(--rule); filter: saturate(0.94); }
+  .plate a:hover img { border-color: var(--ink); }
+  .plate figcaption { padding-top: calc(var(--step) * 1.3); }
+  .plate h3 { font: 600 19px/1.4 var(--display); margin: 0 0 3px; }
+  .plate p { margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--ink-2); }
+  .plate .credit { margin-top: 5px; font-size: 13.5px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } html { scroll-behavior: auto; } }
+
+  @media (max-width: 1100px) {
+    .sheet { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .plan { grid-column: 1 / -1; grid-row: 1; }
+    .route-in { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 760px) {
+    body { font-size: 16.5px; }
+    header.top { padding-block: 7px; }
+    nav.main a:not(.plan) { display: none; }
+    nav.main .plan { padding: 0 16px; font-size: 15px; }
+    .wordmark { font-size: 17px; gap: 9px; }
+    .titleblock { padding-block: 24px 18px; }
+    h1 { max-width: 15em; }
+    .sheet { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .plan { padding: 11px; }
+    .ticks.l, .ticks.r { display: none; }
+    .three { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+    .plate img { aspect-ratio: 3 / 2; }
+    .table { grid-template-columns: auto minmax(0, 1fr); gap: 0 14px; }
+    .table .hd.x, .table .lg { display: none; }
+    .table .no { display: none; }
+    .sum dl { grid-template-columns: minmax(0, 1fr) auto; }
+    .btn { width: 100%; }
+    .plan-cap { flex-direction: column; gap: 2px; }
+  }
+</style>
+</head>
+<body>
+<header class="top double">
+  <a class="wordmark" href="#">
+    <svg class="mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+      <rect x="4.5" y="4.5" width="23" height="23"/>
+      <path d="M13 4.5v3M19 4.5v3M13 27.5v-3M19 27.5v-3M4.5 13h3M4.5 19h3M27.5 13h-3M27.5 19h-3"/>
+    </svg>
+    เชียงใหม่ เจอร์นีย์
+  </a>
+  <nav class="main" aria-label="เมนูหลัก">
+    <a href="#">สำรวจ</a>
+    <a href="#">คู่มือ</a>
+    <a class="plan" href="planner.html">วางแผนทริป</a>
+    <button class="icon-top" aria-label="เมนู ภาษา ธีม และบัญชี"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  </nav>
+</header>
+
+<section class="titleblock shell">
+  <h1>เมืองนี้เป็นสี่เหลี่ยม เริ่มจากตรงนี้</h1>
+  <p class="stand">กำแพงเวียงกว้างด้านละ 1.6 กิโลเมตร คนเชียงใหม่บอกทางด้วยสี่เหลี่ยมนี้ เราวาง 204 ที่ที่คัดมาเองลงบนผังเดียวกัน แล้วให้คุณจัดเป็นวัน</p>
+</section>
+
+<div class="shell sheet">
+  <nav class="index" aria-label="สำรวจตามประเภท">
+    <h2>ตามประเภท</h2>
+    <ul style="--max:44">
+      <li><a href="#" style="--n:44"><span>ธรรมชาติ</span><b>44</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:37"><span>วัดวาอาราม</span><b>37</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:27"><span>ร้านอาหาร</span><b>27</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:25"><span>หมู่บ้าน &amp; วัฒนธรรม</span><b>25</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:24"><span>คาเฟ่ &amp; ย่านฮิป</span><b>24</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:20"><span>ตลาด &amp; ของกิน</span><b>20</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:15"><span>พิพิธภัณฑ์ &amp; ศิลปะ</span><b>15</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:12"><span>กิจกรรม</span><b>12</b><i class="bar"></i></a></li>
+    </ul>
+  </nav>
+
+  <figure class="plan">
+    <div class="plan-inner">
+      <span class="ticks t" aria-hidden="true"></span><span class="ticks b" aria-hidden="true"></span>
+      <span class="ticks l" aria-hidden="true"></span><span class="ticks r" aria-hidden="true"></span>
+      <div id="map" role="img" aria-label="ผังเวียงเชียงใหม่ แสดงกำแพงเมืองสี่เหลี่ยมและตำแหน่งสถานที่ 204 แห่งจากพิกัดจริง"></div>
+      <div class="north" aria-hidden="true">
+        <svg width="18" height="22" viewBox="0 0 18 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 20V4"/><path d="M4.5 8.5L9 2.5l4.5 6" stroke-linejoin="round"/></svg>
+        <small>N</small>
+      </div>
+      <p class="legend"><i style="background:#a2563c"></i>มีภาพถ่ายที่ตรวจแล้ว 57<br><i style="background:#2c6e70"></i>อีก 147 ที่ในคลัง</p>
+    </div>
+    <figcaption class="plan-cap"><span>ผังจากพิกัดจริง · กำแพงและคูเมืองวาดตามแนวจริง</span><span>แผนที่: MapTiler · OpenStreetMap</span></figcaption>
+  </figure>
+
+  <nav class="index" aria-label="สำรวจตามโซน">
+    <h2>ตามโซน</h2>
+    <ul style="--max:69">
+      <li><a href="#" style="--n:31"><span>ในกำแพงเมือง</span><b>31</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:19"><span>ริมคูเมือง</span><b>19</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:10"><span>เหนือคูเมือง</span><b>10</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:29"><span>ตะวันออก ทางแม่น้ำปิง</span><b>29</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:8"><span>ใต้คูเมือง</span><b>8</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:38"><span>ตะวันตก ทางดอยสุเทพ</span><b>38</b><i class="bar"></i></a></li>
+      <li><a href="#" style="--n:69"><span>ไกลออกไป</span><b>69</b><i class="bar"></i></a></li>
+    </ul>
+  </nav>
+</div>
+
+<section class="route" aria-labelledby="sample">
+  <div class="shell route-in">
+    <div>
+      <h2 id="sample">ทริปตัวอย่างหนึ่งวัน: ดอยสุเทพแล้วลงมาในเวียง</h2>
+      <div class="table">
+        <span class="hd">เวลา</span><span class="hd x">ลำดับ</span><span class="hd">สถานที่</span><span class="hd x">ช่วงต่อไป</span>
+        <time>09:00–11:00</time><span class="no">1</span><span class="nm">วัดพระธาตุดอยสุเทพ</span><span class="lg">ขับรถ 29 นาที · 16.6 กม.</span>
+        <time>11:29–12:29</time><span class="no">2</span><span class="nm">วัดเจดีย์หลวง</span><span class="lg">ขับรถ 1 นาที · 0.6 กม.</span>
+        <time>12:30–13:30</time><span class="no">3</span><span class="nm">วัดพระสิงห์</span><span class="lg">จบวัน</span>
+      </div>
+    </div>
+    <div class="sum">
+      <dl>
+        <dt>เวลารวม</dt><dd>4 ชม. 30 นาที</dd>
+        <dt>บนถนน</dt><dd>30 นาที</dd>
+        <dt>ค่าใช้จ่ายโดยประมาณ</dt><dd>฿1,000 / คน</dd>
+      </dl>
+      <a class="btn" href="planner.html">เปิดทริปนี้แล้วแก้ต่อ
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="alt" href="planner.html">หรือเริ่มจากแผนว่าง</a>
+    </div>
+  </div>
+</section>
+
+<section class="plates shell">
+  <h2>ที่ที่เรากลับไปเอง</h2>
+  <div class="three">
+    <figure class="plate">
+      <a href="#"><img src="/images/places/wat-inthrawat-ton-kwen.jpg" alt="วิหารไม้และศาลาจัตุรมุขของวัดต้นเกว๋น กลางลานทราย"></a>
+      <figcaption>
+        <h3>วัดต้นเกว๋น (อินทราวาส)</h3>
+        <p>หางดง · วิหารไม้ล้านนาที่ยังอยู่ครบทั้งหลัง ไปตอนบ่ายแก่ๆ แล้วแดดจะลอดช่องไม้ลงมาที่ลานทราย</p>
+        <p class="credit">ภาพ: Takeaway · CC BY-SA 3.0</p>
+      </figcaption>
+    </figure>
+    <figure class="plate">
+      <a href="#"><img src="/images/places/wat-pha-lat.jpg" alt="ระเบียงหินและลำธารในป่าของวัดผาลาด เชิงดอยสุเทพ"></a>
+      <figcaption>
+        <h3>วัดผาลาด</h3>
+        <p>เชิงดอยสุเทพ · วัดในป่าที่คนขึ้นดอยส่วนใหญ่ขับผ่าน มีลำธารไหลผ่านลานวัดและเสียงจักจั่นทั้งวัน</p>
+        <p class="credit">ภาพ: Stefan Fussan · CC BY-SA 3.0</p>
+      </figcaption>
+    </figure>
+    <figure class="plate">
+      <a href="#"><img src="/images/places/nong-buak-hard-park.jpg" alt="สนามหญ้าและสระน้ำในสวนสาธารณะหนองบวกหาด มุมตะวันตกเฉียงใต้ของกำแพงเมือง"></a>
+      <figcaption>
+        <h3>สวนหนองบวกหาด</h3>
+        <p>ในกำแพงเมือง · มุมตะวันตกเฉียงใต้ของเวียง เป็นที่ที่คนในเมืองมานั่งตอนเย็น ไม่ใช่ที่ที่นักท่องเที่ยวตั้งใจมา</p>
+        <p class="credit">ภาพ: Kawin Jungsakulrujirek · CC BY-SA 3.0</p>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<script src="/vendor/maplibre-gl.js"></script>
+<script src="../data.js"></script>
+<script src="../sketch-map.js"></script>
+<script>
+  sketchMap(document.getElementById("map"), {
+    bounds: CITY_BOUNDS, padding: 26, interactive: false, route: false, pins: false, scale: true,
+    colors: {
+      land: "#fbfcfa", urban: "#f1f4f0", forest: "#e2eade", forestOpacity: 0.95, water: "#d2e0e0",
+      road: "#e2e7e2", roadMinor: "#ebefea", label: "#5a6a6b", labels: false,
+      wall: "#1e2a2c", moat: "#9cc0bf", dot: "#2c6e70", dotPhoto: "#a2563c", dotOpacity: 0.85,
+    },
+  });
+</script>
+</body>
+</html>

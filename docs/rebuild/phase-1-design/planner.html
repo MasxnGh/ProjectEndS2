@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>วางแผนทริป · Chiangmai Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/vendor/maplibre-gl.css">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+  .site-footer { margin-top: 0; }
+  .ws { display: grid; min-height: calc(100svh - 72px); }
+  .panel { display: grid; align-content: start; gap: var(--s-5); padding: var(--s-5) var(--gutter) var(--s-7); }
+  .mapside { position: relative; display: none; }
+  .mapside .map { position: absolute; inset: 0; }
+  @media (min-width: 1024px) {
+    .ws { grid-template-columns: 520px 1fr; height: calc(100svh - 72px); min-height: 720px; }
+    .panel { overflow-y: auto; padding: var(--s-6) var(--s-6) var(--s-7); border-right: 1px solid var(--line); }
+    .mapside { display: block; }
+    .seg-view { display: none !important; }
+  }
+  .ws[data-view="map"] .panel-list { display: none; }
+  @media (max-width: 1023px) {
+    .ws[data-view="map"] .mapside { display: block; height: 70svh; margin: 0 var(--gutter); border-radius: var(--r-lg); overflow: hidden; }
+  }
+
+  /* Trip header */
+  .trip-head { display: grid; gap: var(--s-3); }
+  .trip-head .title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+  .trip-head h1 { font-size: clamp(1.5rem, 1.3rem + 0.8vw, 1.875rem); line-height: 1.3; }
+  .trip-head .saved { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: var(--fs-small); }
+  .fields { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .fields .chip { background: var(--surface); box-shadow: inset 0 0 0 1.5px var(--line); }
+  .fields .chip .muted { color: var(--text-2); font-weight: 400; }
+  .checklist { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); font-size: var(--fs-small); color: var(--text-2); }
+  .checklist span { display: inline-flex; align-items: center; gap: 6px; }
+  .checklist .ok { color: var(--brand); font-weight: 500; }
+  .checklist .ok .i { background: var(--brand); color: var(--on-brand); border-radius: 50%; padding: 2px; width: 18px; height: 18px; stroke-width: 2.5; }
+  .checklist .todo .i { width: 18px; height: 18px; }
+  .ai-row { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+  /* Segmented view switch (phones) */
+  .seg-view { display: inline-flex; padding: 4px; background: var(--mist); border-radius: var(--r-pill); justify-self: start; }
+  .seg-view button { min-height: 40px; padding: 0 18px; border-radius: var(--r-pill); border: 0; background: transparent; font-size: var(--fs-label); font-weight: 500; color: var(--text-2); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .seg-view button[aria-pressed="true"] { background: var(--surface); color: var(--brand); box-shadow: var(--float); }
+
+  /* Day tabs */
+  .daytabs { display: flex; gap: var(--s-2); overflow-x: auto; scrollbar-width: none; }
+  .daytabs::-webkit-scrollbar { display: none; }
+  .daytab { flex: none; display: grid; gap: 0; text-align: left; min-height: 56px; padding: 8px 18px; border-radius: var(--r-lg); border: 0; background: var(--mist); color: var(--text); cursor: pointer; }
+  .daytab b { font-weight: 600; font-size: var(--fs-label); }
+  .daytab small { color: var(--text-2); font-size: 0.8125rem; }
+  .daytab[aria-selected="true"] { background: var(--brand); color: var(--on-brand); }
+  .daytab[aria-selected="true"] small { color: inherit; opacity: 0.8; }
+  .daytab--add { display: grid; place-items: center; min-width: 56px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--line-strong); color: var(--brand); }
+
+  /* Day */
+  .dayhead { display: grid; gap: var(--s-3); }
+  .dayhead h2 { font-size: var(--fs-title); font-weight: 600; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-2); }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 12px; display: grid; gap: 2px; }
+  .stat small { color: var(--text-2); font-size: 0.8125rem; line-height: 1.4; }
+  .stat b { font-weight: 600; font-size: 1rem; color: var(--text); line-height: 1.4; }
+  .daymeta { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+  .stops { list-style: none; margin: 0; padding: 0; display: grid; }
+  .stop { display: grid; grid-template-columns: 32px 56px 64px 1fr 44px; gap: var(--s-3); align-items: center; padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--float); }
+  .handle { width: 32px; height: 44px; display: grid; place-items: center; border: 0; background: none; color: var(--text-2); cursor: grab; border-radius: var(--r-sm); }
+  .handle:hover { background: var(--mist); }
+  .time { display: grid; font-variant-numeric: tabular-nums; line-height: 1.3; }
+  .time b { font-weight: 600; color: var(--brand); }
+  .time span { color: var(--text-2); font-size: var(--fs-small); }
+  .stop .media { width: 64px; height: 64px; border-radius: var(--r-md); }
+  .stop .noimg .ring { width: 36px; height: 36px; }
+  .stop .noimg .zone { display: none; }
+  .stop .info { min-width: 0; display: grid; gap: 4px; }
+  .stop .info b { font-weight: 500; line-height: 1.4; }
+  .stop .info small { color: var(--text-2); font-size: var(--fs-small); display: flex; align-items: center; gap: 6px; }
+  .stop .open { color: var(--brand); }
+  .stop .n { position: absolute; }
+  .leg { display: flex; align-items: center; gap: var(--s-2); margin-left: 60px; padding: 10px 0 10px 18px; border-left: 2px dashed var(--line-strong); color: var(--text-2); font-size: var(--fs-small); }
+  .add { display: flex; align-items: center; justify-content: center; gap: var(--s-2); min-height: 56px; margin-top: var(--s-3); border-radius: var(--r-lg); border: 1.5px dashed var(--line-strong); background: transparent; color: var(--brand); font-weight: 500; font-size: var(--fs-label); cursor: pointer; width: 100%; }
+  .add:hover { background: var(--mist); }
+
+  .tray { border-radius: var(--r-lg); background: var(--sand-fill); padding: var(--s-4) var(--s-5); display: grid; gap: var(--s-2); }
+  .tray h3 { font-size: 1rem; display: flex; align-items: center; justify-content: space-between; }
+  .tray p { color: var(--text-2); font-size: var(--fs-small); }
+  :root[data-theme="dark"] .tray p { color: var(--text-2); }
+
+  .finish { display: grid; gap: var(--s-3); padding-top: var(--s-5); border-top: 1px solid var(--line); }
+  .finish h3 { font-size: 1rem; }
+  .finish .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--s-2); }
+  .finish .row .btn { padding: 0 12px; }
+
+  /* Map overlays */
+  .map-top { position: absolute; left: 16px; top: 16px; z-index: 2; display: flex; gap: var(--s-2); flex-wrap: wrap; }
+  .map-top .badge { background: var(--surface); box-shadow: var(--float); min-height: 40px; padding: 0 16px; }
+  .map-bottom { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 2; display: flex; justify-content: space-between; align-items: flex-end; gap: var(--s-3); pointer-events: none; }
+  .map-bottom > * { pointer-events: auto; }
+  .sunbox { background: var(--surface); box-shadow: var(--float); border-radius: var(--r-lg); padding: 12px 16px; display: grid; gap: 2px; font-size: var(--fs-small); color: var(--text-2); }
+  .sunbox b { color: var(--text); font-weight: 600; }
+
+  .dock { position: sticky; bottom: 0; z-index: 25; display: flex; align-items: center; gap: var(--s-3); padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -16px rgba(29,56,53,.3); }
+  .dock .sum { flex: 1; min-width: 0; font-size: var(--fs-small); color: var(--text-2); line-height: 1.4; }
+  .dock .sum b { color: var(--text); font-weight: 600; display: block; font-size: 1rem; }
+  @media (min-width: 1024px) { .dock { display: none; } }
+  @media (max-width: 639px) {
+    .stop { grid-template-columns: 28px 48px 1fr 40px; gap: 10px; padding: 10px; }
+    .stop .media { display: none; }
+    .stop .time b { font-size: 0.9375rem; }
+    .leg { margin-left: 50px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .stats .stat:last-child { grid-column: 1 / -1; }
+    .finish .row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main id="main">
+  <div class="ws" id="ws" data-view="list">
+    <div class="panel">
+      <header class="trip-head">
+        <div class="title-row">
+          <h1>ทริปเชียงใหม่ของฉัน</h1>
+          <button class="icon-btn icon-btn--plain" aria-label="เปลี่ยนชื่อทริป" id="rename"></button>
+        </div>
+        <div class="fields" id="fields"></div>
+        <div class="checklist" id="checklist" aria-label="ความคืบหน้าของแผน"></div>
+        <div class="ai-row" id="ai"></div>
+      </header>
+
+      <div class="seg-view" role="group" aria-label="มุมมอง" id="seg"></div>
+
+      <div class="panel-list" style="display:grid;gap:var(--s-5)">
+        <div class="daytabs" role="tablist" aria-label="วันในทริป" id="tabs"></div>
+        <section class="dayhead" aria-labelledby="h-day" id="dayhead"></section>
+        <ol class="stops" id="stops" aria-label="ลำดับจุดแวะของวันที่ 1"></ol>
+        <section class="tray" aria-labelledby="h-tray">
+          <h3 id="h-tray">ยังไม่ได้จัดวัน <span class="badge num">0</span></h3>
+          <p>สถานที่ที่กดเพิ่มไว้แต่ยังไม่ได้ลากลงวันไหนจะรออยู่ตรงนี้</p>
+        </section>
+        <section class="finish" aria-labelledby="h-fin">
+          <h3 id="h-fin">เก็บแผนนี้ไว้</h3>
+          <div class="row" id="finish"></div>
+          <p class="t-small t-muted">แผนถูกเก็บไว้ในเครื่องนี้แล้ว เข้าสู่ระบบด้วย Google เพื่อเปิดจากเครื่องอื่น</p>
+        </section>
+      </div>
+    </div>
+    <div class="mapside" aria-label="แผนที่เส้นทางวันที่ 1">
+      <div class="map" id="map"></div>
+      <div class="map-top" id="maptop"></div>
+      <div class="map-bottom" id="mapbottom"></div>
+    </div>
+  </div>
+  <div class="dock" id="dock"></div>
+</main>
+<script src="/vendor/maplibre-gl.js"></script>
+<script src="assets/catalogue.js"></script>
+<script src="assets/sample-trip.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/map.js"></script>
+<script>
+  const { icon, bySlug, media, CAT, DISTRICT, dur, km, baht } = UI;
+  UI.mount("planner");
+  const T = SAMPLE_TRIP.day1;
+  const stops = T.stops.map(([s, mins, arr, dep]) => ({ p: bySlug(s), mins, arr, dep }));
+  const travellers = 1;
+  const SUN = { rise: "06:30", set: "17:47" }; // app's calculateSunTimes() for 14 Nov 2026, Chiang Mai
+  const $ = (id) => document.getElementById(id);
+
+  $("rename").innerHTML = icon("more");
+  $("fields").innerHTML = `
+    <button class="chip">${icon("calendar", "i--sm")} <span class="num">14–16 พ.ย. 2569</span> <span class="muted">· 3 วัน</span></button>
+    <button class="chip">${icon("users", "i--sm")} <span class="num">${travellers} คน</span></button>
+    <button class="chip">${icon("wallet", "i--sm")} งบ <span class="muted">ยังไม่ได้ตั้ง</span></button>
+    <button class="chip">${icon("car", "i--sm")} รถยนต์</button>`;
+  $("checklist").innerHTML = `
+    <span class="ok">${icon("check")} ตั้งวันที่แล้ว</span>
+    <span class="ok">${icon("check")} มีสถานที่ 3 แห่ง</span>
+    <span class="todo">${icon("info")} อีก 2 วันยังว่าง</span>`;
+  $("ai").innerHTML = `<button class="btn btn--secondary btn--sm">${icon("sparkle", "i--sm")} ให้ AI ช่วยจัด</button><a class="btn btn--ghost btn--sm" href="explore.html">${icon("plus", "i--sm")} เพิ่มสถานที่</a>`;
+  $("seg").innerHTML = `<button aria-pressed="true" data-view="list">${icon("list", "i--sm")} รายการ</button><button aria-pressed="false" data-view="map">${icon("map", "i--sm")} แผนที่</button>`;
+  $("tabs").innerHTML = `
+    <button class="daytab" role="tab" aria-selected="true"><b>วันที่ 1</b><small class="num">ส. 14 พ.ย. · 3 จุด</small></button>
+    <button class="daytab" role="tab" aria-selected="false"><b>วันที่ 2</b><small class="num">อา. 15 พ.ย. · ว่าง</small></button>
+    <button class="daytab" role="tab" aria-selected="false"><b>วันที่ 3</b><small class="num">จ. 16 พ.ย. · ว่าง</small></button>
+    <button class="daytab daytab--add" aria-label="เพิ่มวัน">${icon("plus")}</button>`;
+  $("dayhead").innerHTML = `
+    <h2 id="h-day">วันที่ 1 · เสาร์ 14 พฤศจิกายน</h2>
+    <div class="stats">
+      <div class="stat"><small>ทั้งวัน</small><b class="num">${dur(T.total)}</b></div>
+      <div class="stat"><small>เดินทาง · ราว ${Math.round(T.km)} กม.</small><b class="num">${dur(T.travel)}</b></div>
+      <div class="stat"><small>ค่าเข้าชมและกิจกรรม</small><b class="num">ราว ${baht(T.budgetPerPerson)}/คน</b></div>
+    </div>
+    <div class="daymeta"><span class="badge num">${icon("sun", "i--sm")} ขึ้น ${SUN.rise} · ตก ${SUN.set}</span><span class="badge" id="wxday">${icon("wind", "i--sm")} กำลังโหลดพยากรณ์…</span></div>`;
+  $("stops").innerHTML = stops.map(({ p, mins, arr, dep }, i) => `
+    ${mins ? `<li class="leg num">${icon("car", "i--sm")} ขับรถราว ${dur(mins)}</li>` : ""}
+    <li class="stop">
+      <button class="handle" aria-label="ลากหรือกดลูกศรเพื่อย้าย ${p.th}">${icon("grip")}</button>
+      <div class="time"><b>${arr}</b><span>ถึง ${dep}</span></div>
+      ${media(p)}
+      <div class="info"><b>${i + 1}. ${p.th}</b><small><span class="open">${icon("check", "i--sm")} เปิด ${p.hours.replace("ทุกวัน ", "").replace(" น.", "")}</span></small></div>
+      <button class="icon-btn icon-btn--plain" aria-label="ตัวเลือกของ ${p.th}">${icon("more")}</button>
+    </li>`).join("") + `<li><button class="add">${icon("plus", "i--sm")} เพิ่มสถานที่ลงวันที่ 1</button></li>`;
+  $("finish").innerHTML = `
+    <button class="btn btn--primary">${icon("bookmark", "i--sm")} บันทึก</button>
+    <button class="btn btn--secondary">${icon("qr", "i--sm")} แชร์ / QR</button>
+    <button class="btn btn--secondary">${icon("printer", "i--sm")} พิมพ์ PDF</button>`;
+  $("dock").innerHTML = `<div class="sum"><b class="num">วันที่ 1 · ${dur(T.total)}</b><span class="num">3 จุด · เดินทาง ${dur(T.travel)}</span></div><button class="icon-btn" aria-label="แชร์ทริป">${icon("share")}</button><button class="btn btn--primary btn--sm">${icon("bookmark", "i--sm")} บันทึก</button>`;
+
+  const gm = "https://www.google.com/maps/dir/?api=1&origin=" + stops[0].p.lat + "," + stops[0].p.lng + "&destination=" + stops[2].p.lat + "," + stops[2].p.lng + "&waypoints=" + stops[1].p.lat + "," + stops[1].p.lng;
+  $("maptop").innerHTML = `<span class="badge">${icon("route", "i--sm")} วันที่ 1 · 3 จุด</span>`;
+  $("mapbottom").innerHTML = `<div class="sunbox"><span>${icon("sunset", "i--sm")} พระอาทิตย์ตกวันนี้</span><b class="num">${SUN.set} น.</b></div><a class="btn btn--primary" href="${gm}" target="_blank" rel="noopener">${icon("nav", "i--sm")} เปิดเส้นทางวันนี้ใน Google Maps</a>`;
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-view]"); if (!b) return;
+    $("ws").dataset.view = b.dataset.view;
+    document.querySelectorAll("#seg button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    if (window._map) setTimeout(() => window._map.resize(), 50);
+  });
+
+  // Live forecast for the day, from the app's Open-Meteo route
+  fetch(`/api/weather?lat=${stops[1].p.lat}&lng=${stops[1].p.lng}`).then((r) => r.json()).then((w) => {
+    const d = w.daily && w.daily[0];
+    if (d) $("wxday").innerHTML = `${icon("sun", "i--sm")} ${d.condition.label.th} · <span class="num">${d.minTempC != null ? Math.round(d.minTempC) + "–" : "สูงสุด "}${Math.round(d.maxTempC)}°</span>`;
+  }).catch(() => ($("wxday").textContent = "ยังไม่มีพยากรณ์"));
+
+  const lng = stops.map((s) => s.p.lng), lat = stops.map((s) => s.p.lat);
+  window._map = brandMap($("map"), {
+    bounds: [[Math.min(...lng), Math.min(...lat)], [Math.max(...lng), Math.max(...lat)]], padding: { top: 90, bottom: 110, left: 70, right: 70 },
+    route: SAMPLE_TRIP.route,
+    pins: stops.map(({ p }, i) => ({ lng: p.lng, lat: p.lat, n: i + 1, label: `${i + 1}. ${p.th}` })),
+  });
+</script>
+</body>
+</html>

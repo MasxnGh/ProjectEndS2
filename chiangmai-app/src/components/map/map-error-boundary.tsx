@@ -1,9 +1,6 @@
 "use client";
 
 import { Component, type ReactNode } from "react";
-import { RotateCw } from "lucide-react";
-import { useLocale } from "@/components/providers/locale-provider";
-import { cn } from "@/lib/utils";
 
 interface MapErrorBoundaryProps {
   children: ReactNode;
@@ -40,26 +37,4 @@ export class MapErrorBoundary extends Component<MapErrorBoundaryProps, MapErrorB
     }
     return this.props.children;
   }
-}
-
-export function MapErrorFallback({ className, onRetry }: { className?: string; onRetry: () => void }) {
-  const { dict } = useLocale();
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-surface-muted p-6 text-center",
-        className
-      )}
-    >
-      <p className="text-sm text-muted-foreground">{dict.common.mapUnavailable}</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="flex items-center gap-1.5 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium hover:border-accent hover:text-accent-text"
-      >
-        <RotateCw className="h-3 w-3" />
-        {dict.weather.retry}
-      </button>
-    </div>
-  );
 }

@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { signOut } from "next-auth/react";
-import { Download, Loader2, Trash2 } from "lucide-react";
-import { Modal } from "@/components/ui/modal";
+import { Download, Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { Button, buttonStyles } from "@/components/brand/button";
+import { cx } from "@/components/brand/cx";
+import { Dialog } from "@/components/brand/dialog";
+import { ICON_STROKE } from "@/components/brand/icons";
+import { fill } from "@/components/brand/place-text";
+import { textFieldStyles } from "@/components/brand/text-field";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import type { Locale } from "@/i18n";
@@ -14,6 +19,8 @@ export function AccountActions({ locale }: { locale: Locale }) {
   const { dict } = useLocale();
   const t = dict.account;
   const { showToast } = useToast();
+  const titleId = useId();
+  const inputId = useId();
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [typed, setTyped] = useState("");
@@ -43,92 +50,99 @@ export function AccountActions({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <section className="mt-12">
-        <h2 className="font-serif-display text-2xl">{t.export.title}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">{t.export.body}</p>
+      <section aria-labelledby="account-export" className="grid justify-items-start gap-2 border-t border-line pt-10">
+        <h2 id="account-export" className="text-title font-semibold text-brand">
+          {t.export.title}
+        </h2>
+        <p className="max-w-[60ch] text-body text-pretty text-ink-soft">{t.export.body}</p>
         {/* A plain link, not a fetch: the browser's own download handling is
             more reliable than reconstructing a blob, and it works even if
             JavaScript later fails on this page. */}
-        <a
-          href="/api/account/export"
-          download
-          className="mt-4 inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm hover:border-accent hover:text-accent-text"
-        >
-          <Download className="h-4 w-4" aria-hidden="true" />
+        <a href="/api/account/export" download className={cx(buttonStyles({ variant: "secondary" }), "mt-2")}>
+          <Download aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
           {t.export.cta}
         </a>
       </section>
 
-      <section className="mt-12 rounded-lg border border-destructive/40 p-6">
-        <h2 className="font-serif-display text-2xl text-destructive">{t.delete.title}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-foreground/80 text-pretty">{t.delete.body}</p>
-        <button
-          type="button"
+      {/* The brand has no red: the warning icon and the words carry the weight,
+          and the button is the outlined one, never the filled. */}
+      <section
+        aria-labelledby="account-delete"
+        className="mt-10 grid justify-items-start gap-2 rounded-lg border-[1.5px] border-line-strong p-6 sm:p-7"
+      >
+        <h2 id="account-delete" className="flex items-center gap-2 text-title font-semibold text-ink">
+          <TriangleAlert aria-hidden strokeWidth={ICON_STROKE} className="size-5 flex-none text-brand" />
+          {t.delete.title}
+        </h2>
+        <p className="max-w-[60ch] text-body text-pretty text-ink-soft">{t.delete.body}</p>
+        <Button
+          variant="secondary"
+          className="mt-2"
           onClick={() => {
             setTyped("");
             setConfirmOpen(true);
           }}
-          className="mt-4 inline-flex items-center gap-2 rounded-full border border-destructive px-5 py-2.5 text-sm font-medium text-destructive hover:bg-destructive hover:text-white"
+          icon={<Trash2 aria-hidden strokeWidth={ICON_STROKE} className="size-5" />}
         >
-          <Trash2 className="h-4 w-4" aria-hidden="true" />
           {t.delete.cta}
-        </button>
+        </Button>
       </section>
 
-      {confirmOpen ? (
-        <Modal
-          open
-          onClose={() => (deleting ? undefined : setConfirmOpen(false))}
-          titleId="delete-account-title"
-          closeLabel={dict.nav.close}
-        >
-          <h2 id="delete-account-title" className="font-serif-display text-xl text-destructive">
-            {t.delete.confirmTitle}
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-foreground/80 text-pretty">
-            {t.delete.confirmBody}
-          </p>
-          <ul className="mt-4 space-y-1 text-sm text-foreground/80">
-            {t.delete.confirmList.map((item) => (
-              <li key={item}>• {item}</li>
-            ))}
-          </ul>
+      <Dialog open={confirmOpen} onClose={() => (deleting ? undefined : setConfirmOpen(false))} labelledBy={titleId}>
+        <h2 id={titleId} className="flex items-center gap-2 text-title text-brand">
+          <TriangleAlert aria-hidden strokeWidth={ICON_STROKE} className="size-5 flex-none" />
+          {t.delete.confirmTitle}
+        </h2>
+        <p className="mt-2 text-body text-pretty text-ink-soft">{t.delete.confirmBody}</p>
+        <ul className="mt-3 grid gap-1.5 text-body text-ink">
+          {t.delete.confirmList.map((item) => (
+            <li key={item} className="grid grid-cols-[1.25rem_1fr] items-baseline">
+              <span aria-hidden className="text-brand">
+                •
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
 
-          {/* The second step. Typing the word is deliberately more friction
-              than a click: this cannot be undone, and a mis-click on a
-              destructive button is a real way people lose everything. */}
-          <label htmlFor="delete-confirm-input" className="mt-5 block text-sm text-muted-foreground">
-            {t.delete.typeToConfirm.replace("{word}", CONFIRM_WORD)}
-          </label>
-          <input
-            id="delete-confirm-input"
-            value={typed}
-            onChange={(event) => setTyped(event.target.value)}
-            autoComplete="off"
-            className="mt-1.5 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-destructive focus:outline-none"
-          />
+        {/* The second step. Typing the word is deliberately more friction
+            than a click: this cannot be undone, and a mis-click on a
+            destructive button is a real way people lose everything. Focus
+            starts in the field, since typing alone changes nothing. */}
+        <label htmlFor={inputId} className="mt-5 block text-label text-ink">
+          {fill(t.delete.typeToConfirm, { word: CONFIRM_WORD })}
+        </label>
+        <input
+          id={inputId}
+          value={typed}
+          onChange={(event) => setTyped(event.target.value)}
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          data-autofocus
+          className={cx("mt-1.5", textFieldStyles)}
+        />
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              disabled={typed.trim() !== CONFIRM_WORD || deleting}
-              onClick={deleteAccount}
-              className="flex items-center gap-2 rounded-full bg-destructive px-5 py-2.5 text-sm font-medium text-white hover:brightness-95 disabled:opacity-50"
-            >
-              {deleting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-              {deleting ? t.delete.deleting : t.delete.confirmCta}
-            </button>
-            <button
-              type="button"
-              disabled={deleting}
-              onClick={() => setConfirmOpen(false)}
-              className="rounded-full border border-border px-5 py-2.5 text-sm hover:border-accent hover:text-accent-text disabled:opacity-50"
-            >
-              {t.delete.cancel}
-            </button>
-          </div>
-        </Modal>
-      ) : null}
+        <div className="mt-6 grid gap-2">
+          <Button
+            variant="secondary"
+            disabled={typed.trim() !== CONFIRM_WORD || deleting}
+            onClick={deleteAccount}
+            icon={
+              deleting ? (
+                <Loader2 aria-hidden strokeWidth={ICON_STROKE} className="size-5 animate-spin" />
+              ) : (
+                <Trash2 aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+              )
+            }
+          >
+            {deleting ? t.delete.deleting : t.delete.confirmCta}
+          </Button>
+          <Button variant="ghost" disabled={deleting} onClick={() => setConfirmOpen(false)}>
+            {t.delete.cancel}
+          </Button>
+        </div>
+      </Dialog>
     </>
   );
 }

@@ -1,4 +1,3 @@
-import { Section } from "@/components/ui/section";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -6,7 +5,8 @@ import { collectUserData } from "@/lib/db/account-data";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { AccountActions } from "@/components/account/account-actions";
-import { Reveal } from "@/components/reveal";
+import { PageHead } from "@/components/brand/page-head";
+import { Wrap } from "@/components/brand/surface";
 
 export async function generateMetadata({
   params,
@@ -58,27 +58,28 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
   ];
 
   return (
-    <Section as="div" width="prose" rhythm="tight" className="lg:py-20">
-      <Reveal as="div">
-        <h1 className="font-serif-display text-4xl leading-tight sm:text-5xl">{t.title}</h1>
-        <p className="mt-4 text-lg leading-relaxed text-muted-foreground text-pretty">{t.intro}</p>
-      </Reveal>
+    <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
+      <Wrap className="max-w-[calc(760px+4rem)]">
+        <PageHead title={t.title} intro={t.intro} />
 
-      <Reveal as="div" delay={0.08} className="mt-12">
-        <h2 className="font-serif-display text-2xl">{t.storedTitle}</h2>
-        <p className="mt-2 text-sm text-muted-foreground text-pretty">{t.storedIntro}</p>
-        <dl className="mt-6 divide-y divide-border rounded-lg border border-border">
-          {rows.map((row) => (
-            <div key={row.label} className="flex flex-wrap items-baseline gap-x-6 gap-y-1 px-5 py-4">
-              <dt className="w-40 shrink-0 text-sm text-muted-foreground">{row.label}</dt>
-              <dd className="min-w-0 flex-1 break-words text-sm">{row.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <p className="mt-3 text-xs text-muted-foreground text-pretty">{t.tokenNote}</p>
-      </Reveal>
+        <section aria-labelledby="account-stored" className="grid gap-2 pb-10">
+          <h2 id="account-stored" className="text-title font-semibold text-brand">
+            {t.storedTitle}
+          </h2>
+          <p className="max-w-[60ch] text-body text-pretty text-ink-soft">{t.storedIntro}</p>
+          <dl className="mt-4 divide-y divide-line rounded-lg border border-line bg-panel shadow-float">
+            {rows.map((row) => (
+              <div key={row.label} className="grid gap-1 px-5 py-4 sm:grid-cols-[12rem_minmax(0,1fr)] sm:items-baseline sm:gap-6">
+                <dt className="text-small text-ink-soft">{row.label}</dt>
+                <dd className="min-w-0 text-body break-words text-ink tabular-nums">{row.value}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-2 max-w-[68ch] text-small text-pretty text-ink-soft">{t.tokenNote}</p>
+        </section>
 
-      <AccountActions locale={loc} />
-    </Section>
+        <AccountActions locale={loc} />
+      </Wrap>
+    </div>
   );
 }

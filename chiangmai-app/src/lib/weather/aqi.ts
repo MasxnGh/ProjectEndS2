@@ -17,12 +17,3 @@ export const AQI_LABELS: Record<AqiLevel, { en: string; th: string }> = {
   "very-unhealthy": { en: "Very unhealthy", th: "ไม่ดีต่อสุขภาพมาก" },
   hazardous: { en: "Hazardous", th: "อันตราย" },
 };
-
-export const AQI_COLORS: Record<AqiLevel, { bg: string; fg: string }> = {
-  good: { bg: "var(--color-secondary)", fg: "var(--color-secondary-foreground)" },
-  moderate: { bg: "var(--color-accent)", fg: "var(--color-accent-foreground)" },
-  "unhealthy-sensitive": { bg: "var(--color-tertiary)", fg: "var(--color-tertiary-foreground)" },
-  unhealthy: { bg: "#8a3a2c", fg: "#f7f4ef" },
-  "very-unhealthy": { bg: "var(--color-destructive)", fg: "var(--color-destructive-foreground)" },
-  hazardous: { bg: "#5c1913", fg: "#f7f4ef" },
-};

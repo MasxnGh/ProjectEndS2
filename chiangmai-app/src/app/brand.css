@@ -1,0 +1,242 @@
+/*
+ * Chiangmai Journey — design tokens for the rebuild.
+ *
+ * Source of truth: DESIGN.md at the repo root, written from the owner's brand
+ * board, and the Phase 1 prototypes in docs/rebuild/phase-1-design/.
+ *
+ * Written fresh. Nothing here shares a name with the older palette in
+ * globals.css, so pages can move to this system one at a time; the old tokens
+ * are deleted once the last page has moved.
+ *
+ * Contrast below is WCAG 2 and was computed from these exact values (oklab
+ * mixes resolved first). Every text pairing clears 4.5:1 in both themes.
+ */
+
+:root {
+  /* The board's palette, sampled from its swatches. */
+  --cmj-green: #1d3835;
+  --cmj-green-deep: #142a27;
+  --cmj-leaf: #8aa189;
+  --cmj-sand: #efd3b1;
+  --cmj-sunset: #eb9d56;
+  --cmj-lavender: #bdadd9;
+  --cmj-ink: #17221f;
+  --cmj-stone: #4f5a57;
+  --cmj-paper: #f9f3f0;
+  --cmj-surface: #fffcfa;
+  --cmj-mist: #ece6e3;
+
+  /* Roles, light theme. */
+  --cmj-page: var(--cmj-paper);
+  --cmj-panel: var(--cmj-surface);
+  --cmj-well: var(--cmj-mist);
+  --cmj-text: var(--cmj-ink); /* 14.87 on page, 13.23 on well */
+  --cmj-text-soft: var(--cmj-stone); /* 6.52 on page, 5.80 on well */
+  --cmj-brand: var(--cmj-green); /* 11.45 on page, 8.76 on sand */
+  --cmj-brand-hover: var(--cmj-green-deep);
+  --cmj-on-brand: var(--cmj-paper); /* 11.45 on green */
+  --cmj-sand-fill: var(--cmj-sand);
+  --cmj-leaf-fill: color-mix(in oklab, var(--cmj-leaf) 35%, var(--cmj-surface)); /* green on it 8.92 */
+  --cmj-line: color-mix(in oklab, var(--cmj-green) 14%, transparent);
+  --cmj-line-strong: color-mix(in oklab, var(--cmj-green) 28%, transparent);
+  /* The one reversed plane (footer, planner band). Paper on it 11.45. */
+  --cmj-forest: var(--cmj-green);
+  --cmj-on-forest: var(--cmj-paper);
+  --cmj-on-forest-soft: color-mix(in oklab, var(--cmj-paper) 78%, var(--cmj-green)); /* 7.32 */
+  /* Accent marks on the ground (sparkle, brush, selected map pin). Never text on light. */
+  --cmj-spark: var(--cmj-sunset);
+
+  /* Depth is green-tinted, never grey-black. */
+  --cmj-float: 0 10px 30px -12px rgb(29 56 53 / 0.25);
+  --cmj-lift: 0 18px 40px -16px rgb(29 56 53 / 0.3);
+}
+
+/*
+ * Dark theme: derived from the green rather than invented. The ground is the
+ * green taken almost to black, surfaces step up from it, and sand takes over
+ * as the voice because green cannot carry text on a dark ground.
+ */
+.dark {
+  --cmj-page: #0f1c1a;
+  --cmj-panel: #172a27;
+  --cmj-well: #213733;
+  --cmj-text: #f3ece8; /* 14.96 on page, 10.83 on well */
+  --cmj-text-soft: #b9c4c0; /* 9.76 on page, 7.06 on well */
+  --cmj-brand: var(--cmj-sand); /* 12.17 on page, 8.81 on well */
+  --cmj-brand-hover: #f6e2c9;
+  --cmj-on-brand: var(--cmj-green-deep); /* 10.52 on sand */
+  --cmj-sand-fill: #2b3c35; /* sand on it 8.12 */
+  --cmj-leaf-fill: #20352f; /* sand on it 9.07 */
+  --cmj-line: rgb(243 236 232 / 0.12);
+  --cmj-line-strong: rgb(243 236 232 / 0.24);
+  --cmj-forest: #0a1513;
+  --cmj-on-forest: #f3ece8; /* 15.91 */
+  --cmj-on-forest-soft: #b9c4c0; /* 10.38 */
+  --cmj-float: 0 10px 30px -12px rgb(0 0 0 / 0.5);
+  --cmj-lift: 0 18px 40px -16px rgb(0 0 0 / 0.6);
+}
+
+/*
+ * Tailwind names. `inline` makes each utility read the variable directly, so
+ * the theme switch above is all it takes to recolour them.
+ *
+ * Radius and spacing need no new names: the scale already in globals.css
+ * (rounded-sm 8, md 12, lg 16, xl 24, full; 4px spacing steps) is the board's.
+ */
+@theme inline {
+  --color-page: var(--cmj-page);
+  --color-panel: var(--cmj-panel);
+  --color-well: var(--cmj-well);
+  --color-ink: var(--cmj-text);
+  --color-ink-soft: var(--cmj-text-soft);
+  --color-brand: var(--cmj-brand);
+  --color-brand-hover: var(--cmj-brand-hover);
+  --color-on-brand: var(--cmj-on-brand);
+  --color-sand-fill: var(--cmj-sand-fill);
+  --color-leaf-fill: var(--cmj-leaf-fill);
+  --color-line: var(--cmj-line);
+  --color-line-strong: var(--cmj-line-strong);
+  --color-forest: var(--cmj-forest);
+  --color-on-forest: var(--cmj-on-forest);
+  --color-on-forest-soft: var(--cmj-on-forest-soft);
+  --color-spark: var(--cmj-spark);
+
+  /* Fixed palette, for things that do not change with the theme (photos, tiles). */
+  --color-cmj-green: var(--cmj-green);
+  --color-cmj-green-deep: var(--cmj-green-deep);
+  --color-cmj-leaf: var(--cmj-leaf);
+  --color-cmj-sand: var(--cmj-sand);
+  --color-cmj-sunset: var(--cmj-sunset);
+  --color-cmj-lavender: var(--cmj-lavender);
+  --color-cmj-paper: var(--cmj-paper);
+  --color-cmj-surface: var(--cmj-surface);
+
+  /* Prompt draws Thai and Latin together; Allura is the one Latin script line. */
+  --font-brand: var(--font-prompt), "Noto Sans Thai", system-ui, sans-serif;
+  --font-script: var(--font-allura), cursive;
+
+  /* Type roles from DESIGN.md. Thai is never letter-spaced. */
+  --text-display: clamp(2.75rem, 2rem + 4vw, 5.5rem);
+  --text-display--line-height: 1.12;
+  --text-display--font-weight: 600;
+  --text-headline: clamp(1.75rem, 1.4rem + 1.5vw, 2.5rem);
+  --text-headline--line-height: 1.3;
+  --text-headline--font-weight: 600;
+  --text-title: 1.25rem;
+  --text-title--line-height: 1.4;
+  --text-title--font-weight: 500;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.7;
+  --text-label: 0.9375rem;
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: 500;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+  --text-credit: 0.8125rem;
+  --text-credit--line-height: 1.4;
+
+  --shadow-float: var(--cmj-float);
+  --shadow-lift: var(--cmj-lift);
+
+  --ease-brand: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@layer components {
+  /*
+   * One shared warm grade, so photographs from many Commons contributors read
+   * as one series. Colour only: nothing is added to the scene.
+   */
+  .cmj-grade-warm img {
+    filter: saturate(1.05) sepia(0.1) contrast(1.02) brightness(1.01);
+  }
+  .cmj-grade-warm::after,
+  .cmj-grade-golden::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+  }
+  .cmj-grade-warm::after {
+    background: linear-gradient(180deg, rgb(235 157 86 / 0.1), rgb(189 173 217 / 0.06) 55%, rgb(29 56 53 / 0));
+  }
+  /* The single hero photograph of a page. */
+  .cmj-grade-golden img {
+    filter: sepia(0.2) saturate(1.18) brightness(1.04) contrast(1.03);
+  }
+  .cmj-grade-golden::after {
+    background:
+      radial-gradient(120% 90% at 82% 8%, rgb(235 157 86 / 0.6), rgb(235 157 86 / 0) 62%),
+      linear-gradient(180deg, rgb(189 173 217 / 0.22), rgb(189 173 217 / 0) 45%);
+  }
+
+  /* The board's ridge line, faint across the foot of a no-photo panel. */
+  .cmj-ridge::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 38%;
+    pointer-events: none;
+    background-color: currentColor;
+    opacity: 0.07;
+    mask: no-repeat bottom / 100% 100%
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 60' preserveAspectRatio='none'%3E%3Cpath d='M0 60 L0 44 L34 22 L58 36 L92 8 L128 34 L150 24 L200 46 L200 60 Z'/%3E%3C/svg%3E");
+  }
+
+  /* A row of chips that scrolls sideways on narrow screens instead of wrapping. */
+  .cmj-scroll-row {
+    scrollbar-width: none;
+  }
+  .cmj-scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
+   * MapLibre's own chrome, in board dress, inside brand areas only (the old
+   * planner map keeps its look until Phase 5). The popup becomes a panel with
+   * the card radius; zoom buttons become one floating pill.
+   */
+  [data-brand] .maplibregl-popup-content {
+    padding: 0;
+    border-radius: 16px;
+    background: var(--cmj-panel);
+    color: var(--cmj-text);
+    box-shadow: var(--cmj-lift);
+    font-family: var(--font-prompt), "Noto Sans Thai", system-ui, sans-serif;
+  }
+  [data-brand] .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+    border-top-color: var(--cmj-panel);
+  }
+  [data-brand] .maplibregl-popup-anchor-top .maplibregl-popup-tip {
+    border-bottom-color: var(--cmj-panel);
+  }
+  [data-brand] .maplibregl-ctrl-group {
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--cmj-panel);
+    box-shadow: var(--cmj-float);
+  }
+  [data-brand] .maplibregl-ctrl-group button {
+    width: 40px;
+    height: 40px;
+  }
+  [data-brand] .maplibregl-ctrl-group button + button {
+    border-top-color: var(--cmj-line);
+  }
+  :where(.dark) [data-brand] .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+    filter: invert(0.92);
+  }
+  /* Credits stay MapLibre's size, in the brand face. */
+  [data-brand] .maplibregl-ctrl-attrib {
+    font-family: var(--font-prompt), system-ui, sans-serif;
+  }
+
+  /* A page with the phone action dock (the place page) keeps room under the
+     footer, so the dock never covers its last lines. */
+  @media (max-width: 1023.98px) {
+    body:has([data-place-dock]) {
+      /* The dock's height: 12px + 48px button + 12px, and its 1px top rule. */
+      padding-bottom: calc(4.5rem + 1px + env(safe-area-inset-bottom));
+    }
+  }
+}

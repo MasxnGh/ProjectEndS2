@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Trirong, Anuphan, IBM_Plex_Mono } from "next/font/google";
+import { Prompt, Allura } from "next/font/google";
 import { notFound } from "next/navigation";
 import "@/app/globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -7,8 +7,10 @@ import { LocaleProvider } from "@/components/providers/locale-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/toast/toast-provider";
-import { NavBar } from "@/components/nav-bar";
-import { Footer } from "@/components/footer";
+import { SiteHeader } from "@/components/brand/site-header";
+import { SiteFooter } from "@/components/brand/site-footer";
+import { places } from "@/data/places";
+import type { PlaceCategory } from "@/data/types";
 import { PwaRegister } from "@/components/pwa-register";
 import { locales, isLocale, getDictionary } from "@/i18n";
 import { SITE_URL } from "@/lib/site";
@@ -16,33 +18,23 @@ import { AuthSessionProvider } from "@/components/providers/auth-session-provide
 import { FavoritesProvider } from "@/lib/favorites/favorites-provider";
 
 /*
- * Both scripts come from one foundry.
- *
- * This replaces four faces — Fraunces and Inter for Latin, Noto Serif Thai and
- * IBM Plex Sans Thai for Thai — which meant every bilingual line was set in two
- * unrelated designs. Trirong and Anuphan are drawn by Cadson Demak with Thai
- * and Latin together, so each loads one file covering both and the pairing is
- * the designers' own rather than ours. It also drops two font downloads.
+ * The rebuild's faces (DESIGN.md). Prompt covers Thai and Latin in one family;
+ * the three weights are the only ones the design uses. Allura sets a single
+ * Latin script line on a few pages, so it is not preloaded on every route.
  */
-const trirong = Trirong({
+const prompt = Prompt({
   subsets: ["latin", "thai"],
-  weight: ["300", "400", "500", "600"],
-  variable: "--font-trirong",
+  weight: ["400", "500", "600"],
+  variable: "--font-prompt",
   display: "swap",
 });
 
-const anuphan = Anuphan({
-  subsets: ["latin", "thai"],
-  variable: "--font-anuphan",
-  display: "swap",
-});
-
-/** Figures only — distances, prices, opening hours, coordinates. */
-const plexMono = IBM_Plex_Mono({
+const allura = Allura({
   subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-plex-mono",
+  weight: "400",
+  variable: "--font-allura",
   display: "swap",
+  preload: false,
 });
 
 export function generateStaticParams() {
@@ -87,9 +79,10 @@ export async function generateMetadata({
 }
 
 export const viewport: Viewport = {
+  // The header's own surface, so the browser bar runs into it.
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#e8eae6" },
-    { media: "(prefers-color-scheme: dark)", color: "#10171e" },
+    { media: "(prefers-color-scheme: light)", color: "#fffcfa" },
+    { media: "(prefers-color-scheme: dark)", color: "#172a27" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -105,14 +98,18 @@ export default async function LocaleLayout({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale);
+  // Counted here, on the server, so the header's Explore menu shows real
+  // numbers without the place catalogue shipping to the browser.
+  const counts = {} as Record<PlaceCategory, number>;
+  for (const place of places) counts[place.category] = (counts[place.category] ?? 0) + 1;
 
   return (
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${trirong.variable} ${anuphan.variable} ${plexMono.variable}`}
+      className={`${prompt.variable} ${allura.variable}`}
     >
-      <body className="min-h-dvh bg-background text-foreground antialiased">
+      <body className="min-h-dvh bg-page text-ink antialiased">
         {/*
           A raw <script>, on purpose.
 
@@ -166,13 +163,14 @@ export default async function LocaleLayout({
                 <SmoothScrollProvider>
                   <a
                     href="#main-content"
-                    className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
+                    data-brand
+                    className="sr-only rounded-full bg-brand font-brand text-label text-on-brand focus:not-sr-only focus:fixed focus:top-3 focus:left-4 focus:z-[100] focus:px-5 focus:py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
-                    Skip to content
+                    {dict.shell.skip}
                   </a>
-                  <NavBar />
+                  <SiteHeader counts={counts} total={places.length} />
                   <main id="main-content">{children}</main>
-                  <Footer />
+                  <SiteFooter locale={locale} dict={dict} />
                   <PwaRegister />
                 </SmoothScrollProvider>
                 </FavoritesProvider>

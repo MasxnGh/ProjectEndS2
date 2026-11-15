@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สถานที่ · Chiangmai Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=Allura&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/vendor/maplibre-gl.css">
+<link rel="stylesheet" href="assets/system.css">
+<style>
+  .pl-head { display: grid; gap: var(--s-5); padding-block: var(--s-5) var(--s-6); }
+  .pl-head h1 { font-size: clamp(2rem, 1.5rem + 2.2vw, 3.25rem); line-height: 1.25; }
+  .pl-head .en { color: var(--text-2); font-size: 1rem; }
+  .pl-head .lede { font-size: 1.125rem; max-width: 52ch; color: var(--text); }
+  .pl-head .badges { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .actions { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+  @media (min-width: 1024px) { .pl-head { grid-template-columns: 1fr auto; align-items: end; } .actions { justify-content: flex-end; } }
+  .pl-media { border-radius: var(--r-xl); aspect-ratio: 21 / 9; }
+  .pl-media.noimg { gap: var(--s-4); }
+  .pl-media.noimg .ring { width: 96px; height: 96px; }
+  .pl-media.noimg p { max-width: 36ch; font-size: var(--fs-small); color: var(--text-2); }
+  .pl-credit { margin-top: var(--s-2); }
+  @media (max-width: 767px) { .pl-media { aspect-ratio: 4 / 3; border-radius: var(--r-lg); } }
+
+  .pl-body { display: grid; gap: var(--s-7); padding-top: var(--s-7); }
+  @media (min-width: 1024px) { .pl-body { grid-template-columns: minmax(0, 1fr) 400px; gap: var(--s-8); } .side { position: sticky; top: 96px; align-self: start; } }
+  .story { display: grid; gap: var(--s-6); align-content: start; }
+  .story h2 { font-size: 1.5rem; line-height: 1.35; margin-bottom: var(--s-3); }
+  .story .prose p { max-width: 66ch; }
+  .before { display: grid; gap: var(--s-3); }
+  .before li { display: flex; gap: var(--s-3); align-items: flex-start; }
+  .before ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); }
+  .before .icon-btn { width: 40px; height: 40px; cursor: default; }
+  .before b { font-weight: 500; display: block; }
+  .before small { color: var(--text-2); font-size: var(--fs-small); }
+
+  .side { display: grid; gap: var(--s-4); }
+  .facts { padding: var(--s-5); display: grid; gap: var(--s-4); }
+  .facts dl { margin: 0; display: grid; gap: var(--s-4); }
+  .facts dl div { display: grid; grid-template-columns: 24px 1fr; gap: 2px var(--s-3); }
+  .facts dt { grid-column: 2; font-size: var(--fs-small); color: var(--text-2); }
+  .facts dd { grid-column: 2; margin: 0; font-weight: 500; }
+  .facts dl .i { grid-row: 1 / span 2; color: var(--brand); margin-top: 2px; }
+  .facts .hint { font-size: var(--fs-small); color: var(--text-2); font-weight: 400; }
+  .side .map { height: 220px; border-radius: var(--r-lg); }
+  .wx { padding: var(--s-4) var(--s-5); display: flex; align-items: center; gap: var(--s-4); }
+  .wx .temp { font-size: 1.75rem; font-weight: 600; color: var(--brand); }
+  .wx small { display: block; color: var(--text-2); font-size: var(--fs-small); }
+
+  .nearby { padding-top: var(--s-9); }
+  .nearby .grid { display: grid; gap: var(--s-4); }
+  @media (min-width: 768px) { .nearby .grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1200px) { .nearby .grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; gap: var(--s-2); padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -16px rgba(29,56,53,.3); }
+  .dock .btn { flex: 1; }
+  @media (min-width: 1024px) { .dock { display: none; } }
+  @media (max-width: 1023px) { body { padding-bottom: 80px; } .pl-head .actions { display: none; } }
+</style>
+</head>
+<body>
+<main id="main" class="wrap"></main>
+<script src="/vendor/maplibre-gl.js"></script>
+<script src="assets/catalogue.js"></script>
+<script src="assets/shell.js"></script>
+<script src="assets/map.js"></script>
+<script>
+  const { icon, bySlug, img, placeCard, CAT, ZONE, DISTRICT, dur, price, where, C } = UI;
+  UI.mount("explore");
+  const p = bySlug(new URLSearchParams(location.search).get("s") || "wat-phra-that-doi-suthep");
+  document.title = `${p.th} · Chiangmai Journey`;
+  const BEST = { morning: "ช่วงเช้า", afternoon: "ช่วงบ่าย", evening: "ช่วงเย็น", anytime: "ได้ทั้งวัน" };
+  const PRICE = { 1: "ต่ำกว่า ฿300 ต่อคน", 2: "฿300–1,000 ต่อคน", 3: "มากกว่า ฿1,000 ต่อคน" };
+  const dist = (a, b) => { const R = 6371, r = Math.PI / 180, dLa = (b.lat - a.lat) * r, dLo = (b.lng - a.lng) * r; const h = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(h)); };
+  const near = C.places.filter((x) => x.s !== p.s).map((x) => [x, dist(p, x)]).sort((a, b) => a[1] - b[1]).slice(0, 4);
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+
+  const before = [];
+  if (p.dress && (p.dress.sh || p.dress.kn)) before.push(["shirt", "แต่งกายสุภาพ", [p.dress.sh && "ปิดไหล่", p.dress.kn && "ปิดเข่า"].filter(Boolean).join(" และ ")]);
+  if (p.dress && p.dress.shoes) before.push(["home", "ถอดรองเท้าก่อนเข้าอาคาร", "เตรียมรองเท้าที่ถอดง่าย"]);
+  if (p.booking) before.push(["calendar", "ต้องจองล่วงหน้า", "ติดต่อก่อนไป"]);
+  if (p.golden) before.push(["sunset", p.golden === "sunrise" ? "สวยตอนพระอาทิตย์ขึ้น" : p.golden === "sunset" ? "สวยตอนพระอาทิตย์ตก" : "สวยช่วงแสงทอง", "ตัววางแผนคำนวณเวลาแสงทองของวันที่คุณไปให้"]);
+  if (p.elev) before.push(["mountain", `อยู่สูงราว ${p.elev.toLocaleString("th-TH")} เมตร`, "อากาศเย็นกว่าในเมือง เผื่อเสื้อแขนยาว"]);
+
+  document.getElementById("main").innerHTML = `
+    <nav class="crumbs" aria-label="เส้นทาง"><a href="home.html">หน้าแรก</a>${icon("right")}<a href="explore.html">สำรวจ</a>${icon("right")}<a href="explore.html?category=${p.c}">${CAT[p.c].th}</a></nav>
+    <header class="pl-head">
+      <div style="display:grid;gap:12px">
+        <h1>${p.th}</h1>
+        <p class="en" lang="en">${p.en}</p>
+        <p class="lede">${p.short}</p>
+        <div class="badges"><span class="badge badge--leaf">${icon(CAT[p.c].icon, "i--sm")} ${CAT[p.c].th}</span><span class="badge">${icon("pin", "i--sm")} ${where(p)}</span><span class="badge num">${icon("clock", "i--sm")} อยู่ราว ${dur(p.dur)}</span><span class="badge num">${price(p.price)}</span></div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn fav" aria-label="บันทึกไว้ในรายการโปรด" aria-pressed="false">${icon("heart")}</button>
+        <button class="icon-btn" aria-label="แชร์">${icon("share")}</button>
+        <a class="btn btn--secondary" href="${gmaps}" target="_blank" rel="noopener">${icon("nav", "i--sm")} เส้นทางใน Google Maps</a>
+        <button class="btn btn--primary">${icon("plus", "i--sm")} เพิ่มลงแผน</button>
+      </div>
+    </header>
+    ${p.photo
+      ? `<figure style="margin:0"><div class="photo graded pl-media"><img src="${img(p.s)}" alt="${p.th}"></div><figcaption class="credit pl-credit">ภาพ: ${p.credit.by} · ${p.credit.lic} · Wikimedia Commons</figcaption></figure>`
+      : `<div class="noimg pl-media"><span class="ring">${icon(CAT[p.c].icon, "i--xl")}</span><span class="zone">${where(p)}</span><p>ยังไม่มีภาพถ่ายที่ยืนยันได้ว่าเป็นที่นี่ เราจึงไม่ใส่ภาพที่ไม่ใช่</p></div>`}
+    <div class="pl-body">
+      <article class="story">
+        <section class="prose"><h2>เรื่องของที่นี่</h2><p>${p.desc}</p></section>
+        <aside class="tip"><h3>${icon("sparkle")} ทริคจากคนท้องถิ่น</h3><p>${p.tip}</p></aside>
+        ${before.length ? `<section class="before"><h2>ก่อนไป</h2><ul>${before.map(([i, b, s]) => `<li><span class="icon-btn" aria-hidden="true">${icon(i)}</span><div><b>${b}</b><small>${s}</small></div></li>`).join("")}</ul></section>` : ""}
+      </article>
+      <aside class="side" aria-label="ข้อมูลการไป">
+        <div class="box facts">
+          <dl>
+            <div>${icon("clock")}<dt>เวลาเปิด-ปิด</dt><dd>${p.hours}<br><span class="hint">ควรเช็กกับสถานที่อีกครั้งก่อนเดินทางไกล</span></dd></div>
+            <div>${icon("sun")}<dt>ช่วงที่ดีที่สุด</dt><dd>${p.best.map((b) => BEST[b]).join(" · ")}</dd></div>
+            <div>${icon("wallet")}<dt>ค่าใช้จ่ายโดยประมาณ</dt><dd class="num">${price(p.price)} · ${PRICE[p.price]}</dd></div>
+            <div>${icon("pin")}<dt>ที่ตั้ง</dt><dd style="font-weight:400">${p.addr}</dd></div>
+          </dl>
+          <div class="map" id="map"></div>
+          <button class="btn btn--primary">${icon("plus", "i--sm")} เพิ่มลงแผน</button>
+        </div>
+        <div class="box wx" id="wx"><span class="icon-btn" aria-hidden="true">${icon("sun")}</span><div><small>อากาศตอนนี้</small><span class="t-small t-muted">กำลังโหลด…</span></div></div>
+      </aside>
+    </div>
+    <section class="nearby" aria-labelledby="h-near">
+      <div class="sec-head"><h2 id="h-near">ใกล้ๆ กัน</h2><span class="rule"></span></div>
+      <div class="grid">${near.map(([x]) => placeCard(x, { stack: true })).join("")}</div>
+    </section>`;
+  document.body.insertAdjacentHTML("beforeend", `<div class="dock"><button class="icon-btn fav" aria-label="บันทึกไว้ในรายการโปรด" aria-pressed="false">${icon("heart")}</button><a class="icon-btn" href="${gmaps}" aria-label="เส้นทางใน Google Maps">${icon("nav")}</a><button class="btn btn--primary">${icon("plus", "i--sm")} เพิ่มลงแผน</button></div>`);
+
+  // Live weather from the app's own Open-Meteo route
+  fetch(`/api/weather?lat=${p.lat}&lng=${p.lng}`).then((r) => r.json()).then((w) => {
+    const c = w.current;
+    document.getElementById("wx").innerHTML = `<span class="icon-btn" aria-hidden="true">${icon(c.isDay ? "sun" : "moon")}</span><div><small>อากาศตอนนี้ที่${DISTRICT[p.d] || "นี่"}</small><span class="temp num">${Math.round(c.temperatureC)}°</span> <span>${c.condition.label.th}</span><small>ข้อมูลสภาพอากาศจาก Open-Meteo</small></div>`;
+  }).catch(() => (document.getElementById("wx").querySelector(".t-muted").textContent = "ยังไม่มีข้อมูลสภาพอากาศ"));
+
+  brandMap(document.getElementById("map"), {
+    bounds: [[p.lng - 0.02, p.lat - 0.015], [p.lng + 0.02, p.lat + 0.015]], padding: 20, interactive: false,
+    pins: [{ lng: p.lng, lat: p.lat, label: p.th, accent: false }],
+  });
+</script>
+</body>
+</html>

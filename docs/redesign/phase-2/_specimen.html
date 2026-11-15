@@ -1,0 +1,13 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><title>Thai type specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fahkwang:wght@300;500;700&family=Chonburi&family=Pridi:wght@300;400;600&family=Taviraj:wght@300;500;700&family=Noto+Serif+Thai:wght@400;600;800&family=Bai+Jamjuree:wght@400;600;700&family=Sarabun:wght@400;600&family=Thasadith:wght@400;700&family=Maitree:wght@400;600&family=Anuphan:wght@400;600&family=Noto+Sans+Thai+Looped:wght@400;600&family=K2D:wght@400;700&family=Athiti:wght@400;600&family=Trirong:wght@400;600&family=Krub:wght@400;600&family=IBM+Plex+Sans+Thai+Looped:wght@400;600&display=swap" rel="stylesheet">
+<style>body{margin:0;padding:28px 36px;background:#f3f3f1;color:#161a1d;font:14px/1.4 system-ui}
+.row{display:grid;grid-template-columns:150px 1fr 1fr;gap:24px;align-items:start;padding:14px 0;border-top:1px solid #c9ccc8}
+.n{font:600 12px/1.3 system-ui;color:#555}.d{font-size:44px;line-height:1.3}.b{font-size:17px;line-height:1.7}
+</style></head><body>
+<script>
+const F=[["Fahkwang",500],["Chonburi",400],["Pridi",400],["Taviraj",500],["Noto Serif Thai",600],["Trirong",600],["Maitree",600],["Bai Jamjuree",600],["Thasadith",700],["K2D",700],["Sarabun",400],["Anuphan",400],["Noto Sans Thai Looped",400],["IBM Plex Sans Thai Looped",400],["Athiti",400],["Krub",400]];
+document.body.innerHTML=F.map(([f,w])=>`<div class="row"><div class="n">${f}<br>${w}</div>
+<div class="d" style="font-family:'${f}';font-weight:${w}">เมืองนี้เป็นสี่เหลี่ยม<br>วัดบ้านเด่นสะหลีศรีเมืองแกน</div>
+<div class="b" style="font-family:'${f}';font-weight:400">เชียงใหม่ใจดีกับคนที่ไม่รีบ — กาแฟอีกแก้วในซอยนิมมาน อีกชั่วโมงใต้เจดีย์อายุเก้าร้อยปี น้ำตก ผู้ใหญ่ ปิ่น ก๊วยเตี๋ยว ญี่ปุ่น ฏิบัติ<br>Chiangmai Journey · 09:00–11:27 · ฿1,500 · 4 ชม. 32 นาที</div></div>`).join("");
+</script></body></html>
