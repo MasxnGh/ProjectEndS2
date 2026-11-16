@@ -580,8 +580,17 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
           {/* lg:relative makes this scrolling column the containing block for
               absolute children. Without it a screen-reader-only status line
               (sr-only is position: absolute) took the body as its box, escaped
-              the scroll clip, and stretched the page far below the footer. */}
-          <div className="grid content-start gap-6 px-4 pt-6 pb-10 sm:px-6 lg:relative lg:overflow-y-auto lg:overscroll-contain lg:border-r lg:border-line lg:p-8">
+              the scroll clip, and stretched the page far below the footer.
+              data-lenis-prevent hands the wheel back to this column: the
+              site's smooth scroll otherwise takes every wheel turn for the
+              page, so the column could not be scrolled with a mouse. At the
+              column's end the wheel carries on to the page, which on a short
+              screen (the workspace is at least 720px) still has the column's
+              foot and the footer below the fold. */}
+          <div
+            data-lenis-prevent
+            className="grid content-start gap-6 px-4 pt-6 pb-10 sm:px-6 lg:relative lg:overflow-y-auto lg:border-r lg:border-line lg:p-8"
+          >
             <TripHead
               progress={planProgress}
               placeCount={tripTotals.places + unscheduledPlaces.length}
