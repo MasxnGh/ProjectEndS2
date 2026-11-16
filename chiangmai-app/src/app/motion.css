@@ -650,16 +650,20 @@ html[data-intro="skip"] .cmj-intro {
   white-space: pre-line;
   color: color-mix(in oklab, var(--cmj-sand) 14%, transparent);
 }
+/* The light's window reaches past the box: at this tight line height the
+   "y" hangs below it (0.06em in Prompt; 0.15em leaves room for a fallback
+   font), so a window cut at the box would start the light inside the letter
+   and leave the tail unlit. It starts just under the lowest ink instead. */
 .cmj-intro-word > span {
   position: absolute;
   inset: 0;
   color: var(--cmj-sand);
-  clip-path: inset(100% 0 0 0);
+  clip-path: inset(calc(100% + 0.15em) -0.05em -0.15em);
   animation: cmj-intro-fill 1300ms var(--cmj-ease-draw) 120ms forwards;
 }
 @keyframes cmj-intro-fill {
   to {
-    clip-path: inset(0 0 0 0);
+    clip-path: inset(-0.1em -0.05em -0.15em);
   }
 }
 
