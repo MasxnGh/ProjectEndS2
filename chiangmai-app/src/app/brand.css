@@ -239,4 +239,124 @@
       padding-bottom: calc(4.5rem + 1px + env(safe-area-inset-bottom));
     }
   }
+
+  /*
+   * <Select> (components/brand/select.tsx). Closed, it is a mist pill drawn by
+   * its utilities. Open, its list follows the menus in the header: a panel with
+   * a hairline and the lift shadow, 44px rows, mist under the pointer, and the
+   * chosen row in the voice colour with a check, so the choice does not rest on
+   * colour alone (DESIGN.md, State).
+   *
+   * Styling the open list needs `appearance: base-select` (Chrome and Edge
+   * 135+). It is kept to a mouse or trackpad: on a touch screen the phone's own
+   * picker is easier to thumb through, so it stays. Everywhere else the list is
+   * the browser's, on the brand ground and ink where it takes them.
+   */
+  .cmj-select {
+    appearance: none;
+  }
+  .cmj-select option {
+    background-color: var(--cmj-panel);
+    color: var(--cmj-text);
+  }
+
+  @supports (appearance: base-select) {
+    @media (hover: hover) and (pointer: fine) {
+      .cmj-select,
+      .cmj-select::picker(select) {
+        appearance: base-select;
+      }
+      .cmj-select {
+        /* base-select lays the chosen option out in a flex row; centre it in
+           the 44px pill, keep it on one line, and cut long names the way the
+           native select does. */
+        align-items: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* The component draws its own chevron. */
+      .cmj-select::picker-icon {
+        display: none;
+      }
+      .cmj-select:open + svg {
+        rotate: 180deg;
+      }
+
+      .cmj-select::picker(select) {
+        margin-block: 6px;
+        padding: 6px;
+        max-block-size: min(20rem, 100svh - 2rem);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--cmj-line-strong) transparent;
+        border: 1px solid var(--cmj-line);
+        border-radius: var(--radius-lg);
+        background: var(--cmj-panel);
+        color: var(--cmj-text);
+        box-shadow: var(--cmj-lift);
+      }
+
+      .cmj-select option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-block-size: 2.75rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: var(--radius-md);
+        background-color: transparent;
+        font-size: var(--text-label);
+        line-height: var(--text-label--line-height);
+        font-weight: 400;
+        white-space: normal;
+        cursor: pointer;
+      }
+      .cmj-select option:hover,
+      .cmj-select option:focus-visible {
+        background-color: var(--cmj-well);
+      }
+      .cmj-select option:focus-visible {
+        outline: 2px solid var(--cmj-brand);
+        outline-offset: -2px;
+      }
+      .cmj-select option:checked {
+        background-color: var(--cmj-brand);
+        color: var(--cmj-on-brand);
+        font-weight: 500;
+      }
+      .cmj-select option:checked:focus-visible {
+        outline-color: var(--cmj-on-brand);
+      }
+      /* The check goes at the end of the row, where the eye lands after the name. */
+      .cmj-select option::checkmark {
+        order: 1;
+        margin-inline-start: auto;
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .cmj-select + svg {
+          transition: rotate 150ms var(--ease-brand);
+        }
+        .cmj-select::picker(select) {
+          opacity: 0;
+          translate: 0 -4px;
+          transition:
+            opacity 150ms var(--ease-brand),
+            translate 150ms var(--ease-brand),
+            overlay 150ms allow-discrete,
+            display 150ms allow-discrete;
+        }
+        .cmj-select:open::picker(select) {
+          opacity: 1;
+          translate: 0 0;
+        }
+        @starting-style {
+          .cmj-select:open::picker(select) {
+            opacity: 0;
+            translate: 0 -4px;
+          }
+        }
+      }
+    }
+  }
 }

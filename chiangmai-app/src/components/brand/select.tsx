@@ -5,14 +5,16 @@ import { ICON_STROKE } from "./icons";
 
 /**
  * The browser's own <select> in a mist pill, with a drawn chevron so it reads
- * the same in both themes. Native, so phones open their own picker.
+ * the same in both themes. Native, so phones open their own picker. With a
+ * mouse, where the browser allows it, the open list is styled as a brand
+ * dropdown too (`.cmj-select` in app/brand.css).
  */
 export function Select({ className, wrapperClassName, ...rest }: ComponentProps<"select"> & { wrapperClassName?: string }) {
   return (
     <span className={cx("relative inline-flex min-w-0", wrapperClassName)}>
       <select
         className={cx(
-          "h-11 w-full min-w-0 cursor-pointer appearance-none rounded-full border-0 bg-well pr-10 pl-4 font-brand text-label text-ink",
+          "cmj-select h-11 w-full min-w-0 cursor-pointer rounded-full border-0 bg-well pr-10 pl-4 font-brand text-label text-ink",
           "transition-colors duration-150 ease-brand hover:bg-[color-mix(in_oklab,var(--cmj-well)_88%,var(--cmj-brand))]",
           focusRing,
           className,
