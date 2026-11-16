@@ -274,6 +274,17 @@ Real photograph, title in Display, one-line subtitle, search pill. Photo caption
 - **Reading:** a guide shows how far through you are in a 3px bar along the foot of the header (Magic UI ScrollProgress), in the voice colour.
 - **Feedback:** saving a place pops the heart and sends one ring out from it. Buttons nudge their arrow; tiles lift; photos in cards zoom slightly.
 
+### Loading
+**Waiting is the light passing over the valley, and the path being walked.** The pieces live in `src/components/brand/loaders.tsx` and `nav-progress.tsx`; their CSS is the "Waiting" block of `motion.css`. Every loop is one pass and then a rest, on a 2.4s rhythm, never a constant throb.
+
+- **Skeleton (`<Skeleton>`).** The shape of what is coming, in the well colour (maps use the map style's own paper). One soft band of sand-warmed light crosses the screen; it is fixed to the viewport, so it passes over every block together instead of each block flickering on its own. Used by the planner before the saved plan is read and by the place page's weather. Replaces Tailwind's `animate-pulse`.
+- **The walked mark (`<MarkLoader>`).** The brand mark rests faint; a short stretch of light walks the ridge from the left foot over the summit and down, and the sparkle catches the light as the walker crosses under it. Shown in a map's frame while MapLibre loads (with the label, after 400ms, so a quick map shows only the skeleton) and beside the AI planner's "putting your places into days" line.
+- **The label (Magic UI AnimatedShinyText).** The words that say what is being waited for, resting in Stone Ink with a highlight in the voice colour crossing them. Reworked so contrast never drops: the original fades the text to 70% and sweeps black or white across it.
+- **Route dots (`<RouteDots>`).** Three stops joined by a dashed leg, lighting in turn, the width of an icon. They take the icon's place in a button that is working (saving, copying, signing in, deleting, optimising the route, asking the AI) instead of a spinning circle. A working button is `aria-busy` and keeps its full colour: busy is not unavailable.
+- **The page line (`<NavProgress>`).** When a link to another page is clicked and that page takes longer than 120ms, a 3px line in the voice colour runs along the top edge of the window, slowing as it goes; it finishes and fades when the page lands. A prefetched page that arrives at once shows nothing.
+
+There is deliberately **no `loading.tsx`** and **no splash screen**. A `loading.tsx` streams every page, which locks the response at 200, so a missing place or trip could no longer answer 404 (the brand 404 page and the trip-token 404s depend on it). A splash would hide the hero photograph, the page's largest paint. The page line is the navigation feedback instead.
+
 ### Timing and curves
 | Use | Duration | Curve |
 |---|---|---|
@@ -283,6 +294,9 @@ Real photograph, title in Display, one-line subtitle, search pill. Photo caption
 | Focal entrance (title, route step) | 650–900ms per step | `--cmj-ease-out` |
 | Lines drawn or written | 480ms–1.7s | `--cmj-ease-draw` (0.45, 0, 0.2, 1) |
 | Photo settling | 2–2.4s | `--cmj-ease-out` |
+| Waiting loops (skeleton light, label, walked mark) | 2.4s: one pass, then a rest | `--cmj-ease-draw` or (0.4, 0, 0.2, 1) |
+| Route dots | 1.2s, 180ms between stops | `--cmj-ease-draw` |
+| Page line | shown after 120ms, runs 10s towards 92%, finishes in 260ms | (0.08, 0.7, 0.2, 1), then `--cmj-ease-out` |
 
 No bounce or elastic curves. Exits are not animated.
 
@@ -291,7 +305,7 @@ No bounce or elastic curves. Exits are not animated.
 
 **The Largest Paint Moves, Never Hides Rule.** The hero photograph is the page's largest paint. It may scale, but it is never faded or delayed.
 
-**The Reduced Motion Rule.** Under `prefers-reduced-motion`, every entrance, draw, settle, beam and pop is switched off outright, delays included, so nothing waits to appear. The reading bar stays, because it only follows the reader's own scrolling.
+**The Reduced Motion Rule.** Under `prefers-reduced-motion`, every entrance, draw, settle, beam and pop is switched off outright, delays included, so nothing waits to appear. The reading bar stays, because it only follows the reader's own scrolling. Waits stand still: the skeleton is its plain shape, the label plain text, the mark whole, the route dots all lit; the page line appears in place and fades, without travelling.
 
 **The Operate Quietly Rule.** Explore, the planner, my trips and account are places to work. They get feedback only, never load choreography.
 
@@ -302,6 +316,7 @@ No bounce or elastic curves. Exits are not animated.
 - **Don't** add light rays, flares or glow over a real photograph. The photo is a record of a real place; the hero's warm grade is colour only.
 - **Don't** reveal every section on scroll. Reveal lists that appear as lists, and leave reading text still.
 - **Don't** loop anything that is off screen.
+- **Don't** use a spinning circle or a pulsing block for a wait. Use the route dots, the skeleton's light, or the walked mark, and always say in words what is being waited for.
 
 ## Do's and Don'ts
 

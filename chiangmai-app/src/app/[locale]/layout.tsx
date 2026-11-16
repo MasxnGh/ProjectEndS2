@@ -8,6 +8,7 @@ import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provi
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { SiteHeader } from "@/components/brand/site-header";
+import { NavProgress } from "@/components/brand/nav-progress";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { places } from "@/data/places";
 import type { PlaceCategory } from "@/data/types";
@@ -168,6 +169,7 @@ export default async function LocaleLayout({
                   >
                     {dict.shell.skip}
                   </a>
+                  <NavProgress />
                   <SiteHeader counts={counts} total={places.length} />
                   <main id="main-content">{children}</main>
                   <SiteFooter locale={locale} dict={dict} />

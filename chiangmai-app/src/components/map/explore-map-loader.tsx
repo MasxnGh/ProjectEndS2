@@ -7,16 +7,12 @@ import { cx } from "@/components/brand/cx";
 import { Button } from "@/components/brand/button";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { MapErrorBoundary } from "@/components/map/map-error-boundary";
+import { MapLoadingState } from "@/components/map/map-loading";
 import type { ExploreMapProps } from "@/components/map/explore-map";
-
-/** The map's own paper colour, so the swap from placeholder to map is quiet. */
-function MapPlaceholder({ className }: { className?: string }) {
-  return <div aria-hidden className={cx("animate-pulse bg-[#f4eee9] dark:bg-[#13231f]", className)} />;
-}
 
 const ExploreMap = dynamic(() => import("@/components/map/explore-map").then((mod) => mod.ExploreMap), {
   ssr: false,
-  loading: () => <MapPlaceholder className="size-full" />,
+  loading: () => <MapLoadingState />,
 });
 
 function MapFallback({ onRetry, className }: { onRetry: () => void; className?: string }) {

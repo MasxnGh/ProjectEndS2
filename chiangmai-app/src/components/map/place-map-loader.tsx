@@ -8,12 +8,13 @@ import { Button } from "@/components/brand/button";
 import { cx } from "@/components/brand/cx";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { MapErrorBoundary } from "@/components/map/map-error-boundary";
+import { MapLoadingState } from "@/components/map/map-loading";
 
 // MapLibre needs `window`, so the map itself runs on the client only; the rest
 // of the place page stays a server component.
 const PlaceMap = dynamic(() => import("@/components/map/place-map").then((mod) => mod.PlaceMap), {
   ssr: false,
-  loading: () => <div aria-hidden className="size-full animate-pulse bg-[#f4eee9] dark:bg-[#13231f]" />,
+  loading: () => <MapLoadingState />,
 });
 
 export function PlaceMapLoader({

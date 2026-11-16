@@ -46,12 +46,11 @@ export function CompareMap({ place }: { place: Place }) {
 
   return (
     <div className="grid gap-3">
-      <PlaceMapLoader
-        mainPlace={place}
-        nearbyPlaces={nearbyPlaces}
-        comparePlace={compared}
-        className="h-[220px] rounded-md"
-      />
+      {/* The frame holds the height, so the placeholder fills the same 220px
+          the map will (the map's dynamic `loading` never sees className). */}
+      <div className="h-[220px] overflow-hidden rounded-md">
+        <PlaceMapLoader mainPlace={place} nearbyPlaces={nearbyPlaces} comparePlace={compared} className="size-full" />
+      </div>
       <label className="grid gap-1.5">
         <span className="text-small text-ink-soft">{t.compareTitle}</span>
         <Select value={comparedSlug} onChange={(event) => setComparedSlug(event.target.value)} wrapperClassName="w-full">

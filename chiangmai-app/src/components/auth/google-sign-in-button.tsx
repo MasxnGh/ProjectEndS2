@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { Loader2 } from "lucide-react";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { buttonStyles } from "@/components/brand/button";
 import { cx } from "@/components/brand/cx";
-import { ICON_STROKE } from "@/components/brand/icons";
+import { RouteDots } from "@/components/brand/loaders";
 
 /**
  * The outlined brand button with Google's own mark, which Google asks to keep
@@ -29,18 +28,19 @@ export function GoogleSignInButton({
     <button
       type="button"
       disabled={isPending}
+      aria-busy={isPending || undefined}
       onClick={() => {
         setIsPending(true);
         signIn("google", { callbackUrl });
       }}
       className={cx(
         buttonStyles({ variant: "secondary" }),
-        "w-full gap-3 bg-panel disabled:cursor-wait disabled:opacity-70",
+        "w-full gap-3 bg-panel",
         className,
       )}
     >
       {isPending ? (
-        <Loader2 aria-hidden strokeWidth={ICON_STROKE} className="size-5 flex-none animate-spin" />
+        <RouteDots />
       ) : (
         <GoogleIcon className="size-5 flex-none" />
       )}

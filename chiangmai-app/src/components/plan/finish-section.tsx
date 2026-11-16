@@ -2,13 +2,14 @@
 
 import { useId, useState } from "react";
 import QRCode from "qrcode";
-import { Check, LoaderCircle, Printer, QrCode, RotateCw, Save, Share2 } from "lucide-react";
+import { Check, Printer, QrCode, RotateCw, Save, Share2 } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import { useTripStore } from "@/lib/trip-store";
 import { Button } from "@/components/brand/button";
 import { Dialog } from "@/components/brand/dialog";
 import { ICON_STROKE } from "@/components/brand/icons";
+import { RouteDots } from "@/components/brand/loaders";
 
 export type SaveState = "local" | "saving" | "saved" | "failed";
 
@@ -59,7 +60,7 @@ export function SaveButton({
   const c = dict.planner.cloudSave;
   if (state === "saving") {
     return (
-      <Button disabled aria-busy className={className} icon={<LoaderCircle aria-hidden strokeWidth={ICON_STROKE} className={`${icon} animate-spin`} />}>
+      <Button disabled aria-busy className={className} icon={<RouteDots />}>
         {c.saving}
       </Button>
     );
@@ -94,7 +95,7 @@ export function SaveStatus({ state }: { state: SaveState }) {
   return (
     <p aria-live="polite" className="-mt-2 inline-flex items-center gap-1.5 text-small text-ink-soft">
       {state === "saving" ? (
-        <LoaderCircle aria-hidden strokeWidth={ICON_STROKE} className="size-4 animate-spin" />
+        <RouteDots />
       ) : state === "failed" ? null : (
         <Check aria-hidden strokeWidth={2} className="size-4 text-brand" />
       )}

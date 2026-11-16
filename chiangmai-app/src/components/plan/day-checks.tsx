@@ -19,6 +19,7 @@ import { IconButton } from "@/components/brand/icon-button";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { cx } from "@/components/brand/cx";
 import { fill, formatDuration } from "@/components/brand/place-text";
+import { RouteDots } from "@/components/brand/loaders";
 import { shortDayDate } from "./plan-text";
 
 const warnBox = "rounded-lg bg-[color-mix(in_oklab,var(--cmj-sunset)_22%,var(--cmj-panel))] p-4 text-ink";
@@ -372,7 +373,7 @@ function OptimizeRoute({ dayId, places }: { dayId: string; places: Place[] }) {
           disabled={busy}
           aria-busy={busy}
           className="justify-self-start"
-          icon={<Sparkles aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+          icon={busy ? <RouteDots /> : <Sparkles aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
         >
           {busy ? rt.optimizing : rt.optimize}
         </Button>

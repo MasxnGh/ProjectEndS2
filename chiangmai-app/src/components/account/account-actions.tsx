@@ -2,13 +2,14 @@
 
 import { useId, useState } from "react";
 import { signOut } from "next-auth/react";
-import { Download, Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { Download, Trash2, TriangleAlert } from "lucide-react";
 import { Button, buttonStyles } from "@/components/brand/button";
 import { cx } from "@/components/brand/cx";
 import { Dialog } from "@/components/brand/dialog";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { fill } from "@/components/brand/place-text";
 import { textFieldStyles } from "@/components/brand/text-field";
+import { RouteDots } from "@/components/brand/loaders";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import type { Locale } from "@/i18n";
@@ -127,10 +128,11 @@ export function AccountActions({ locale }: { locale: Locale }) {
           <Button
             variant="secondary"
             disabled={typed.trim() !== CONFIRM_WORD || deleting}
+            aria-busy={deleting || undefined}
             onClick={deleteAccount}
             icon={
               deleting ? (
-                <Loader2 aria-hidden strokeWidth={ICON_STROKE} className="size-5 animate-spin" />
+                <RouteDots />
               ) : (
                 <Trash2 aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
               )

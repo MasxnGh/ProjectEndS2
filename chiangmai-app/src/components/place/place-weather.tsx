@@ -11,6 +11,7 @@ import { AqiNote } from "@/components/brand/aqi";
 import { Button } from "@/components/brand/button";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { Box } from "@/components/brand/surface";
+import { Skeleton } from "@/components/brand/loaders";
 
 /** Unchanged from the old weather panel: which part of today suits this place, given the forecast. */
 function pickBestTimeKey(
@@ -66,12 +67,12 @@ export function PlaceWeather({ place }: { place: Place }) {
       <Box className="grid gap-3 p-5" aria-busy="true">
         {heading}
         <div className="flex items-center gap-3">
-          <span className="size-11 animate-pulse rounded-full bg-well" />
-          <span className="h-9 w-24 animate-pulse rounded-full bg-well" />
+          <Skeleton className="size-11 rounded-full" />
+          <Skeleton className="h-9 w-24 rounded-full" />
         </div>
         <div className="grid grid-cols-5 gap-1.5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <span key={i} className="h-[72px] animate-pulse rounded-md bg-well" />
+            <Skeleton key={i} className="h-[72px] rounded-md" />
           ))}
         </div>
         <span className="sr-only">{dict.common.loading}</span>

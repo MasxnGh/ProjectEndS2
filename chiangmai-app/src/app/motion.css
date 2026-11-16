@@ -348,6 +348,213 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Waiting — components/brand/loaders.tsx, nav-progress.tsx             */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Waiting is the light passing over the valley, and the path being walked.
+ * Every loop is one pass and then a rest (2.4s), never a constant throb. The
+ * only sunset is the mark's own sparkle: a wait is not the one thing that
+ * matters on a screen.
+ */
+:root {
+  --cmj-wait: 2400ms;
+  /* The band of light: paper warmed with a little sand. */
+  --cmj-sweep-light: color-mix(in oklab, var(--cmj-surface) 72%, var(--cmj-sand));
+}
+.dark {
+  --cmj-sweep-light: color-mix(in oklab, var(--cmj-sand) 13%, transparent);
+}
+
+/* The band is fixed to the viewport, so one light crosses every block on the
+   screen together instead of each block flickering on its own. (Where
+   `fixed` is not honoured, as on iOS, each block gets its own pass: also fine.) */
+@keyframes cmj-sweep {
+  0% {
+    background-position: -60vw 0;
+  }
+  70%,
+  100% {
+    background-position: 100vw 0;
+  }
+}
+
+.cmj-skeleton {
+  background-color: var(--skeleton-ground, var(--cmj-well));
+  /* Upright, not angled: an angled band on a tall screen would not reach
+     transparent at the tile's sides and would show a hard edge. */
+  background-image: linear-gradient(90deg, transparent, var(--cmj-sweep-light) 50%, transparent);
+  background-size: 60vw 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: -60vw 0;
+  animation: cmj-sweep var(--cmj-wait) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+/* A map's frame: the map style's own paper, so the swap to the map is quiet. */
+.cmj-skeleton-map {
+  --skeleton-ground: #f4eee9;
+}
+.dark .cmj-skeleton-map {
+  --skeleton-ground: #13231f;
+}
+
+/* Magic UI AnimatedShinyText: the label rests in Stone Ink and a highlight in
+   the voice colour crosses it, so the text never gets fainter than it is. */
+@keyframes cmj-shiny {
+  0% {
+    background-position:
+      calc(-1 * var(--shiny-width)) 0,
+      0 0;
+  }
+  70%,
+  100% {
+    background-position:
+      calc(100% + var(--shiny-width)) 0,
+      0 0;
+  }
+}
+.cmj-shiny {
+  color: var(--cmj-text-soft);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .cmj-shiny {
+    background-image:
+      linear-gradient(90deg, transparent, var(--cmj-brand) 50%, transparent),
+      linear-gradient(var(--cmj-text-soft), var(--cmj-text-soft));
+    background-size:
+      var(--shiny-width) 100%,
+      100% 100%;
+    background-repeat: no-repeat;
+    background-position:
+      calc(-1 * var(--shiny-width)) 0,
+      0 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: cmj-shiny var(--cmj-wait) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+/* The mark, walked: the ridge rests faint, and a short stretch of light walks
+   it from the left foot over the summit and down, while the sparkle at the
+   top catches the light as the walker passes under it. */
+@keyframes cmj-walk {
+  0% {
+    stroke-dashoffset: 0.22;
+  }
+  78%,
+  100% {
+    stroke-dashoffset: -1;
+  }
+}
+/* Timed to the walker crossing the summit, about a third of the way through. */
+@keyframes cmj-glint {
+  0%,
+  14% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+  32% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.2);
+  }
+  58%,
+  100% {
+    opacity: 0.35;
+    transform: rotate(90deg) scale(0.8);
+  }
+}
+.cmj-walk [data-base] {
+  opacity: 0.2;
+}
+.cmj-walk [data-walker] {
+  stroke-dasharray: 0.22 1.3;
+  stroke-dashoffset: 0.22;
+  animation: cmj-walk var(--cmj-wait) var(--cmj-ease-draw) infinite;
+}
+.cmj-walk [data-sparkle] {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cmj-glint var(--cmj-wait) var(--cmj-ease-draw) infinite;
+}
+
+/* A busy button: three stops on a route lighting in turn. */
+@keyframes cmj-stop {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.72);
+  }
+  25% {
+    opacity: 1;
+    transform: none;
+  }
+}
+.cmj-route-dots circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cmj-stop 1200ms var(--cmj-ease-draw) infinite backwards;
+}
+.cmj-route-dots circle:nth-of-type(2) {
+  animation-delay: 180ms;
+}
+.cmj-route-dots circle:nth-of-type(3) {
+  animation-delay: 360ms;
+}
+
+/* Moving between pages: a line in the voice colour along the very top edge,
+   shown only if the next page takes longer than a moment. It runs most of the
+   way, slowing as it goes, finishes when the page arrives and fades out. */
+.cmj-nav-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: 3px;
+  overflow-x: clip;
+  pointer-events: none;
+  opacity: 0;
+}
+.cmj-nav-progress > span {
+  position: relative;
+  display: block;
+  height: 100%;
+  border-radius: 0 999px 999px 0;
+  background: var(--cmj-brand);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--cmj-brand) 45%, transparent);
+  transform: translateX(-100%);
+}
+/* The head of the line, a little brighter, like light on a path. */
+.cmj-nav-progress > span::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 80px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, var(--cmj-sweep-light));
+}
+.dark .cmj-nav-progress > span::after {
+  background: linear-gradient(90deg, transparent, var(--cmj-surface));
+  opacity: 0.6;
+}
+.cmj-nav-progress[data-state="loading"] {
+  opacity: 1;
+  transition: opacity 150ms var(--ease-brand);
+}
+.cmj-nav-progress[data-state="loading"] > span {
+  transform: translateX(-8%);
+  transition: transform 10s cubic-bezier(0.08, 0.7, 0.2, 1);
+}
+.cmj-nav-progress[data-state="done"] {
+  opacity: 0;
+  transition: opacity 350ms var(--ease-brand) 220ms;
+}
+.cmj-nav-progress[data-state="done"] > span {
+  transform: none;
+  transition: transform 260ms var(--cmj-ease-out);
+}
+
+/* ------------------------------------------------------------------ */
 /* Reduced motion and print                                            */
 /* ------------------------------------------------------------------ */
 
@@ -378,9 +585,51 @@
   .cmj-beam {
     display: none !important;
   }
+
+  /* Waiting stands still: the skeleton is its plain shape, the label plain
+     text, the mark whole, the stops all lit. The page line still shows, but
+     appears in place and fades instead of travelling. */
+  .cmj-skeleton,
+  .cmj-route-dots circle {
+    animation: none;
+  }
+  .cmj-shiny {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+  .cmj-walk [data-base] {
+    opacity: 1;
+  }
+  .cmj-walk [data-walker] {
+    display: none;
+  }
+  .cmj-walk [data-sparkle] {
+    animation: none;
+  }
+  .cmj-nav-progress > span,
+  .cmj-nav-progress[data-state] > span {
+    transition: none;
+  }
+  .cmj-nav-progress[data-state="loading"] > span {
+    transform: translateX(-35%);
+  }
+}
+
+@media (forced-colors: active) {
+  .cmj-shiny {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+  .cmj-nav-progress > span {
+    background: Highlight;
+  }
 }
 
 @media print {
+  .cmj-nav-progress {
+    display: none;
+  }
   [data-reveal] [data-stop],
   [data-reveal] [data-leg],
   [data-reveal] [data-route-after],
