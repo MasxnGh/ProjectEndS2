@@ -7,15 +7,12 @@ import { cx } from "@/components/brand/cx";
 import { Button } from "@/components/brand/button";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { MapErrorBoundary } from "@/components/map/map-error-boundary";
+import { MapLoadingState } from "@/components/map/map-loading";
 import type { PlanMapProps } from "./plan-map";
-
-function MapPlaceholder({ className }: { className?: string }) {
-  return <div aria-hidden className={cx("animate-pulse bg-[#f4eee9] dark:bg-[#13231f]", className)} />;
-}
 
 const PlanMap = dynamic(() => import("./plan-map").then((mod) => mod.PlanMap), {
   ssr: false,
-  loading: () => <MapPlaceholder className="size-full" />,
+  loading: () => <MapLoadingState />,
 });
 
 function MapFallback({ onRetry, className }: { onRetry: () => void; className?: string }) {

@@ -21,6 +21,9 @@ export function buttonStyles({
     "font-brand text-label leading-none whitespace-nowrap",
     "transition-[background-color,color,border-color,transform] duration-150 ease-brand active:translate-y-px",
     "disabled:cursor-not-allowed disabled:opacity-45 aria-disabled:pointer-events-none aria-disabled:opacity-45",
+    // Busy is not unavailable: a button that is working (aria-busy, with
+    // <RouteDots> in place of its icon) keeps its full colour and shows progress.
+    "aria-busy:disabled:cursor-progress aria-busy:disabled:opacity-100",
     focusRing,
     size === "md" ? "min-h-12 px-7" : "min-h-11 px-5",
     {

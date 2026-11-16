@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
-import { Check, LoaderCircle, Sparkles, TriangleAlert, X } from "lucide-react";
+import { Check, Sparkles, TriangleAlert, X } from "lucide-react";
 import { places, getPlaceBySlug } from "@/data/places";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
@@ -14,6 +14,7 @@ import { IconButton } from "@/components/brand/icon-button";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { cx, focusRing } from "@/components/brand/cx";
 import { fill, formatDuration } from "@/components/brand/place-text";
+import { LoadingLabel, MarkLoader, RouteDots } from "@/components/brand/loaders";
 import { baht } from "./plan-text";
 
 interface AiPlanResponse {
@@ -168,7 +169,7 @@ export function AiPlannerDialog({ open, onClose }: { open: boolean; onClose: () 
           aria-busy={status === "loading"}
           icon={
             status === "loading" ? (
-              <LoaderCircle aria-hidden strokeWidth={ICON_STROKE} className="size-4 animate-spin" />
+              <RouteDots />
             ) : (
               <Sparkles aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
             )
@@ -180,7 +181,10 @@ export function AiPlannerDialog({ open, onClose }: { open: boolean; onClose: () 
 
       <div aria-live="polite">
         {status === "loading" ? (
-          <p className="mt-4 text-small text-ink-soft">{fill(t.generatingHint, { count: places.length })}</p>
+          <p className="mt-5 flex items-center gap-3">
+            <MarkLoader className="w-10 text-brand" />
+            <LoadingLabel>{fill(t.generatingHint, { count: places.length })}</LoadingLabel>
+          </p>
         ) : null}
         {status === "error" ? (
           <p className="mt-4 flex items-start gap-2 text-small text-ink">

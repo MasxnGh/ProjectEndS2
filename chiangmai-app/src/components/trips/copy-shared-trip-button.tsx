@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import { Button, ButtonLink } from "@/components/brand/button";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { SignInPrompt } from "@/components/brand/sign-in-prompt";
+import { RouteDots } from "@/components/brand/loaders";
 import type { Locale } from "@/i18n";
 
 /**
@@ -72,7 +73,7 @@ export function CopySharedTripButton({ token, locale }: { token: string; locale:
         onClick={() => (signedIn ? copyTrip() : setPromptOpen(true))}
         icon={
           busy ? (
-            <Loader2 aria-hidden strokeWidth={ICON_STROKE} className={`${iconClass} animate-spin motion-reduce:animate-none`} />
+            <RouteDots />
           ) : (
             <Copy aria-hidden strokeWidth={ICON_STROKE} className={iconClass} />
           )

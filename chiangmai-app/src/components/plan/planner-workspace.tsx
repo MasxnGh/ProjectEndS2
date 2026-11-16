@@ -23,6 +23,7 @@ import { GripVertical, List, Map as MapIcon, Navigation, Route, Sun, Sunset, Tra
 import { places as catalogue } from "@/data/places";
 import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
+import { Skeleton } from "@/components/brand/loaders";
 import { useTripStore, useTripStoreHydrated, UNSCHEDULED } from "@/lib/trip-store";
 import { useToast } from "@/components/toast/toast-provider";
 import { useMediaQuery } from "@/lib/use-media-query";
@@ -99,19 +100,19 @@ function WorkspaceSkeleton() {
     >
       <p className="sr-only">{dict.common.loading}</p>
       <div aria-hidden className="grid content-start gap-5 px-4 py-6 sm:px-6 lg:border-r lg:border-line lg:p-8">
-        <div className="h-9 w-3/4 animate-pulse rounded-md bg-well" />
+        <Skeleton className="h-9 w-3/4 rounded-md" />
         <div className="flex flex-wrap gap-2">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-11 w-28 animate-pulse rounded-full bg-well" />
+            <Skeleton key={i} className="h-11 w-28 rounded-full" />
           ))}
         </div>
-        <div className="h-20 animate-pulse rounded-lg bg-well" />
-        <div className="h-14 w-2/3 animate-pulse rounded-lg bg-well" />
+        <Skeleton className="h-20 rounded-lg" />
+        <Skeleton className="h-14 w-2/3 rounded-lg" />
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-lg bg-well" />
+          <Skeleton key={i} className="h-24 rounded-lg" />
         ))}
       </div>
-      <div aria-hidden className="hidden animate-pulse bg-[#f4eee9] lg:block dark:bg-[#13231f]" />
+      <Skeleton ground="map" className="hidden lg:block" />
     </div>
   );
 }
