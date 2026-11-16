@@ -913,6 +913,7 @@ const en = {
     primaryNav: "Main",
     exploreMenu: "Explore by type",
     allPlaces: "All {count} places",
+    back: "Back",
     openMenu: "Open menu",
     closeMenu: "Close menu",
     settings: "Language, theme and account",

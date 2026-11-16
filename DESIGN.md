@@ -253,7 +253,7 @@ Specified by the board and drawn in full in the Phase 1 prototypes (`docs/rebuil
 
 ### Navigation
 - **Desktop:** wordmark left; links centre (หน้าแรก, สำรวจ ▾, คู่มือ, เกี่ยวกับเรา), Label style, active link underlined in green; search icon and the primary "วางแผนทริป →" pill on the right. The planner is that pill, not a second link. Links that open a menu carry a chevron.
-- **Phone:** wordmark left, menu button right; the primary action stays visible in the hero rather than hidden behind the menu.
+- **Phone:** wordmark left, menu button right; the primary action stays visible in the hero rather than hidden behind the menu. Every page but home puts a back chevron (44px, plain) before the logo: it goes back when the previous page is on this site and replaces the page with its parent otherwise, so it never leaves the site. Below 360px those pages show the mark without the wordmark so the bar still fits at 320px.
 - Secondary controls (language, theme, sign-in) live in the menu, not the bar.
 
 ### Hero

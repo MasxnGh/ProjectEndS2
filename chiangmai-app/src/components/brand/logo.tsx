@@ -52,6 +52,7 @@ export function Logo({
   label,
   tone = "brand",
   draw = false,
+  compact = false,
   className,
 }: {
   href: string;
@@ -60,6 +61,8 @@ export function Logo({
   tone?: "brand" | "sand";
   /** The header's logo draws itself once per page load. */
   draw?: boolean;
+  /** Below 360px, the mark alone: the phone header also holds the back button. */
+  compact?: boolean;
   className?: string;
 }) {
   return (
@@ -75,7 +78,7 @@ export function Logo({
       )}
     >
       <BrandMark draw={draw} />
-      <Wordmark />
+      <Wordmark className={compact ? "max-[359px]:hidden" : undefined} />
     </Link>
   );
 }
