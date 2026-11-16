@@ -110,7 +110,7 @@ export function SiteHeader({
     <>
       <header data-brand className="no-print sticky top-0 z-50 border-b border-line bg-panel font-brand text-ink">
         <Wrap className="flex h-[72px] items-center gap-4 lg:gap-6">
-          <Logo href={home} label={dict.ui.logoHome} />
+          <Logo href={home} label={dict.ui.logoHome} draw />
 
           <nav aria-label={dict.shell.primaryNav} className="mx-auto hidden items-center gap-1 lg:flex">
             <Link href={href.home} aria-current={current.home ? "page" : undefined} className={navLinkStyles(current.home)}>

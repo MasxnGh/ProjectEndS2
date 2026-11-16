@@ -7,14 +7,21 @@ import { MARK_SPARKLE, MARK_STROKES, MARK_VIEWBOX } from "./mark";
  * with the orange sparkle above it. Redrawn as SVG from the board; replace the
  * paths when final artwork arrives, the component's shape stays.
  */
-export function BrandMark({ className }: { className?: string }) {
+export function BrandMark({ className, draw = false }: { className?: string; /** Draw the ridge and light the sparkle once, on load (app/motion.css). */ draw?: boolean }) {
   return (
-    <svg viewBox={MARK_VIEWBOX} aria-hidden="true" className={cx("h-auto w-[46px] flex-none", className)}>
-      <path d={MARK_SPARKLE} className="fill-spark" />
+    <svg
+      viewBox={MARK_VIEWBOX}
+      aria-hidden="true"
+      className={cx("cmj-mark h-auto w-[46px] flex-none overflow-visible", draw && "cmj-mark-draw", className)}
+    >
+      <path d={MARK_SPARKLE} data-sparkle className="fill-spark" />
       {MARK_STROKES.map(({ d, width }) => (
         <path
           key={d}
           d={d}
+          data-stroke
+          // A path length of 1 lets the stroke animation draw any path in one go.
+          pathLength={1}
           fill="none"
           stroke="currentColor"
           strokeWidth={width}
@@ -44,12 +51,15 @@ export function Logo({
   href,
   label,
   tone = "brand",
+  draw = false,
   className,
 }: {
   href: string;
   /** Accessible name, e.g. dict.ui.logoHome. */
   label: string;
   tone?: "brand" | "sand";
+  /** The header's logo draws itself once per page load. */
+  draw?: boolean;
   className?: string;
 }) {
   return (
@@ -58,13 +68,13 @@ export function Logo({
       aria-label={label}
       className={cx(
         // min-h-11: the mark is 36px tall, the link is the 44px thumb target.
-        "inline-flex min-h-11 flex-none items-center gap-2.5 rounded-sm",
+        "group/logo inline-flex min-h-11 flex-none items-center gap-2.5 rounded-sm",
         tone === "brand" ? "text-brand" : "text-cmj-sand",
         focusRing,
         className,
       )}
     >
-      <BrandMark />
+      <BrandMark draw={draw} />
       <Wordmark />
     </Link>
   );

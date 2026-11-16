@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Reveal } from "@/components/magicui/reveal";
 import { cx } from "./cx";
 
 /**
@@ -30,7 +31,8 @@ export function SectionHeading({
       <Tag id={id} className="max-w-full flex-1 font-brand text-headline text-balance text-brand sm:flex-none">
         {children}
       </Tag>
-      <span aria-hidden className="hidden h-px min-w-6 flex-1 bg-line-strong sm:block" />
+      {/* Drawn out from the title as the section comes into view. */}
+      <Reveal as="span" aria-hidden className="cmj-hairline hidden h-px min-w-6 flex-1 bg-line-strong sm:block" />
       {action ? <div className="flex-none">{action}</div> : null}
     </div>
   );

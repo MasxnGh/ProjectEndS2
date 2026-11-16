@@ -65,7 +65,8 @@ export function Sparkle({ className }: { className?: string }) {
 /** The board's single brush stroke, under a tagline. At most one per page. */
 export function Brush({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 96 12" aria-hidden="true" className={cx("block h-3 w-24 text-spark", className)}>
+    // Brushed on from left to right shortly after the page arrives (app/motion.css).
+    <svg viewBox="0 0 96 12" aria-hidden="true" className={cx("cmj-wipe block h-3 w-24 text-spark", className)}>
       <path
         d="M3 8.5C22 4 52 2.5 93 5.5"
         fill="none"
