@@ -1,0 +1,397 @@
+/*
+ * Motion for Chiangmai Journey — the rules are in "Motion" in DESIGN.md.
+ *
+ * Two authored moments carry the voice: the home hero arriving (the photo
+ * settles like a camera coming to rest, the title rises out of a soft blur)
+ * and the sample day drawing itself stop by stop. Everything else is quiet
+ * support: lists that appear as lists, the section hairline, the brush, the
+ * mark, and feedback when something is pressed.
+ *
+ * Two rules hold everywhere:
+ *
+ * 1. **Fail visible.** Nothing is hidden in the server's HTML by a script.
+ *    Entrances above the fold are CSS keyframes that end opaque, so they never
+ *    wait for JavaScript. Reveals on scroll hide only what is still below the
+ *    fold when the page has hydrated (see components/magicui/reveal.tsx); with
+ *    no script, every element is simply there.
+ * 2. **Reduced motion means no travel.** Under prefers-reduced-motion every
+ *    entrance below is switched off outright, delays included, so nothing
+ *    waits to appear. Feedback that confirms an action keeps a colour change.
+ */
+
+:root {
+  /* Arrivals: a soft expo-out, the curve in lib/motion.ts (EASE). Hover and
+     state changes keep --ease-brand from brand.css. */
+  --cmj-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Handwriting and lines being drawn: even speed through the middle. */
+  --cmj-ease-draw: cubic-bezier(0.45, 0, 0.2, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Keyframes                                                           */
+/* ------------------------------------------------------------------ */
+
+@keyframes cmj-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes cmj-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+
+@keyframes cmj-slide-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cmj-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A photograph coming to rest, like a camera settling on the view. */
+@keyframes cmj-settle {
+  from {
+    transform: scale(1.07);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A line written left to right: the brush, the script line. The negative
+   insets leave room for swashes and round caps outside the box. */
+@keyframes cmj-write {
+  from {
+    clip-path: inset(-40% 100% -40% -8%);
+  }
+  to {
+    clip-path: inset(-40% -8% -40% -8%);
+  }
+}
+
+/* A dashed leg of the route drawn downwards, from one stop to the next. */
+@keyframes cmj-draw-down {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The mark's ridge drawn in one stroke (paths carry pathLength="1"). */
+@keyframes cmj-stroke {
+  from {
+    stroke-dashoffset: 1.02;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The four-point sparkle catching the light. */
+@keyframes cmj-twinkle {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(-90deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.35) rotate(10deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The heart, pressed. Multiplies with the icon's own scale-110. */
+@keyframes cmj-pop {
+  0% {
+    transform: scale(0.7);
+  }
+  45% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes cmj-ring {
+  from {
+    opacity: 0.85;
+    transform: scale(0.65);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.55);
+  }
+}
+
+@keyframes cmj-beam {
+  to {
+    offset-distance: 100%;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Arrival on load — CSS only, so it never waits for hydration          */
+/* ------------------------------------------------------------------ */
+
+/* `backwards`, not `both`: the start frame holds through the delay, and once
+   the animation ends the element's own styles take over again, so no
+   transform or filter lingers to trap fixed or sticky descendants. */
+.cmj-arrive {
+  animation: cmj-rise 900ms var(--cmj-ease-out) var(--cmj-delay, 0ms) backwards;
+}
+
+.cmj-arrive-fade {
+  animation: cmj-fade 700ms var(--cmj-ease-out) var(--cmj-delay, 0ms) backwards;
+}
+
+.cmj-settle {
+  animation: cmj-settle var(--cmj-settle-duration, 2400ms) var(--cmj-ease-out) backwards;
+}
+
+.cmj-wipe {
+  animation: cmj-write 800ms var(--cmj-ease-draw) var(--cmj-delay, 380ms) backwards;
+}
+
+/* TextAnimate's segments (components/magicui/text-animate.tsx). */
+.cmj-text-seg {
+  animation-duration: var(--ta-duration, 900ms);
+  animation-timing-function: var(--cmj-ease-out);
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--ta-delay, 0ms) + var(--i, 0) * var(--ta-stagger, 120ms));
+}
+.cmj-text-seg[data-animation="blurInUp"] {
+  animation-name: cmj-rise;
+}
+.cmj-text-seg[data-animation="blurIn"] {
+  animation-name: cmj-blur-in;
+}
+.cmj-text-seg[data-animation="slideUp"] {
+  animation-name: cmj-slide-up;
+}
+.cmj-text-seg[data-animation="fadeIn"] {
+  animation-name: cmj-fade;
+}
+
+/* ------------------------------------------------------------------ */
+/* The mark                                                            */
+/* ------------------------------------------------------------------ */
+
+.cmj-mark [data-sparkle] {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 600ms var(--cmj-ease-out);
+}
+/* Pointing at the logo turns the sparkle a quarter, as if it caught the sun. */
+.group\/logo:hover .cmj-mark [data-sparkle] {
+  transform: rotate(90deg) scale(1.15);
+}
+
+/* The header's mark draws itself once per page load (the header lives in the
+   layout, so moving between pages does not replay it). */
+.cmj-mark-draw [data-stroke] {
+  stroke-dasharray: 1 1.02;
+  animation: cmj-stroke 1100ms var(--cmj-ease-draw) var(--cmj-delay, 120ms) backwards;
+}
+.cmj-mark-draw [data-stroke]:nth-of-type(3) {
+  --cmj-delay: 620ms;
+  animation-duration: 600ms;
+}
+.cmj-mark-draw [data-stroke]:nth-of-type(4) {
+  --cmj-delay: 760ms;
+  animation-duration: 600ms;
+}
+.cmj-mark-draw [data-sparkle] {
+  animation: cmj-twinkle 700ms var(--cmj-ease-out) 900ms backwards;
+}
+
+/* ------------------------------------------------------------------ */
+/* Reveal on scroll — state set by components/magicui/reveal.tsx       */
+/* ------------------------------------------------------------------ */
+
+/* BlurFade: the element itself, or (with `stagger`) each direct child. */
+.cmj-blur-fade[data-reveal="hidden"],
+.cmj-stagger[data-reveal="hidden"] > * {
+  opacity: 0;
+  transform: translate3d(var(--bf-x, 0px), var(--bf-y, 16px), 0);
+  filter: blur(var(--bf-blur, 6px));
+}
+.cmj-blur-fade[data-reveal="shown"],
+.cmj-stagger[data-reveal="shown"] > * {
+  transition-property: opacity, transform, filter;
+  transition-duration: var(--bf-duration, 800ms);
+  transition-timing-function: var(--cmj-ease-out);
+  /* The stagger is capped at the sixth item, so a long list never makes the
+     last card wait. */
+  transition-delay: calc(var(--bf-delay, 0ms) + min(var(--i, 0), 6) * var(--bf-stagger, 80ms));
+}
+
+/* The hairline after a section title, drawn out from the title. */
+.cmj-hairline {
+  transform-origin: left center;
+}
+.cmj-hairline[data-reveal="hidden"] {
+  transform: scaleX(0);
+}
+.cmj-hairline[data-reveal="shown"] {
+  transition: transform 1200ms var(--cmj-ease-out) 120ms;
+}
+
+/* A photograph further down the page settles as it comes into view, like the hero. */
+.cmj-settle-view[data-reveal="hidden"] {
+  transform: scale(1.07);
+}
+.cmj-settle-view[data-reveal="shown"] {
+  transition: transform 2400ms var(--cmj-ease-out);
+}
+
+/* The closing script line, written by hand from left to right. */
+.cmj-write[data-reveal="hidden"] {
+  clip-path: inset(-40% 100% -40% -8%);
+}
+.cmj-write[data-reveal="shown"] {
+  animation: cmj-write 1700ms var(--cmj-ease-draw) 150ms backwards;
+}
+
+/*
+ * The sample day draws itself: stop one, the leg down to stop two, stop two,
+ * and so on, then the totals. Each stop and leg carries its index as --i.
+ * One step is 700ms; a leg starts 380ms before the stop it leads to.
+ */
+.cmj-route[data-reveal="hidden"] [data-stop],
+.cmj-route[data-reveal="hidden"] [data-route-after] {
+  opacity: 0;
+  transform: translate3d(0, 10px, 0);
+  filter: blur(4px);
+}
+.cmj-route[data-reveal="hidden"] [data-leg] {
+  clip-path: inset(0 0 100% 0);
+}
+.cmj-route[data-reveal="shown"] [data-stop],
+.cmj-route[data-reveal="shown"] [data-route-after] {
+  transition-property: opacity, transform, filter;
+  transition-duration: 650ms;
+  transition-timing-function: var(--cmj-ease-out);
+  transition-delay: calc(var(--i, 0) * 700ms + 150ms);
+}
+.cmj-route[data-reveal="shown"] [data-leg] {
+  animation: cmj-draw-down 480ms var(--cmj-ease-draw) calc(var(--i, 1) * 700ms - 230ms) backwards;
+}
+
+/* ------------------------------------------------------------------ */
+/* BorderBeam — a slow light along the edge of one card               */
+/* ------------------------------------------------------------------ */
+
+.cmj-beam {
+  display: none;
+}
+@supports (offset-path: rect(0 auto auto 0 round 1px)) {
+  .cmj-beam {
+    display: block;
+    opacity: 0;
+    transition: opacity 1200ms var(--cmj-ease-out) var(--beam-fade-delay, 0ms);
+  }
+  .cmj-beam[data-running] {
+    opacity: 1;
+  }
+  .cmj-beam > span {
+    animation: cmj-beam var(--beam-duration, 10s) linear infinite;
+    animation-delay: var(--beam-delay, 0s);
+    animation-play-state: paused;
+  }
+  .cmj-beam[data-running] > span {
+    animation-play-state: running;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Feedback                                                            */
+/* ------------------------------------------------------------------ */
+
+.cmj-pop {
+  animation: cmj-pop 420ms var(--cmj-ease-out);
+}
+.cmj-ring {
+  animation: cmj-ring 560ms var(--cmj-ease-out) forwards;
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion and print                                            */
+/* ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Off outright, delays included: nothing waits to appear. */
+  .cmj-arrive,
+  .cmj-arrive-fade,
+  .cmj-settle,
+  .cmj-wipe,
+  .cmj-text-seg,
+  .cmj-mark-draw [data-stroke],
+  .cmj-mark-draw [data-sparkle],
+  .cmj-pop,
+  .cmj-ring,
+  .cmj-write[data-reveal],
+  .cmj-route[data-reveal] [data-leg] {
+    animation: none !important;
+  }
+  .cmj-ring {
+    opacity: 0;
+  }
+  .cmj-mark [data-sparkle] {
+    transition: none;
+  }
+  .group\/logo:hover .cmj-mark [data-sparkle] {
+    transform: none;
+  }
+  .cmj-beam {
+    display: none !important;
+  }
+}
+
+@media print {
+  [data-reveal] [data-stop],
+  [data-reveal] [data-leg],
+  [data-reveal] [data-route-after],
+  .cmj-blur-fade[data-reveal],
+  .cmj-stagger[data-reveal] > *,
+  .cmj-hairline[data-reveal],
+  .cmj-settle-view[data-reveal],
+  .cmj-write[data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+}

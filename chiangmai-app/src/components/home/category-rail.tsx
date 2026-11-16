@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { revealAttr, useReveal } from "@/components/magicui/reveal";
 import { ChevronRight } from "lucide-react";
 import { IconButton } from "@/components/brand/icon-button";
 import { ICON_STROKE } from "@/components/brand/icons";
@@ -15,6 +16,14 @@ import { ICON_STROKE } from "@/components/brand/icons";
 export function CategoryRail({ nextLabel, children }: { nextLabel: string; children: ReactNode }) {
   const listRef = useRef<HTMLUListElement>(null);
   const [atEnd, setAtEnd] = useState(false);
+  // The tiles arrive one after another as the row comes into view (BlurFade's
+  // stagger, app/motion.css). The row is observed as a whole: tiles past its
+  // right edge are clipped by the scroller and would never count as in view.
+  const reveal = useReveal(listRef);
+
+  useEffect(() => {
+    listRef.current?.querySelectorAll(":scope > li").forEach((li, i) => (li as HTMLElement).style.setProperty("--i", String(i)));
+  }, []);
 
   useEffect(() => {
     const list = listRef.current;
@@ -41,7 +50,9 @@ export function CategoryRail({ nextLabel, children }: { nextLabel: string; child
     <div className="relative">
       <ul
         ref={listRef}
-        className="cmj-scroll-row grid snap-x snap-mandatory auto-cols-[44%] grid-flow-col gap-4 overflow-x-auto pb-1 sm:auto-cols-[30%] lg:auto-cols-[calc((100%-4rem)/5.3)]"
+        data-reveal={revealAttr(reveal)}
+        style={{ "--bf-stagger": "70ms" } as CSSProperties}
+        className="cmj-scroll-row cmj-stagger grid snap-x snap-mandatory auto-cols-[44%] grid-flow-col gap-4 overflow-x-auto pb-1 sm:auto-cols-[30%] lg:auto-cols-[calc((100%-4rem)/5.3)]"
       >
         {children}
       </ul>

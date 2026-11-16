@@ -20,6 +20,8 @@ import { SectionHeading } from "@/components/brand/section-heading";
 import { Wrap } from "@/components/brand/surface";
 import { GuideCover, GuideCoverCredit, guideCoverPath, guideCoverSlug } from "@/components/guides/guide-cover";
 import { placeCountLabel } from "@/components/plan/plan-text";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { ScrollProgress } from "@/components/magicui/scroll-progress";
 
 export function generateStaticParams() {
   return guides.map((g) => ({ slug: g.slug }));
@@ -126,6 +128,8 @@ export default async function GuideDetailPage({
 
   return (
     <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
+      {/* How far through the guide you are, in a thin bar across the top. */}
+      <ScrollProgress />
       <script {...jsonLdScriptProps(articleJsonLd)} />
       <script
         {...jsonLdScriptProps(
@@ -156,13 +160,13 @@ export default async function GuideDetailPage({
 
         <article>
           <header className="grid max-w-[820px] gap-4 pt-2 pb-6 sm:pb-8">
-            <h1 className="text-[clamp(2.25rem,1.6rem+2.8vw,3.75rem)] leading-[1.2] font-semibold text-balance text-brand">
+            <h1 className="cmj-arrive text-[clamp(2.25rem,1.6rem+2.8vw,3.75rem)] leading-[1.2] font-semibold text-balance text-brand">
               {title}
             </h1>
-            <p className="text-[clamp(1.125rem,1rem+0.5vw,1.375rem)] leading-[1.6] text-pretty text-ink">
+            <p className="cmj-arrive text-[clamp(1.125rem,1rem+0.5vw,1.375rem)] leading-[1.6] text-pretty text-ink [--cmj-delay:120ms]">
               {guide.dek[locale]}
             </p>
-            <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-small text-ink-soft tabular-nums">
+            <p className="cmj-arrive-fade flex flex-wrap items-center gap-x-4 gap-y-1 text-small text-ink-soft tabular-nums [--cmj-delay:240ms]">
               <span className="inline-flex items-center gap-1.5">
                 <BookOpen aria-hidden strokeWidth={ICON_STROKE} className="size-4" />
                 {fill(dict.homepage.readTime, { minutes: guide.readMinutes })}
@@ -184,13 +188,16 @@ export default async function GuideDetailPage({
                 guideCoverSlug(guide) ? "aspect-[4/3] sm:aspect-[21/9]" : "aspect-[16/9] sm:aspect-[4/1]",
               )}
             >
-              <GuideCover
-                guide={guide}
-                locale={locale}
-                dict={dict}
-                sizes="(max-width: 1344px) calc(100vw - 32px), 1280px"
-                eager
-              />
+              {/* The cover settles as the page arrives, as the home hero does. */}
+              <div className="cmj-settle size-full [--cmj-settle-duration:2000ms]">
+                <GuideCover
+                  guide={guide}
+                  locale={locale}
+                  dict={dict}
+                  sizes="(max-width: 1344px) calc(100vw - 32px), 1280px"
+                  eager
+                />
+              </div>
             </div>
             <figcaption>
               <GuideCoverCredit guide={guide} locale={locale} dict={dict} className="mt-2" />
@@ -236,7 +243,7 @@ export default async function GuideDetailPage({
         {others.length > 0 ? (
           <section aria-labelledby="guide-next" className="pt-16 sm:pt-24">
             <SectionHeading id="guide-next">{t.readNext}</SectionHeading>
-            <ul className="grid gap-8 md:grid-cols-2 md:gap-6">
+            <BlurFade as="ul" stagger={0.1} className="grid gap-8 md:grid-cols-2 md:gap-6">
               {others.map((other) => (
                 <li key={other.slug}>
                   <article className="group/guide relative grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:items-center sm:gap-5">
@@ -261,7 +268,7 @@ export default async function GuideDetailPage({
                   </article>
                 </li>
               ))}
-            </ul>
+            </BlurFade>
           </section>
         ) : null}
       </Wrap>

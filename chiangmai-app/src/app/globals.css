@@ -1,6 +1,8 @@
 @import "tailwindcss";
 /* The design tokens (DESIGN.md): colours, type, depth. Everything below uses them. */
 @import "./brand.css";
+/* Entrances, reveals and feedback (DESIGN.md, "Motion"). */
+@import "./motion.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 

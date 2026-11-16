@@ -14,6 +14,7 @@ import { PhotoCredit, PlacePhoto } from "@/components/brand/place-photo";
 import { fill } from "@/components/brand/place-text";
 import { SectionHeading } from "@/components/brand/section-heading";
 import { Box, Wrap } from "@/components/brand/surface";
+import { BlurFade } from "@/components/magicui/blur-fade";
 
 /** The page's one photograph: a teak temple in the old city, credited below it. */
 const HERO_PLACE = "wat-phan-tao";
@@ -76,8 +77,9 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
       <Wrap>
         <section className="grid items-center gap-10 pt-10 pb-12 sm:pt-14 md:grid-cols-2 md:gap-12 lg:pb-16">
           <div className="grid justify-items-center gap-3 text-center text-brand">
-            <BrandMark className="w-[120px] sm:w-[150px]" />
-            <h1 className="grid">
+            {/* The mark draws itself, then the name and the board's line arrive. */}
+            <BrandMark draw className="w-[120px] sm:w-[150px]" />
+            <h1 className="cmj-arrive grid [--cmj-delay:350ms]">
               <span className="sr-only">{t.title} — </span>
               <span lang="en" className="text-[clamp(2.5rem,2rem+2.4vw,3.75rem)] leading-[1.05] font-semibold">
                 Chiangmai
@@ -85,20 +87,21 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                 Journey
               </span>
             </h1>
-            <p lang="en" className="text-label font-medium tracking-[0.12em] text-ink uppercase">
+            <p lang="en" className="cmj-arrive-fade text-label font-medium tracking-[0.12em] text-ink uppercase [--cmj-delay:600ms]">
               Explore • Experience • Enjoy
             </p>
             <hr aria-hidden className="my-2 h-[1.5px] w-14 border-0 bg-line-strong" />
-            <p className="text-title leading-[1.6] text-ink">
+            <p className="cmj-arrive text-title leading-[1.6] text-ink [--cmj-delay:700ms]">
               <Phrases text={t.tagline} />
             </p>
-            <Brush />
+            <Brush className="[--cmj-delay:1000ms]" />
           </div>
 
           {hero ? (
             <figure className="mx-auto w-full max-w-[520px]">
               <div className="relative aspect-[4/5] overflow-hidden rounded-xl">
                 <PlacePhoto
+                  className="cmj-settle"
                   slug={hero.slug}
                   alt={fill(t.photoAlt, { place: hero.name[locale] })}
                   sizes="(max-width: 768px) calc(100vw - 32px), 520px"
@@ -121,7 +124,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
 
         <section aria-labelledby="about-values" className="pt-4">
           <SectionHeading id="about-values">{t.valuesTitle}</SectionHeading>
-          <ul className="grid gap-5 md:grid-cols-3">
+          <BlurFade as="ul" stagger={0.1} className="grid gap-5 md:grid-cols-3">
             {values.map(({ icon: Icon, title, en, body }) => (
               <li key={en}>
                 <Box className="grid h-full content-start justify-items-start gap-3 px-5 py-6 sm:px-6">
@@ -137,12 +140,12 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                 </Box>
               </li>
             ))}
-          </ul>
+          </BlurFade>
         </section>
 
         <section aria-labelledby="about-sources" className="pt-16 sm:pt-24">
           <SectionHeading id="about-sources">{t.sourcesTitle}</SectionHeading>
-          <ul className="max-w-[820px]">
+          <BlurFade as="ul" stagger={0.08} className="max-w-[820px]">
             {sources.map(({ icon: Icon, title, body }) => (
               <li key={title} className="grid grid-cols-[44px_1fr] items-start gap-4 border-b border-line py-4 first:pt-0">
                 <span aria-hidden className="grid size-11 place-items-center rounded-full bg-well text-brand">
@@ -154,7 +157,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                 </div>
               </li>
             ))}
-          </ul>
+          </BlurFade>
           {/* Under the list, not beside the title: the long label squeezed the title onto three lines on a phone. */}
           <ButtonLink href={`/${locale}/credits`} variant="ghost" size="sm" arrow className="mt-4 -ml-3">
             {t.creditsLink}

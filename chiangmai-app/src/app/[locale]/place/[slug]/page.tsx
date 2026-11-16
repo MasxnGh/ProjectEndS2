@@ -293,16 +293,17 @@ export default async function PlaceDetailPage({
 
         <header className="grid gap-5 pt-2 pb-6 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-8">
           <div className="grid gap-3">
-            <h1 className="text-[clamp(2rem,1.5rem+2.2vw,3.25rem)] leading-[1.25] font-semibold text-balance text-brand">
+            {/* A short arrival, the same on every place (app/motion.css). */}
+            <h1 className="cmj-arrive text-[clamp(2rem,1.5rem+2.2vw,3.25rem)] leading-[1.25] font-semibold text-balance text-brand">
               <ThaiName text={name} />
             </h1>
-            <p lang={otherLocale} className="text-body text-ink-soft">
+            <p lang={otherLocale} className="cmj-arrive-fade text-body text-ink-soft [--cmj-delay:120ms]">
               {place.name[otherLocale]}
             </p>
-            <p className="max-w-[52ch] text-[1.125rem] leading-[1.6] text-pretty text-ink">
+            <p className="cmj-arrive max-w-[52ch] text-[1.125rem] leading-[1.6] text-pretty text-ink [--cmj-delay:160ms]">
               {place.shortDescription[locale]}
             </p>
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="cmj-arrive-fade flex flex-wrap gap-2 pt-1 [--cmj-delay:280ms]">
               <Badge
                 tone="leaf"
                 href={`/${locale}/explore?category=${place.category}`}
@@ -338,6 +339,8 @@ export default async function PlaceDetailPage({
               sizes="(min-width: 1344px) 1280px, calc(100vw - 2rem)"
               grade="golden"
               eager
+              // The photograph settles as the page arrives, as the home hero does.
+              className="cmj-settle [--cmj-settle-duration:2000ms]"
               fallback={
                 <NoPhoto
                   icon={CategoryIcon}

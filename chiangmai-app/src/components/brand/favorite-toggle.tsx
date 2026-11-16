@@ -36,6 +36,10 @@ export function FavoriteToggle({
   // A list shows a heart per card, so the sign-in dialog is only built once a
   // heart is first pressed, then kept so the browser can return focus on close.
   const [promptMounted, setPromptMounted] = useState(false);
+  // Counts presses that saved the place. Re-keying the heart on each one
+  // replays its pop and the ring, so the press itself is answered, not the
+  // state: hearts that are already full on page load stay still.
+  const [saves, setSaves] = useState(0);
   const active = isFavorite(slug);
   const label = fill(active ? dict.favorites.removeFrom : dict.favorites.addTo, { place: placeName });
 
@@ -44,7 +48,10 @@ export function FavoriteToggle({
       <button
         type="button"
         onClick={() => {
-          if (isSignedIn) return toggle(slug);
+          if (isSignedIn) {
+            if (!active) setSaves((n) => n + 1);
+            return toggle(slug);
+          }
           setPromptMounted(true);
           setPromptOpen(true);
         }}
@@ -65,10 +72,18 @@ export function FavoriteToggle({
           className,
         )}
       >
+        {active && saves > 0 ? (
+          <span key={`ring-${saves}`} aria-hidden className="cmj-ring pointer-events-none absolute inset-0 rounded-full border-2 border-current" />
+        ) : null}
         <Heart
+          key={`heart-${active && saves > 0 ? saves : 0}`}
           aria-hidden
           strokeWidth={ICON_STROKE}
-          className={cx("size-5 transition-transform duration-200 ease-brand", active && "scale-110 fill-current")}
+          className={cx(
+            "size-5 transition-transform duration-200 ease-brand",
+            active && "scale-110 fill-current",
+            active && saves > 0 && "cmj-pop",
+          )}
         />
       </button>
       {promptMounted ? (

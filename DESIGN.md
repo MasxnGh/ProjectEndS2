@@ -259,6 +259,50 @@ Specified by the board and drawn in full in the Phase 1 prototypes (`docs/rebuil
 ### Hero
 Real photograph, title in Display, one-line subtitle, search pill. Photo caption with place name and credit in the lower corner. No autoplay carousel: if more than one hero photo is offered, the viewer changes it.
 
+## Motion
+
+**Motion thesis: "The light settles, the path draws itself."** Movement on this site is the last hour of light on the mountain: things arrive softly, out of a slight blur, and come to rest. Two authored moments carry the voice; everything else is quiet support. Magic UI components are used where they fit, installed with `npx shadcn@latest add @magicui/<name>` into `src/components/magicui/` and then reworked to these rules (Magic UI's model is that you own the copied code). Keyframes and reveal styles live in `src/app/motion.css`.
+
+### The two authored moments
+- **Arrival (home hero).** The photograph settles like a camera coming to rest (scale 1.07 → 1 over 2.4s). The title rises out of a soft blur line by line (Magic UI TextAnimate, `by="line"`), then the subtitle (300ms), search (420ms) and chips (540ms). Everything is usable by about 1.4s. The place page, guide and About page use a shorter version of the same arrival.
+- **The day draws itself (home planner band).** When the sample day scrolls into view: stop one, the dashed leg drawn down to stop two, stop two, and so on, then the totals, with the budget counting up (Magic UI NumberTicker). A slow light in sunset and sand runs around the card on the green band (Magic UI BorderBeam), only while it is on screen.
+
+### Quiet support
+- **The mark** in the header draws its ridge in one stroke and lights the sparkle last, once per page load. Pointing at the logo turns the sparkle a quarter.
+- **Section hairlines** draw out from the title as the section comes into view. **The brush** is painted on from left to right. **The script line** on the home closing is written by hand, left to right.
+- **Lists that appear as lists** (category tiles, featured places, guides, About values and sources) arrive one by one (Magic UI BlurFade, `stagger`), capped at the sixth item so nothing waits long.
+- **Reading:** a guide shows how far through you are in a 3px bar along the foot of the header (Magic UI ScrollProgress), in the voice colour.
+- **Feedback:** saving a place pops the heart and sends one ring out from it. Buttons nudge their arrow; tiles lift; photos in cards zoom slightly.
+
+### Timing and curves
+| Use | Duration | Curve |
+|---|---|---|
+| Feedback (hover, press, toggle) | 150–200ms | `--ease-brand` |
+| Heart pop and ring | 420–560ms | `--cmj-ease-out` |
+| Reveal on scroll | 800ms, 80–100ms between items | `--cmj-ease-out` (0.16, 1, 0.3, 1) |
+| Focal entrance (title, route step) | 650–900ms per step | `--cmj-ease-out` |
+| Lines drawn or written | 480ms–1.7s | `--cmj-ease-draw` (0.45, 0, 0.2, 1) |
+| Photo settling | 2–2.4s | `--cmj-ease-out` |
+
+No bounce or elastic curves. Exits are not animated.
+
+### Named Rules
+**The Fail Visible Rule.** Nothing is hidden in the server's HTML by a script. Arrivals above the fold are CSS keyframes that end opaque and never wait for hydration. Reveals on scroll hide only what is still below the fold after hydration. With JavaScript off, every element is present (checked: 27 of 27 visible). Magic UI's originals start at `opacity: 0` until React runs; ours do not.
+
+**The Largest Paint Moves, Never Hides Rule.** The hero photograph is the page's largest paint. It may scale, but it is never faded or delayed.
+
+**The Reduced Motion Rule.** Under `prefers-reduced-motion`, every entrance, draw, settle, beam and pop is switched off outright, delays included, so nothing waits to appear. The reading bar stays, because it only follows the reader's own scrolling.
+
+**The Operate Quietly Rule.** Explore, the planner, my trips and account are places to work. They get feedback only, never load choreography.
+
+**The One Sunset Rule applies to motion too.** The moving sunset things (the beam, the sparkle, the heart ring) never move on one screen at the same time.
+
+### Don't
+- **Don't** use Magic UI's loud effects here: particles, meteors, globe, confetti, rainbow or shimmer buttons, marquees, sparkles around text. They break the calm, photo-led character.
+- **Don't** add light rays, flares or glow over a real photograph. The photo is a record of a real place; the hero's warm grade is colour only.
+- **Don't** reveal every section on scroll. Reveal lists that appear as lists, and leave reading text still.
+- **Don't** loop anything that is off screen.
+
 ## Do's and Don'ts
 
 ### Do:

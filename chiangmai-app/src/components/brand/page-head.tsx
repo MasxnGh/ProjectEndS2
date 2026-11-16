@@ -22,12 +22,16 @@ export function PageHead({
   children?: ReactNode;
 }) {
   return (
+    // A short arrival: the title rises, the brush is drawn, the intro follows
+    // (app/motion.css; CSS only, so it never waits for scripts).
     <header className={cx("grid max-w-[720px] gap-3 pt-10 pb-8 sm:pt-14 sm:pb-10", className)}>
-      <h1 className="text-[clamp(2.25rem,1.7rem+2.4vw,3.5rem)] leading-[1.2] font-semibold text-balance text-brand">
+      <h1 className="cmj-arrive text-[clamp(2.25rem,1.7rem+2.4vw,3.5rem)] leading-[1.2] font-semibold text-balance text-brand">
         {title}
       </h1>
       {brush ? <Brush /> : null}
-      {intro ? <p className="text-[1.125rem] leading-[1.6] text-pretty text-ink-soft">{intro}</p> : null}
+      {intro ? (
+        <p className="cmj-arrive text-[1.125rem] leading-[1.6] text-pretty text-ink-soft [--cmj-delay:120ms]">{intro}</p>
+      ) : null}
       {children}
     </header>
   );

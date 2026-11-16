@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -27,6 +28,11 @@ import { SearchField } from "@/components/brand/search-field";
 import { SectionHeading } from "@/components/brand/section-heading";
 import { Wrap } from "@/components/brand/surface";
 import { GuideCover } from "@/components/guides/guide-cover";
+import { BlurFade } from "@/components/magicui/blur-fade";
+import { BorderBeam } from "@/components/magicui/border-beam";
+import { NumberTicker } from "@/components/magicui/number-ticker";
+import { Reveal } from "@/components/magicui/reveal";
+import { TextAnimate } from "@/components/magicui/text-animate";
 import { CategoryRail } from "./category-rail";
 import { ThaiName } from "@/components/brand/thai-name";
 
@@ -58,7 +64,12 @@ export function HomeHero({
     <section aria-label={t.heroLabel} className="pt-3 sm:pt-4">
       <Wrap>
         <div className="relative isolate grid min-h-[620px] grid-rows-[1fr_auto] items-end overflow-hidden rounded-lg text-cmj-paper sm:min-h-[clamp(560px,78svh,760px)] sm:rounded-xl">
-          <div className="absolute inset-0 -z-20">
+          {/* The arrival (DESIGN.md, "Motion"): the photograph settles like a
+              camera coming to rest while the title rises out of a soft blur,
+              then the subtitle, the search and the chips. CSS keyframes only,
+              so none of it waits for scripts, and the photo (the page's
+              largest paint) is never hidden: it only scales. */}
+          <div className="cmj-settle absolute inset-0 -z-20">
             {/* A photograph taken at golden hour, so the shared warm grade is
                 enough: the golden grade's added glow is for overcast photos.
                 Phone: the right of the frame, where the light is. Wider: low,
@@ -86,12 +97,15 @@ export function HomeHero({
             )}
           />
           <div className="grid min-w-0 max-w-[640px] gap-4 px-4 pt-8 pb-3 sm:px-8 sm:pt-12 sm:pb-8 lg:px-16 lg:pt-24 lg:pb-16">
-            <h1 lang="en" className="text-display leading-[1.02] tracking-[-0.01em] text-cmj-paper">
-              Chiangmai
-              <br />
-              Journey
-            </h1>
-            <p className="max-w-[30ch] text-[clamp(1.125rem,1rem+0.6vw,1.375rem)] leading-[1.6] text-pretty">
+            <TextAnimate
+              as="h1"
+              by="line"
+              lang="en"
+              className="text-display leading-[1.02] tracking-[-0.01em] text-cmj-paper"
+            >
+              {"Chiangmai\nJourney"}
+            </TextAnimate>
+            <p className="cmj-arrive max-w-[30ch] [--cmj-delay:300ms] text-[clamp(1.125rem,1rem+0.6vw,1.375rem)] leading-[1.6] text-pretty">
               <Phrases text={fill(t.heroSub, { count: total })} />
             </p>
             <SearchField
@@ -99,9 +113,9 @@ export function HomeHero({
               label={dict.ui.search.label}
               placeholder={dict.ui.search.placeholder}
               submitLabel={dict.ui.search.submit}
-              className="mt-3 max-w-[520px] dark:border-line-strong"
+              className="cmj-arrive mt-3 max-w-[520px] [--cmj-delay:420ms] dark:border-line-strong"
             />
-            <ChipRow scroll className="-mr-4 items-center pr-4 sm:mr-0 sm:flex-wrap sm:overflow-visible sm:pr-0">
+            <ChipRow scroll className="cmj-arrive -mr-4 items-center [--cmj-delay:540ms] pr-4 sm:mr-0 sm:flex-wrap sm:overflow-visible sm:pr-0">
               <span className="mr-1 flex-none text-small text-cmj-paper/90">{t.tryLabel}</span>
               {quick.map((category) => (
                 <ChipLink
@@ -124,7 +138,7 @@ export function HomeHero({
             dict={dict}
             tone="photo"
             placeName={`${hero.name[locale]} · ${t.heroWhere}`}
-            className="px-4 pb-4 sm:px-8 sm:pb-6 lg:absolute lg:right-4 lg:bottom-4 lg:max-w-[46ch] lg:rounded-md lg:bg-[rgb(20_42_39/0.7)] lg:px-3 lg:py-1.5 lg:text-right"
+            className="cmj-arrive-fade px-4 pb-4 [--cmj-delay:1000ms] sm:px-8 sm:pb-6 lg:absolute lg:right-4 lg:bottom-4 lg:max-w-[46ch] lg:rounded-md lg:bg-[rgb(20_42_39/0.7)] lg:px-3 lg:py-1.5 lg:text-right"
           />
         </div>
       </Wrap>
@@ -176,7 +190,7 @@ export function HomeFeatured({ locale, dict, picks }: Props & { picks: Place[] }
         <SectionHeading id="home-featured">{t.featuredTitle}</SectionHeading>
         <p className="-mt-3 mb-6 max-w-[60ch] text-body text-ink-soft sm:-mt-4 sm:mb-8">{t.featuredLead}</p>
         <div className="grid gap-6 lg:grid-cols-[1.08fr_1fr] lg:gap-12">
-          <article className="group/big relative grid content-start gap-4">
+          <BlurFade as="article" className="group/big relative grid content-start gap-4">
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg sm:rounded-xl">
               <PlacePhoto
                 slug={big.slug}
@@ -210,14 +224,14 @@ export function HomeFeatured({ locale, dict, picks }: Props & { picks: Place[] }
                 <ArrowRight strokeWidth={ICON_STROKE} className="size-5" />
               </span>
             </div>
-          </article>
-          <ul className="grid content-start gap-4">
+          </BlurFade>
+          <BlurFade as="ul" stagger={0.1} delay={0.15} className="grid content-start gap-4">
             {rest.map((place) => (
               <li key={place.slug}>
                 <PlaceCardFor place={place} locale={locale} dict={dict} />
               </li>
             ))}
-          </ul>
+          </BlurFade>
         </div>
       </Wrap>
     </section>
@@ -260,7 +274,7 @@ export function HomePlanner({
     <section aria-labelledby="home-planner" className="pt-16 sm:pt-24">
       <Wrap>
         <div className="relative isolate -mx-2 grid gap-8 overflow-hidden rounded-lg bg-forest px-4 pt-8 pb-6 text-on-forest sm:mx-0 sm:gap-12 sm:rounded-xl sm:p-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:p-16">
-          <div className="grid content-start gap-6">
+          <BlurFade className="grid content-start gap-6">
             <h2 id="home-planner" className="max-w-[16ch] text-headline text-balance text-on-forest">
               <Phrases text={t.plannerTitle} />
             </h2>
@@ -284,9 +298,14 @@ export function HomePlanner({
                 </li>
               ))}
             </ul>
-          </div>
+          </BlurFade>
 
-          <div className="relative z-10 rounded-lg bg-panel p-4 text-ink shadow-lift sm:p-6">
+          {/* The sample day draws itself as it comes into view: stop one, the
+              leg down to stop two, stop two, and so on, then the totals, with
+              the budget counting up and an evening light running along the
+              card's edge (app/motion.css, ".cmj-route"). */}
+          <Reveal className="cmj-route relative z-10 rounded-lg bg-panel p-4 text-ink shadow-lift sm:p-6">
+            <BorderBeam outside size={140} borderWidth={2} duration={11} fadeInDelay={schedule.stops.length * 0.7} />
             <div className="mb-4 flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
               <h3 className="text-title text-brand">{t.sampleDay}</h3>
               <span className="text-small text-ink-soft">{t.sampleTag}</span>
@@ -298,12 +317,18 @@ export function HomePlanner({
                 return (
                   <li key={stop.place.slug}>
                     {i > 0 ? (
-                      <p className="my-1.5 ml-[13px] flex items-center gap-2 border-l-2 border-dashed border-line-strong py-1.5 pl-[27px] text-small text-ink-soft tabular-nums">
+                      <p
+                        data-leg
+                        style={{ "--i": i } as CSSProperties}
+                        className="my-1.5 ml-[13px] flex items-center gap-2 border-l-2 border-dashed border-line-strong py-1.5 pl-[27px] text-small text-ink-soft tabular-nums">
                         <Route aria-hidden strokeWidth={ICON_STROKE} className="size-4 flex-none" />
                         {fill(t.sampleLeg, { duration: formatDuration(stop.travelMinutesFromPrevious, dict) })}
                       </p>
                     ) : null}
-                    <div className="grid grid-cols-[28px_56px_1fr] items-center gap-2.5 sm:grid-cols-[28px_64px_1fr] sm:gap-3">
+                    <div
+                      data-stop
+                      style={{ "--i": i } as CSSProperties}
+                      className="grid grid-cols-[28px_56px_1fr] items-center gap-2.5 sm:grid-cols-[28px_64px_1fr] sm:gap-3">
                       <span className="grid size-7 place-items-center rounded-full bg-brand text-[0.8125rem] font-semibold text-on-brand tabular-nums">
                         {i + 1}
                       </span>
@@ -332,7 +357,10 @@ export function HomePlanner({
                 );
               })}
             </ol>
-            <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-4 text-small text-ink-soft tabular-nums">
+            <dl
+              data-route-after
+              style={{ "--i": schedule.stops.length } as CSSProperties}
+              className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-4 text-small text-ink-soft tabular-nums">
               <div className="flex gap-1.5">
                 <dt>{t.totalTravel}</dt>
                 <dd className="font-semibold text-ink">{formatDuration(schedule.totalTravelMinutes, dict)}</dd>
@@ -344,11 +372,19 @@ export function HomePlanner({
               <div className="flex gap-1.5">
                 <dt>{t.budgetLabel}</dt>
                 <dd>
-                  <span className="font-semibold text-ink">฿{budgetThb.toLocaleString("en-US")}</span> {t.budgetUnit}
+                  <span className="font-semibold text-ink">
+                    ฿
+                    <NumberTicker
+                      value={budgetThb}
+                      revealWith=".cmj-route"
+                      delay={schedule.stops.length * 0.7 + 0.2}
+                    />
+                  </span>{" "}
+                  {t.budgetUnit}
                 </dd>
               </div>
             </dl>
-          </div>
+          </Reveal>
 
           <Ridge />
         </div>
@@ -372,7 +408,7 @@ export function HomeGuides({ locale, dict, guides }: Props & { guides: Guide[] }
         >
           {t.guidesTitle}
         </SectionHeading>
-        <ul className="grid gap-8 md:grid-cols-3 md:gap-6">
+        <BlurFade as="ul" stagger={0.1} className="grid gap-8 md:grid-cols-3 md:gap-6">
           {guides.map((guide) => {
             return (
               <li key={guide.slug}>
@@ -397,7 +433,7 @@ export function HomeGuides({ locale, dict, guides }: Props & { guides: Guide[] }
               </li>
             );
           })}
-        </ul>
+        </BlurFade>
       </Wrap>
     </section>
   );
@@ -409,9 +445,9 @@ export function HomeClosing({ locale, dict, place }: Props & { place: Place }) {
     <section aria-label={t.closingLabel} className="pt-16 pb-16 sm:pt-24 sm:pb-24">
       <Wrap>
         <div className="relative isolate grid min-h-[420px] grid-rows-[1fr_auto] overflow-hidden rounded-lg text-cmj-paper sm:rounded-xl">
-          <div className="absolute inset-0 -z-20">
+          <Reveal className="cmj-settle-view absolute inset-0 -z-20">
             <PlacePhoto slug={place.slug} alt="" sizes="(max-width: 1344px) calc(100vw - 32px), 1280px" />
-          </div>
+          </Reveal>
           <div
             aria-hidden
             className={cx(
@@ -421,15 +457,22 @@ export function HomeClosing({ locale, dict, place }: Props & { place: Place }) {
             )}
           />
           <div className="grid max-w-[760px] content-center gap-4 self-center px-4 pt-12 pb-4 sm:px-8 sm:py-12 lg:p-16">
-            <p lang="en" className="font-script text-[clamp(2.5rem,1.9rem+2.6vw,4rem)] leading-[1.15] text-cmj-paper">
+            {/* Written by hand, left to right, as it comes into view. */}
+            <Reveal
+              as="p"
+              lang="en"
+              className="cmj-write font-script text-[clamp(2.5rem,1.9rem+2.6vw,4rem)] leading-[1.15] text-cmj-paper"
+            >
               {t.closingScript}
-            </p>
-            <p className="max-w-[34ch] text-[1.125rem] leading-[1.6] text-pretty"><Phrases text={t.closingBody} /></p>
-            <div>
+            </Reveal>
+            <BlurFade as="p" delay={0.9} className="max-w-[34ch] text-[1.125rem] leading-[1.6] text-pretty">
+              <Phrases text={t.closingBody} />
+            </BlurFade>
+            <BlurFade delay={1.05}>
               <ButtonLink href={`/${locale}/planner`} variant="on-photo" arrow className={lightFocus}>
                 {t.closingCta}
               </ButtonLink>
-            </div>
+            </BlurFade>
           </div>
           <PhotoCredit
             slug={place.slug}

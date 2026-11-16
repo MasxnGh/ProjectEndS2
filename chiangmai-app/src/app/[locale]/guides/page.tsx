@@ -15,6 +15,7 @@ import { Brush, categoryIcon, ICON_STROKE } from "@/components/brand/icons";
 import { fill } from "@/components/brand/place-text";
 import { Wrap } from "@/components/brand/surface";
 import { GuideCover, GuideCoverCredit } from "@/components/guides/guide-cover";
+import { BlurFade } from "@/components/magicui/blur-fade";
 
 export async function generateMetadata({
   params,
@@ -55,11 +56,11 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
       />
       <Wrap>
         <header className="grid max-w-[720px] gap-3 pt-10 pb-10 sm:pt-14 sm:pb-14">
-          <h1 className="text-[clamp(2.25rem,1.7rem+2.4vw,3.5rem)] leading-[1.2] font-semibold text-brand">
+          <h1 className="cmj-arrive text-[clamp(2.25rem,1.7rem+2.4vw,3.5rem)] leading-[1.2] font-semibold text-brand">
             {dict.nav.guides}
           </h1>
           <Brush />
-          <p className="text-[1.125rem] leading-[1.6] text-pretty text-ink-soft">{t.intro}</p>
+          <p className="cmj-arrive text-[1.125rem] leading-[1.6] text-pretty text-ink-soft [--cmj-delay:120ms]">{t.intro}</p>
         </header>
 
         <ol className="grid gap-14 sm:gap-20">
@@ -70,7 +71,8 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
               .map((slug) => getPlaceBySlug(slug))
               .filter((place): place is Place => Boolean(place));
             return (
-              <li key={guide.slug}>
+              // Each guide arrives as you scroll to it; the first is already on screen.
+              <BlurFade as="li" key={guide.slug}>
                 <article className="grid items-center gap-5 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
                   {/* Alternate sides on desktop so three long rows don't read as one column. */}
                   <div className={cx("min-w-0", index % 2 === 1 && "lg:order-2")}>
@@ -135,7 +137,7 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
                     </div>
                   </div>
                 </article>
-              </li>
+              </BlurFade>
             );
           })}
         </ol>
