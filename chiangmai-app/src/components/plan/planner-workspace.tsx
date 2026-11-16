@@ -576,7 +576,11 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
 
       <div data-brand className="bg-page font-brand text-ink print:hidden">
         <div className="lg:grid lg:h-[calc(100svh-73px)] lg:min-h-[720px] lg:grid-cols-[520px_minmax(0,1fr)]">
-          <div className="grid content-start gap-6 px-4 pt-6 pb-10 sm:px-6 lg:overflow-y-auto lg:overscroll-contain lg:border-r lg:border-line lg:p-8">
+          {/* lg:relative makes this scrolling column the containing block for
+              absolute children. Without it a screen-reader-only status line
+              (sr-only is position: absolute) took the body as its box, escaped
+              the scroll clip, and stretched the page far below the footer. */}
+          <div className="grid content-start gap-6 px-4 pt-6 pb-10 sm:px-6 lg:relative lg:overflow-y-auto lg:overscroll-contain lg:border-r lg:border-line lg:p-8">
             <TripHead
               progress={planProgress}
               placeCount={tripTotals.places + unscheduledPlaces.length}
