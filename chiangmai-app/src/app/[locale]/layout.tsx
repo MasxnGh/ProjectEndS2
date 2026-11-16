@@ -9,6 +9,9 @@ import { MotionProvider } from "@/components/providers/motion-provider";
 import { ToastProvider } from "@/components/toast/toast-provider";
 import { SiteHeader } from "@/components/brand/site-header";
 import { NavProgress } from "@/components/brand/nav-progress";
+import { Intro } from "@/components/brand/intro";
+import { IntroControl } from "@/components/brand/intro-control";
+import { introScript } from "@/lib/intro";
 import { SiteFooter } from "@/components/brand/site-footer";
 import { places } from "@/data/places";
 import type { PlaceCategory } from "@/data/types";
@@ -153,6 +156,13 @@ export default async function LocaleLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme")||"system";var r=t==="system"?(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"):t;document.documentElement.classList.add(r);document.documentElement.style.colorScheme=r;}catch(e){}})();`,
           }}
         />
+        {/* The first-visit intro decides before the first paint whether to
+            play (lib/intro.ts), so the page never shows and then gets covered.
+            A raw <script> for the same reasons as theme-init above. The intro
+            itself sits first in <body>, outside every provider, so nothing on
+            the page can rise above it. */}
+        <script id="intro-init" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: introScript(locales) }} />
+        <Intro />
         <MotionProvider>
         <AuthSessionProvider>
           <ThemeProvider>
@@ -170,6 +180,7 @@ export default async function LocaleLayout({
                     {dict.shell.skip}
                   </a>
                   <NavProgress />
+                  <IntroControl />
                   <SiteHeader counts={counts} total={places.length} />
                   <main id="main-content">{children}</main>
                   <SiteFooter locale={locale} dict={dict} />

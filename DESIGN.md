@@ -264,7 +264,7 @@ Real photograph, title in Display, one-line subtitle, search pill. Photo caption
 **Motion thesis: "The light settles, the path draws itself."** Movement on this site is the last hour of light on the mountain: things arrive softly, out of a slight blur, and come to rest. Two authored moments carry the voice; everything else is quiet support. Magic UI components are used where they fit, installed with `npx shadcn@latest add @magicui/<name>` into `src/components/magicui/` and then reworked to these rules (Magic UI's model is that you own the copied code). Keyframes and reveal styles live in `src/app/motion.css`.
 
 ### The two authored moments
-- **Arrival (home hero).** The photograph settles like a camera coming to rest (scale 1.07 → 1 over 2.4s). The title rises out of a soft blur line by line (Magic UI TextAnimate, `by="line"`), then the subtitle (300ms), search (420ms) and chips (540ms). Everything is usable by about 1.4s. The place page, guide and About page use a shorter version of the same arrival.
+- **Arrival (home hero).** The photograph settles like a camera coming to rest (scale 1.07 → 1 over 2.4s). The title rises out of a soft blur line by line (Magic UI TextAnimate, `by="line"`), then the subtitle (300ms), search (420ms) and chips (540ms). Everything is usable by about 1.4s; on the first visit it follows the intro (see "The intro"), so about 3.2s, or at once after a tap. The place page, guide and About page use a shorter version of the same arrival.
 - **The day draws itself (home planner band).** When the sample day scrolls into view: stop one, the dashed leg drawn down to stop two, stop two, and so on, then the totals, with the budget counting up (Magic UI NumberTicker). A slow light in sunset and sand runs around the card on the green band (Magic UI BorderBeam), only while it is on screen.
 
 ### Quiet support
@@ -283,7 +283,15 @@ Real photograph, title in Display, one-line subtitle, search pill. Photo caption
 - **Route dots (`<RouteDots>`).** Three stops joined by a dashed leg, lighting in turn, the width of an icon. They take the icon's place in a button that is working (saving, copying, signing in, deleting, optimising the route, asking the AI) instead of a spinning circle. A working button is `aria-busy` and keeps its full colour: busy is not unavailable.
 - **The page line (`<NavProgress>`).** When a link to another page is clicked and that page takes longer than 120ms, a 3px line in the voice colour runs along the top edge of the window, slowing as it goes; it finishes and fades when the page lands. A prefetched page that arrives at once shows nothing.
 
-There is deliberately **no `loading.tsx`** and **no splash screen**. A `loading.tsx` streams every page, which locks the response at 200, so a missing place or trip could no longer answer 404 (the brand 404 page and the trip-token 404s depend on it). A splash would hide the hero photograph, the page's largest paint. The page line is the navigation feedback instead.
+There is deliberately **no `loading.tsx`**. A `loading.tsx` streams every page, which locks the response at 200, so a missing place or trip could no longer answer 404 (the brand 404 page and the trip-token 404s depend on it). The page line is the navigation feedback instead. The only thing that ever covers the whole window is the intro below, once a visit.
+
+### The intro
+**The first look is the name catching the light.** On the first page of a visit, and only when that page is home, a deep green panel covers the window. "Chiangmai Journey" rests in it faintly in Display, then fills with sand light from the bottom up while a small count runs from 00 to 100 %, and the mark draws itself above it. At 1.5s the panel lifts away upwards; the name lags behind and dims, so the rising edge cuts it off. Underneath, the home page's own arrival plays: the photograph starts settling as the lift begins, and the title follows 250ms later. It is over at 2.25s. It follows the "loading page" pattern collected on Awwwards, in the brand's colours and voice. The pieces are `src/components/brand/intro.tsx`, `intro-control.tsx` and `src/lib/intro.ts`; the CSS is the "Intro" block of `motion.css`.
+
+- **Once, and only on home.** A tiny inline script decides before the first paint, so the page never flashes first. A per-tab session flag is set on every page, so someone who arrives on a place page and later opens home never gets it, and a reload does not replay it. Leaving home and coming back gets the normal arrival with no wait.
+- **Never a trap.** A tap, a key or a scroll skips it. The panel fades out in 280ms and the page's arrival catches up at once.
+- **It ends itself.** All the timing is CSS, so the intro ends at 2.25s even if React never loads. With scripts off, storage blocked, or reduced motion, it never plays. It is `aria-hidden`; the page beneath is already in the HTML.
+- **A beat, not a loader.** The count is timed, not a measure of anything. Nothing waits on it, and the page loads underneath from the start.
 
 ### Timing and curves
 | Use | Duration | Curve |
@@ -297,15 +305,18 @@ There is deliberately **no `loading.tsx`** and **no splash screen**. A `loading.
 | Waiting loops (skeleton light, label, walked mark) | 2.4s: one pass, then a rest | `--cmj-ease-draw` or (0.4, 0, 0.2, 1) |
 | Route dots | 1.2s, 180ms between stops | `--cmj-ease-draw` |
 | Page line | shown after 120ms, runs 10s towards 92%, finishes in 260ms | (0.08, 0.7, 0.2, 1), then `--cmj-ease-out` |
+| Intro: name fills, count runs | 1.3s, from 120ms | `--cmj-ease-draw` |
+| Intro: panel lifts | 720ms, from 1.5s; over at 2.25s | `--cmj-ease-inout` (0.76, 0, 0.24, 1) |
+| Intro: skipped | 280ms fade | `--ease-brand` |
 
 No bounce or elastic curves. Exits are not animated.
 
 ### Named Rules
 **The Fail Visible Rule.** Nothing is hidden in the server's HTML by a script. Arrivals above the fold are CSS keyframes that end opaque and never wait for hydration. Reveals on scroll hide only what is still below the fold after hydration. With JavaScript off, every element is present (checked: 27 of 27 visible). Magic UI's originals start at `opacity: 0` until React runs; ours do not.
 
-**The Largest Paint Moves, Never Hides Rule.** The hero photograph is the page's largest paint. It may scale, but it is never faded or delayed.
+**The Largest Paint Moves, Never Hides Rule.** The hero photograph is the page's largest paint. It may scale, but it is never faded or delayed. The one exception is the intro, which was the owner's choice (2026-11-16). On the first home page of a visit, the intro covers the photograph for 1.5s, and the photograph only starts settling as the panel lifts. Even then it loads and paints underneath from the start, so it is ready the moment the panel moves.
 
-**The Reduced Motion Rule.** Under `prefers-reduced-motion`, every entrance, draw, settle, beam and pop is switched off outright, delays included, so nothing waits to appear. The reading bar stays, because it only follows the reader's own scrolling. Waits stand still: the skeleton is its plain shape, the label plain text, the mark whole, the route dots all lit; the page line appears in place and fades, without travelling.
+**The Reduced Motion Rule.** Under `prefers-reduced-motion`, every entrance, draw, settle, beam and pop is switched off outright, delays included, so nothing waits to appear. The intro does not play. The reading bar stays, because it only follows the reader's own scrolling. Waits stand still: the skeleton is its plain shape, the label plain text, the mark whole, the route dots all lit; the page line appears in place and fades, without travelling.
 
 **The Operate Quietly Rule.** Explore, the planner, my trips and account are places to work. They get feedback only, never load choreography.
 

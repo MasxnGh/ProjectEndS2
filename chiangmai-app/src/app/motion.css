@@ -25,6 +25,8 @@
   --cmj-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   /* Handwriting and lines being drawn: even speed through the middle. */
   --cmj-ease-draw: cubic-bezier(0.45, 0, 0.2, 1);
+  /* A large surface moving away (the intro's panel): slow, fast, slow. */
+  --cmj-ease-inout: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 /* ------------------------------------------------------------------ */
@@ -555,6 +557,149 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* The intro — components/brand/intro.tsx, lib/intro.ts                 */
+/* ------------------------------------------------------------------ */
+
+/*
+ * First visit, home page only (the inline script in lib/intro.ts decides and
+ * marks <html data-intro="play">). Deep green; "Chiangmai Journey" fills with
+ * sand light from the bottom as the count runs to 100 (120ms–1.42s); the
+ * panel lifts (1.5s–2.22s) and the hero's own arrival follows. It ends itself
+ * here, in CSS, even if React never loads; IntroControl only skips it early.
+ */
+@property --cmj-n {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
+
+.cmj-intro {
+  display: none;
+}
+html[data-intro="play"] .cmj-intro,
+html[data-intro="skip"] .cmj-intro {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  color: var(--cmj-sand);
+  /* The end, just after the lift. IntroControl waits on this animation by
+     name (INTRO_END_ANIMATION in lib/intro.ts) to mark the intro "over". */
+  animation: cmj-intro-end 1ms linear 2250ms forwards;
+}
+html[data-intro="skip"] .cmj-intro {
+  animation: cmj-intro-skip 280ms var(--ease-brand) forwards;
+}
+@keyframes cmj-intro-end {
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes cmj-intro-skip {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.cmj-intro-panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--cmj-green-deep);
+  animation: cmj-intro-lift 720ms var(--cmj-ease-inout) 1500ms forwards;
+}
+@keyframes cmj-intro-lift {
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+/* The name rides inside the panel but lags behind it and dims, so the rising
+   edge cuts it off rather than leaving a ghost over the hero's own title. */
+.cmj-intro-name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: clamp(14px, 2vw, 24px);
+  translate: -50% -55%;
+  animation: cmj-intro-name-lag 720ms var(--cmj-ease-inout) 1500ms forwards;
+}
+@keyframes cmj-intro-name-lag {
+  to {
+    opacity: 0;
+    transform: translateY(30vh);
+  }
+}
+.cmj-intro-name svg {
+  width: clamp(48px, 5vw, 64px);
+}
+
+/* The name twice: faint underneath, and a full-strength copy uncovered from
+   the bottom up, like light rising. */
+.cmj-intro-word {
+  position: relative;
+  margin: 0;
+  font-size: clamp(52px, 10.5vw, 168px);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-align: center;
+  white-space: pre-line;
+  color: color-mix(in oklab, var(--cmj-sand) 14%, transparent);
+}
+.cmj-intro-word > span {
+  position: absolute;
+  inset: 0;
+  color: var(--cmj-sand);
+  clip-path: inset(100% 0 0 0);
+  animation: cmj-intro-fill 1300ms var(--cmj-ease-draw) 120ms forwards;
+}
+@keyframes cmj-intro-fill {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The count: an integer animated in CSS and printed with counter(). Where
+   @property is not supported it simply shows 00 and then 100. */
+.cmj-intro-count {
+  margin: 0;
+  font-size: 0.8125rem;
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in oklab, var(--cmj-sand) 70%, transparent);
+  counter-reset: cmj-n var(--cmj-n);
+  animation: cmj-intro-count 1300ms var(--cmj-ease-draw) 120ms both;
+}
+.cmj-intro-count::before {
+  content: counter(cmj-n, decimal-leading-zero) " %";
+}
+@keyframes cmj-intro-count {
+  from {
+    --cmj-n: 0;
+  }
+  to {
+    --cmj-n: 100;
+  }
+}
+
+/* The home page underneath waits for the panel: the photo starts settling as
+   the panel lifts, the words follow 250ms later. Kept after the panel has
+   gone ("over"), so the words are never cut short; dropped on a skip. */
+:is(html[data-intro="play"], html[data-intro="over"]) .cmj-settle {
+  animation-delay: 1500ms;
+}
+:is(html[data-intro="play"], html[data-intro="over"]) :is(.cmj-arrive, .cmj-arrive-fade) {
+  animation-delay: calc(var(--cmj-delay, 0ms) + 1750ms);
+}
+:is(html[data-intro="play"], html[data-intro="over"]) .cmj-text-seg {
+  animation-delay: calc(var(--ta-delay, 0ms) + var(--i, 0) * var(--ta-stagger, 120ms) + 1750ms);
+}
+
+/* ------------------------------------------------------------------ */
 /* Reduced motion and print                                            */
 /* ------------------------------------------------------------------ */
 
@@ -614,6 +759,10 @@
   .cmj-nav-progress[data-state="loading"] > span {
     transform: translateX(-35%);
   }
+  /* The intro never plays (lib/intro.ts checks too). */
+  .cmj-intro {
+    display: none !important;
+  }
 }
 
 @media (forced-colors: active) {
@@ -627,8 +776,9 @@
 }
 
 @media print {
-  .cmj-nav-progress {
-    display: none;
+  .cmj-nav-progress,
+  .cmj-intro {
+    display: none !important;
   }
   [data-reveal] [data-stop],
   [data-reveal] [data-leg],
