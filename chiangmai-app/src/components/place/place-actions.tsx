@@ -108,7 +108,11 @@ export function PlaceDock({
         <Navigation aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
       </a>
       <ShareButton title={name} />
-      <PlanToggle slug={slug} placeName={name} variant="button" className="flex-1" />
+      {/* flex-1 stretches the button, so its padding is only a minimum: px-4
+          lets the longest label ("Add to plan", "อยู่ในแผนแล้ว") fit from
+          340px. Below 360px the icon goes too; the words and the button's
+          fill still tell the two states apart. */}
+      <PlanToggle slug={slug} placeName={name} variant="button" className="flex-1 px-4 max-[359px]:[&>svg]:hidden" />
     </div>
   );
 }

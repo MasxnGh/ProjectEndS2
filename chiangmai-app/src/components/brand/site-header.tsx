@@ -21,6 +21,7 @@ import {
 import type { PlaceCategory } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
+import { BackButton } from "./back-button";
 import { ButtonLink } from "./button";
 import { cx, focusRing } from "./cx";
 import { Dialog } from "./dialog";
@@ -38,7 +39,8 @@ type SessionUser = { name: string | null; email: string | null; image: string | 
  * The site header: logo, three links with Explore opening the place types,
  * search, the planner as the one filled button, and a menu for the things you
  * set once (language, theme, account). Below 1024px all of that moves into a
- * sheet from the right, and the bar keeps the logo, search and the menu button.
+ * sheet from the right, and the bar keeps the logo, search and the menu button,
+ * with a back button before the logo on every page but home.
  *
  * It is solid and always the same height. The pages under it start with framed
  * photographs, not full-bleed ones, so there is nothing to see through it.
@@ -110,7 +112,10 @@ export function SiteHeader({
     <>
       <header data-brand className="no-print sticky top-0 z-50 border-b border-line bg-panel font-brand text-ink">
         <Wrap className="flex h-[72px] items-center gap-4 lg:gap-6">
-          <Logo href={home} label={dict.ui.logoHome} draw />
+          {/* The negative margins pull the 44px target into the gutter and
+              close the gap to the logo, so the bar still fits at 320px. */}
+          <BackButton className="-mx-2 lg:hidden" />
+          <Logo href={home} label={dict.ui.logoHome} draw compact={!current.home} />
 
           <nav aria-label={dict.shell.primaryNav} className="mx-auto hidden items-center gap-1 lg:flex">
             <Link href={href.home} aria-current={current.home ? "page" : undefined} className={navLinkStyles(current.home)}>

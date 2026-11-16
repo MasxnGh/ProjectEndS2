@@ -917,6 +917,7 @@ const th: Dictionary = {
     primaryNav: "เมนูหลัก",
     exploreMenu: "สำรวจตามหมวด",
     allPlaces: "ดูทุกที่ {count} แห่ง",
+    back: "ย้อนกลับ",
     openMenu: "เปิดเมนู",
     closeMenu: "ปิดเมนู",
     settings: "ภาษา ธีม และบัญชี",
