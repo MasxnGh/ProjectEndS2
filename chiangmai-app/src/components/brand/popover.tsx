@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { cx, focusRing } from "./cx";
 
 /**
@@ -46,6 +46,23 @@ export function Popover({
     },
     [buttonId],
   );
+
+  // From sm up the panel hangs under its button, flush with its left edge.
+  // A button near the right of a scrolling box (the planner's left column)
+  // would push the panel past that box's edge, and focusing the field inside
+  // would then scroll the box sideways and cut off its left side. Slide the
+  // panel back inside first; this runs before the focus effect below.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    if (!panel || getComputedStyle(panel).position !== "absolute") return;
+    const box = clipBox(panel);
+    const rect = panel.getBoundingClientRect();
+    let shift = 0;
+    if (rect.right > box.right) shift = box.right - rect.right;
+    if (rect.left + shift < box.left) shift = box.left - rect.left;
+    panel.style.translate = shift ? `${shift}px 0` : "";
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -114,6 +131,23 @@ export function Popover({
       ) : null}
     </div>
   );
+}
+
+/**
+ * The inner edges (inside padding and scrollbar) of the nearest box that
+ * clips `el` sideways, or the window less a 16px gutter when nothing does.
+ */
+function clipBox(el: HTMLElement): { left: number; right: number } {
+  for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (style.overflowX === "visible") continue;
+    const inner = node.getBoundingClientRect().left + node.clientLeft;
+    return {
+      left: inner + parseFloat(style.paddingLeft),
+      right: inner + node.clientWidth - parseFloat(style.paddingRight),
+    };
+  }
+  return { left: 16, right: document.documentElement.clientWidth - 16 };
 }
 
 /** The field chip a Popover opens from: a panel pill with a hairline, as in the planner prototype. */
