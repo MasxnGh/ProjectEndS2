@@ -45,6 +45,11 @@ const en = {
       replaceCta: 'Replace "{title}"',
       close: "Decide later",
     },
+    unavailable: {
+      title: "We can't reach your account right now",
+      body: "Nothing has been lost, and you don't need to sign in again. The database isn't answering for the moment — try again shortly.",
+      retry: "Try again",
+    },
     signOutConfirm: {
       title: "Sign out?",
       body: "Your plan on this device can stay here for next time, or you can clear it now.",

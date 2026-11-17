@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { safeAuth } from "@/lib/auth-safe";
+import { safeCallbackPath } from "@/lib/safe-callback";
 import { isLocale, getDictionary } from "@/i18n";
 import { getPlaceBySlug } from "@/data/places";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
@@ -35,7 +36,7 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackUrl?: string | string[] }>;
 }) {
   const { locale } = await params;
   const loc = isLocale(locale) ? locale : "en";
@@ -43,8 +44,7 @@ export default async function LoginPage({
   const { callbackUrl } = await searchParams;
 
   const session = await safeAuth();
-  const safeCallbackUrl =
-    callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : `/${loc}/planner`;
+  const safeCallbackUrl = safeCallbackPath(callbackUrl, `/${loc}/planner`);
   if (session) {
     redirect(safeCallbackUrl);
   }

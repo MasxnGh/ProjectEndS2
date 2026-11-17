@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSessionState } from "@/lib/session-state";
 import { getTripsCollection } from "@/lib/db/collections";
 import { toSerializedTrip, type SerializedTrip } from "@/lib/db/types";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { MyTripsList } from "@/components/trips/my-trips-list";
+import { AccountUnavailable } from "@/components/brand/account-unavailable";
 import { PageHead } from "@/components/brand/page-head";
 import { Wrap } from "@/components/brand/surface";
 
@@ -51,14 +52,25 @@ export default async function MyTripsPage({ params }: { params: Promise<{ locale
   const loc: Locale = locale;
   const dict = getDictionary(loc);
 
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) {
-    // Signed out: send them to sign in and come back here afterwards. This is
-    // the only page in the app that requires an account — the planner itself
-    // stays fully usable as a guest.
+  const sessionState = await getSessionState();
+  if (sessionState.status === "unavailable") {
+    // Signed in, as far as anyone can tell, but the database can't confirm
+    // it right now. Asking them to sign in again would fail the same way.
+    return (
+      <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
+        <Wrap>
+          <PageHead title={dict.myTrips.title} intro={dict.myTrips.intro} />
+          <AccountUnavailable dict={dict} retryHref={`/${loc}/my-trips`} />
+        </Wrap>
+      </div>
+    );
+  }
+  if (sessionState.status === "signed-out") {
+    // Signed out: send them to sign in and come back here afterwards. The
+    // planner itself stays fully usable as a guest.
     redirect(`/${loc}/login?callbackUrl=${encodeURIComponent(`/${loc}/my-trips`)}`);
   }
+  const { userId } = sessionState;
 
   let trips: SerializedTrip[] = [];
   let loadFailed = false;

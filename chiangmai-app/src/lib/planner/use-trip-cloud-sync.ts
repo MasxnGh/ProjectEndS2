@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTripStore, buildWritableTripPayload } from "@/lib/trip-store";
+import { shouldAutosave } from "@/lib/planner/autosave-gate";
 import { useToast } from "@/components/toast/toast-provider";
 import { useLocale } from "@/components/providers/locale-provider";
 import type { SerializedTrip, TripWritablePayload } from "@/lib/db/types";
@@ -77,11 +78,13 @@ export function useTripCloudSync() {
   const remoteTripId = useTripStore((s) => s.remoteTripId);
   const remoteUpdatedAt = useTripStore((s) => s.remoteUpdatedAt);
   const saveStatus = useTripStore((s) => s.saveStatus);
+  const loadRevision = useTripStore((s) => s.loadRevision);
   const setRemoteTripMeta = useTripStore((s) => s.setRemoteTripMeta);
   const setSaveStatus = useTripStore((s) => s.setSaveStatus);
 
   const [migrationPrompt, setMigrationPrompt] = useState<MigrationPrompt | null>(null);
   const [migrationDeclined, setMigrationDeclined] = useState(false);
+  const [migrationChecking, setMigrationChecking] = useState(false);
   const migrationCheckedForSessionRef = useRef(false);
   const wasAuthenticatedRef = useRef(false);
   const lastSavedJsonRef = useRef<string | null>(null);
@@ -145,9 +148,13 @@ export function useTripCloudSync() {
 
   const runMigrationCheck = useCallback(async () => {
     if (remoteTripId || isLocalPlanEmpty) return;
+    // Set before the first await, so autosave holds off from this render on
+    // (see shouldAutosave) until the answer is in.
+    setMigrationChecking(true);
     try {
       const res = await fetch("/api/trips");
-      const data: { trips?: SerializedTrip[] } = res.ok ? await res.json() : {};
+      if (!res.ok) throw new Error(`List failed: ${res.status}`);
+      const data: { trips?: SerializedTrip[] } = await res.json();
       const [mostRecent] = data.trips ?? [];
       setMigrationDeclined(false);
       if (mostRecent) {
@@ -160,8 +167,13 @@ export function useTripCloudSync() {
       // No existing trips: leave migrationPrompt unset — the autosave
       // effect below will create the first one on its own next tick.
     } catch {
-      // Listing failed. Leave migrationDeclined as-is; the status
-      // indicator's manual "save" affordance lets the user retry.
+      // Listing failed, so there is no telling whether the account already
+      // has a trip. Saving anyway could duplicate it; hold autosave exactly
+      // as "decide later" does. The status shows the plan as on this device
+      // only, and its "save" asks again.
+      setMigrationDeclined(true);
+    } finally {
+      setMigrationChecking(false);
     }
   }, [remoteTripId, isLocalPlanEmpty, dict.planner.details.tripNamePlaceholder]);
 
@@ -186,15 +198,37 @@ export function useTripCloudSync() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, setSaveStatus]);
 
-  // Debounced autosave — skipped while a migration decision is pending or
-  // was explicitly deferred, so it can never silently create a duplicate
-  // trip right after the user said "decide later".
+  // A trip just opened from the account (My Trips → Open) is already what
+  // the account holds, so it counts as saved. Without this, autosave wrote
+  // it straight back unchanged, which only moved its "last edited" time and
+  // reshuffled My Trips. Compared with the revision seen at mount rather than
+  // with zero: a plan carried over from an earlier visit may hold edits that
+  // never reached the server, and those still need their save.
+  const seenLoadRevisionRef = useRef(loadRevision);
   useEffect(() => {
-    if (status !== "authenticated") return;
-    if (migrationPrompt) return;
-    if (isLocalPlanEmpty) return;
-    if (!remoteTripId && migrationDeclined) return;
-    if (payloadJson === lastSavedJsonRef.current) return;
+    if (loadRevision === seenLoadRevisionRef.current) return;
+    seenLoadRevisionRef.current = loadRevision;
+    lastSavedJsonRef.current = payloadJson;
+    // Runs on a load only, with the payload that load produced; declared
+    // before the autosave effect so it settles first in the same commit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadRevision]);
+
+  // Debounced autosave — skipped while the sign-in check is still asking
+  // whether the account has a trip, while its question is open, or after
+  // "decide later", so it can never silently create a duplicate trip.
+  useEffect(() => {
+    const go = shouldAutosave({
+      signedIn: status === "authenticated",
+      migrationChecking,
+      migrationPromptOpen: migrationPrompt !== null,
+      migrationDeclined,
+      localPlanEmpty: isLocalPlanEmpty,
+      remoteTripId,
+      payloadJson,
+      lastSavedJson: lastSavedJsonRef.current,
+    });
+    if (!go) return;
 
     const timer = setTimeout(() => {
       performSave(payload, remoteTripId, remoteUpdatedAt);
@@ -202,6 +236,7 @@ export function useTripCloudSync() {
     return () => clearTimeout(timer);
   }, [
     status,
+    migrationChecking,
     migrationPrompt,
     isLocalPlanEmpty,
     migrationDeclined,
