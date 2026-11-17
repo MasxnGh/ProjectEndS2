@@ -49,6 +49,9 @@ const en = {
       title: "We can't reach your account right now",
       body: "Nothing has been lost, and you don't need to sign in again. The database isn't answering for the moment — try again shortly.",
       retry: "Try again",
+      /** The account button's label in the header while this is so. */
+      trigger: "Language, theme and account — can't reach your account right now",
+      headerBody: "Nothing has been lost, and you don't need to sign in again. We'll keep trying to reconnect.",
     },
     signOutConfirm: {
       title: "Sign out?",
