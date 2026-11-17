@@ -8,10 +8,12 @@ import {
   ArrowRight,
   ChevronDown,
   ChevronRight,
+  CloudOff,
   Heart,
   LogOut,
   Luggage,
   Menu,
+  RotateCw,
   Search,
   ShieldCheck,
   UserRound,
@@ -20,13 +22,16 @@ import {
 } from "lucide-react";
 import type { PlaceCategory } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
+import type { AccountView } from "@/lib/account-view";
 import { useTripStore } from "@/lib/trip-store";
+import { useAccountState } from "@/lib/use-account-state";
 import { BackButton } from "./back-button";
-import { ButtonLink } from "./button";
+import { Button, ButtonLink, type ButtonSize } from "./button";
 import { cx, focusRing } from "./cx";
 import { Dialog } from "./dialog";
 import { CATEGORY_ORDER, categoryIcon, ICON_STROKE } from "./icons";
 import { IconButton, IconButtonLink, iconButtonStyles } from "./icon-button";
+import { RouteDots, Skeleton } from "./loaders";
 import { Logo } from "./logo";
 import { fill } from "./place-text";
 import { LanguageChoice, ThemeChoice } from "./preferences";
@@ -56,9 +61,11 @@ export function SiteHeader({
   const { locale, dict } = useLocale();
   const pathname = usePathname();
   const { data: session } = useSession();
-  const user: SessionUser | null = session?.user
-    ? { name: session.user.name ?? null, email: session.user.email ?? null, image: session.user.image ?? null }
-    : null;
+  const account = useAccountState();
+  const user: SessionUser | null =
+    account.view === "signed-in" && session?.user
+      ? { name: session.user.name ?? null, email: session.user.email ?? null, image: session.user.image ?? null }
+      : null;
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [signOutOpen, setSignOutOpen] = useState(false);
@@ -151,10 +158,13 @@ export function SiteHeader({
             </ButtonLink>
             <AccountMenu
               user={user}
+              view={account.view}
               pathname={pathname}
               loginHref={href.login}
               links={accountLinks}
               onSignOut={requestSignOut}
+              onRetry={account.retry}
+              retrying={account.retrying}
             />
             <IconButton
               label={dict.shell.openMenu}
@@ -231,14 +241,13 @@ export function SiteHeader({
             {user ? (
               <AccountBlock user={user} links={accountLinks} onSignOut={requestSignOut} />
             ) : (
-              <ButtonLink
-                href={href.login}
-                variant="secondary"
-                icon={<UserRound aria-hidden strokeWidth={ICON_STROKE} className="size-5" />}
-                className="w-full"
-              >
-                {dict.shell.signInWithGoogle}
-              </ButtonLink>
+              <NoAccount
+                view={account.view}
+                loginHref={href.login}
+                size="md"
+                onRetry={account.retry}
+                retrying={account.retrying}
+              />
             )}
           </div>
         </div>
@@ -438,23 +447,31 @@ function Avatar({ user, className }: { user: SessionUser; className?: string }) 
 /** Desktop only: language, theme and the account, behind one quiet button. */
 function AccountMenu({
   user,
+  view,
   pathname,
   loginHref,
   links,
   onSignOut,
+  onRetry,
+  retrying,
 }: {
   user: SessionUser | null;
+  view: AccountView;
   pathname: string;
   loginHref: string;
   links: { href: string; label: string; icon: LucideIcon }[];
   onSignOut: () => void;
+  onRetry: () => void;
+  retrying: boolean;
 }) {
   const { dict } = useLocale();
   const { open, setOpen, rootRef, triggerRef, onBlur } = usePopover(pathname);
   const panelId = useId();
   const label = user
     ? fill(dict.auth.menu.trigger, { name: user.name ?? user.email ?? dict.auth.menu.fallbackName })
-    : dict.shell.settings;
+    : view === "unavailable"
+      ? dict.auth.unavailable.trigger
+      : dict.shell.settings;
 
   return (
     <div ref={rootRef} className="relative hidden lg:block" onBlur={onBlur}>
@@ -468,7 +485,13 @@ function AccountMenu({
         onClick={() => setOpen((v) => !v)}
         className={iconButtonStyles({ tone: "plain" })}
       >
-        {user ? <Avatar user={user} /> : <UserRound aria-hidden strokeWidth={ICON_STROKE} className="size-5" />}
+        {user ? (
+          <Avatar user={user} />
+        ) : view === "unavailable" ? (
+          <CloudOff aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+        ) : (
+          <UserRound aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+        )}
       </button>
       <Popover id={panelId} open={open} align="end" className="grid w-[344px] gap-4 p-4">
         {user ? (
@@ -482,15 +505,14 @@ function AccountMenu({
             onNavigate={() => setOpen(false)}
           />
         ) : (
-          <ButtonLink
-            href={loginHref}
-            variant="secondary"
+          <NoAccount
+            view={view}
+            loginHref={loginHref}
             size="sm"
-            icon={<UserRound aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
-            onClick={() => setOpen(false)}
-          >
-            {dict.shell.signInWithGoogle}
-          </ButtonLink>
+            onRetry={onRetry}
+            retrying={retrying}
+            onNavigate={() => setOpen(false)}
+          />
         )}
         <div className="grid gap-4 border-t border-line pt-4">
           <Setting label={dict.footer.language}>
@@ -503,6 +525,77 @@ function AccountMenu({
       </Popover>
     </div>
   );
+}
+
+/**
+ * The account part of the menu when there is no account to show: the sign-in
+ * button once the server has confirmed there is no session, a placeholder
+ * until it has, and a note while the database can't be asked. Offering
+ * sign-in during an outage would send someone who is signed in through a
+ * sign-in that can't work anyway.
+ */
+function NoAccount({
+  view,
+  loginHref,
+  size,
+  onRetry,
+  retrying,
+  onNavigate,
+}: {
+  view: AccountView;
+  loginHref: string;
+  size: ButtonSize;
+  onRetry: () => void;
+  retrying: boolean;
+  onNavigate?: () => void;
+}) {
+  const { dict } = useLocale();
+  const iconSize = size === "md" ? "size-5" : "size-4";
+
+  if (view === "unavailable") {
+    const t = dict.auth.unavailable;
+    return (
+      <div className="grid gap-3">
+        <div className="flex items-start gap-3 px-2">
+          <span className="grid size-10 flex-none place-items-center rounded-full bg-well text-brand">
+            <CloudOff aria-hidden strokeWidth={ICON_STROKE} className="size-5" />
+          </span>
+          <div className="grid gap-1">
+            <p className="text-label">{t.title}</p>
+            <p className="text-small text-ink-soft">{t.headerBody}</p>
+          </div>
+        </div>
+        <Button
+          variant="secondary"
+          size={size}
+          onClick={onRetry}
+          disabled={retrying}
+          aria-busy={retrying || undefined}
+          icon={retrying ? <RouteDots /> : <RotateCw aria-hidden strokeWidth={ICON_STROKE} className={iconSize} />}
+        >
+          {t.retry}
+        </Button>
+      </div>
+    );
+  }
+
+  if (view === "signed-out") {
+    return (
+      <ButtonLink
+        href={loginHref}
+        variant="secondary"
+        size={size}
+        icon={<UserRound aria-hidden strokeWidth={ICON_STROKE} className={iconSize} />}
+        onClick={onNavigate}
+        className="w-full"
+      >
+        {dict.shell.signInWithGoogle}
+      </ButtonLink>
+    );
+  }
+
+  // Still finding out. The same height as the button, so nothing moves when it arrives.
+  return <Skeleton className={cx("rounded-full", size === "md" ? "h-12" : "h-11")} />;
 }
 
 function Setting({ label, children }: { label: string; children: ReactNode }) {
