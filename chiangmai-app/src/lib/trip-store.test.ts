@@ -1,5 +1,26 @@
-import { describe, expect, it } from "vitest";
-import { buildTripSnapshot, UNSCHEDULED, type TripState } from "./trip-store";
+import { describe, expect, it, vi } from "vitest";
+
+// An in-memory `window.localStorage`, in place before the store module loads:
+// zustand's persist middleware reads it from `window`, and without one it
+// skips persisting altogether in Node, leaving nothing to check.
+const storage = vi.hoisted(() => {
+  const items = new Map<string, string>();
+  const stub = {
+    getItem: (key: string) => items.get(key) ?? null,
+    setItem: (key: string, value: string) => void items.set(key, value),
+    removeItem: (key: string) => void items.delete(key),
+    clear: () => items.clear(),
+    key: (i: number) => [...items.keys()][i] ?? null,
+    get length() {
+      return items.size;
+    },
+  };
+  Object.defineProperty(globalThis, "window", { value: { localStorage: stub }, configurable: true });
+  return items;
+});
+
+import { buildTripSnapshot, UNSCHEDULED, useTripStore, type TripState } from "./trip-store";
+import type { SerializedTrip } from "@/lib/db/types";
 
 function fakeState(overrides: Partial<TripState>): TripState {
   return {
@@ -90,5 +111,42 @@ describe("buildTripSnapshot", () => {
     expect(trip.days[0].stops[0]).toEqual({ placeSlug: "wat-chedi-luang", plannedArrival: "10:30", userLocked: true });
     // Same place slug on a different day must not pick up day-1's lock.
     expect(trip.days[1].stops[0]).toEqual({ placeSlug: "wat-chedi-luang", plannedArrival: null, userLocked: false });
+  });
+});
+
+describe("loadRevision", () => {
+  const savedTrip: SerializedTrip = {
+    id: "trip-1",
+    ownerId: "u1",
+    title: "วันแรกกับเชียงใหม่",
+    startDate: null,
+    baseLocation: null,
+    days: [{ date: null, stops: [{ placeSlug: "wat-chedi-luang", plannedArrival: null, userLocked: false }] }],
+    travelMode: "walk",
+    travelers: 2,
+    budgetThb: 0,
+    accommodationThb: 0,
+    packingItems: [],
+    shareToken: "token",
+    visibility: "private",
+    createdAt: "2026-08-14T00:00:00.000Z",
+    updatedAt: "2026-08-22T00:00:00.000Z",
+  };
+
+  it("goes up each time a saved trip is opened, even the same one again", () => {
+    const before = useTripStore.getState().loadRevision;
+    useTripStore.getState().loadRemoteTrip(savedTrip);
+    useTripStore.getState().loadRemoteTrip(savedTrip);
+    expect(useTripStore.getState().loadRevision).toBe(before + 2);
+    expect(useTripStore.getState().remoteTripId).toBe("trip-1");
+  });
+
+  it("is not written to localStorage", () => {
+    useTripStore.getState().loadRemoteTrip(savedTrip);
+    const written = JSON.parse(storage.get("doi-delta-trip-v2") ?? "{}") as { state?: Partial<TripState> };
+    expect(written.state).toBeDefined();
+    expect(written.state).not.toHaveProperty("loadRevision");
+    expect(written.state).not.toHaveProperty("saveStatus");
+    expect(written.state).toHaveProperty("remoteTripId", "trip-1");
   });
 });

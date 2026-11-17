@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSessionState } from "@/lib/session-state";
 import { getFavoritesCollection } from "@/lib/db/collections";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { FavoritesGallery } from "@/components/favorites/favorites-gallery";
+import { AccountUnavailable } from "@/components/brand/account-unavailable";
 import { PageHead } from "@/components/brand/page-head";
 import { Wrap } from "@/components/brand/surface";
 
@@ -33,11 +34,21 @@ export default async function FavoritesPage({ params }: { params: Promise<{ loca
   const loc: Locale = locale;
   const dict = getDictionary(loc);
 
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) {
+  const sessionState = await getSessionState();
+  if (sessionState.status === "unavailable") {
+    return (
+      <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
+        <Wrap>
+          <PageHead title={dict.favorites.title} intro={dict.favorites.intro} />
+          <AccountUnavailable dict={dict} retryHref={`/${loc}/favorites`} />
+        </Wrap>
+      </div>
+    );
+  }
+  if (sessionState.status === "signed-out") {
     redirect(`/${loc}/login?callbackUrl=${encodeURIComponent(`/${loc}/favorites`)}`);
   }
+  const { userId } = sessionState;
 
   // Read straight from the collection for the first paint; the client
   // provider takes over afterwards so a heart toggled here updates instantly

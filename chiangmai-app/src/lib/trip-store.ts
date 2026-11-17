@@ -57,6 +57,8 @@ export interface TripState {
   remoteUpdatedAt: string | null;
   /** Autosave status for the cloud-sync indicator. Deliberately NOT persisted (see partialize below) — a stale "saving"/"failed" surviving a refresh would be misleading; the next debounce cycle re-derives it within ~1.5s anyway. */
   saveStatus: "idle" | "saving" | "saved" | "failed";
+  /** Goes up by one each time loadRemoteTrip puts a saved trip on screen, so autosave can tell "just opened" from "just edited". Not persisted: it only means something within one page session. */
+  loadRevision: number;
   addPlace: (slug: string) => void;
   removeFromPlan: (slug: string, containerId?: string) => void;
   isPlanned: (slug: string) => boolean;
@@ -182,6 +184,7 @@ export const useTripStore = create<TripState>()(
       remoteTripId: null,
       remoteUpdatedAt: null,
       saveStatus: "idle",
+      loadRevision: 0,
 
       addPlace: (slug) => {
         const state = get();
@@ -415,6 +418,7 @@ export const useTripStore = create<TripState>()(
           remoteTripId: trip.id,
           remoteUpdatedAt: trip.updatedAt,
           saveStatus: "saved",
+          loadRevision: get().loadRevision + 1,
         });
       },
 
@@ -430,11 +434,13 @@ export const useTripStore = create<TripState>()(
       version: SCHEMA_VERSION,
       migrate: (persistedState) => persistedState as TripState,
       // saveStatus is UI-only and would be misleading if it survived a reload
-      // mid-save; everything else — including remoteTripId/remoteUpdatedAt —
-      // persists as normal.
+      // mid-save, and loadRevision only counts loads within one page session;
+      // everything else — including remoteTripId/remoteUpdatedAt — persists
+      // as normal.
       partialize: (state) => {
-        const { saveStatus: _saveStatus, ...persisted } = state;
+        const { saveStatus: _saveStatus, loadRevision: _loadRevision, ...persisted } = state;
         void _saveStatus;
+        void _loadRevision;
         return persisted;
       },
     }

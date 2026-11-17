@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSessionState } from "@/lib/session-state";
 import { collectUserData } from "@/lib/db/account-data";
 import { isLocale, getDictionary, type Locale } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { AccountActions } from "@/components/account/account-actions";
+import { AccountUnavailable } from "@/components/brand/account-unavailable";
 import { PageHead } from "@/components/brand/page-head";
 import { Wrap } from "@/components/brand/surface";
 
@@ -34,15 +35,32 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
   const dict = getDictionary(loc);
   const t = dict.account;
 
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) {
+  const unavailable = (
+    <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
+      <Wrap className="max-w-[calc(760px+4rem)]">
+        <PageHead title={t.title} intro={t.intro} />
+        <AccountUnavailable dict={dict} retryHref={`/${loc}/account`} />
+      </Wrap>
+    </div>
+  );
+
+  const sessionState = await getSessionState();
+  if (sessionState.status === "unavailable") return unavailable;
+  if (sessionState.status === "signed-out") {
     redirect(`/${loc}/login?callbackUrl=${encodeURIComponent(`/${loc}/account`)}`);
   }
+  const { userId } = sessionState;
 
   // Read through the same function the export uses, so this page shows
-  // exactly what the download contains — no second inventory to drift.
-  const data = await collectUserData(userId);
+  // exactly what the download contains — no second inventory to drift. The
+  // session was just confirmed, so a failure here is the database dropping
+  // out mid-request: same answer as above, not a crash page.
+  let data: Awaited<ReturnType<typeof collectUserData>>;
+  try {
+    data = await collectUserData(userId);
+  } catch {
+    return unavailable;
+  }
 
   const rows: { label: string; value: string }[] = [
     { label: t.fields.name, value: (data.account?.name as string) ?? "—" },

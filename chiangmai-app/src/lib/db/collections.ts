@@ -7,7 +7,9 @@ import type { TripDoc, FavoriteDoc } from "./types";
  * running this on first use per warm instance — rather than requiring a
  * separate migration step — is safe and keeps setup to "just add
  * MONGODB_URI". Memoized so it only actually runs once per warm instance,
- * not once per request.
+ * not once per request — but only once it has worked: a run that failed
+ * (database unreachable) is dropped so the next request tries again, instead
+ * of every trips/favorites call failing until the server restarts.
  */
 let indexesReady: Promise<void> | null = null;
 
@@ -21,7 +23,11 @@ async function ensureIndexes(): Promise<void> {
 }
 
 function ensureIndexesOnce(): Promise<void> {
-  return (indexesReady ??= ensureIndexes());
+  indexesReady ??= ensureIndexes().catch((error: unknown) => {
+    indexesReady = null;
+    throw error;
+  });
+  return indexesReady;
 }
 
 export async function getTripsCollection(): Promise<Collection<TripDoc>> {

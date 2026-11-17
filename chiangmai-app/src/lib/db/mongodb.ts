@@ -13,18 +13,32 @@ import { MongoClient } from "mongodb";
  */
 declare global {
   var _mongoClientPromise: Promise<MongoClient> | undefined;
+  var _mongoLastFailure: { at: number; error: unknown } | undefined;
 }
 
 /**
- * Returns a rejected promise instead of throwing synchronously when the URI
- * is missing. This module is imported by src/auth.ts, which the root layout
- * calls on every single page — a synchronous throw here would take down
- * guest-mode pages too, not just the auth-dependent ones. A rejected
- * promise only surfaces to whoever actually awaits it (auth(), or a
- * trips/favorites route), which is exactly where "the database isn't
- * configured" should be handled, not at import time.
+ * How long a query waits for a reachable server before it fails. The
+ * driver's default is 30 seconds, which turns a database outage into pages
+ * that hang for half a minute before showing anything. Five is far more
+ * than a healthy Atlas round trip needs, even from a cold start.
  */
-function createClientPromise(): Promise<MongoClient> {
+export const SERVER_SELECTION_TIMEOUT_MS = 5_000;
+
+/**
+ * How long a failed connect stands as the answer before the next call tries
+ * again. One page asks for the database more than once (the session, then
+ * the check that tells "signed out" from "unreachable"); without this each
+ * of those would wait out its own timeout, back to back.
+ */
+export const FAILURE_MEMORY_MS = 2_000;
+
+/**
+ * Rejects instead of throwing synchronously when the URI is missing, so
+ * "the database isn't configured" surfaces only to whoever actually needs
+ * the database (auth(), or a trips/favorites route) and never takes down
+ * guest pages at import time.
+ */
+function connect(): Promise<MongoClient> {
   const uri = process.env.MONGODB_URI;
   if (!uri) {
     return Promise.reject(
@@ -33,22 +47,61 @@ function createClientPromise(): Promise<MongoClient> {
       )
     );
   }
-  const client = new MongoClient(uri);
-  return client.connect();
+  const client = new MongoClient(uri, { serverSelectionTimeoutMS: SERVER_SELECTION_TIMEOUT_MS });
+  return client.connect().catch(async (error: unknown) => {
+    await client.close().catch(() => {});
+    throw error;
+  });
 }
 
-export const clientPromise: Promise<MongoClient> = (globalThis._mongoClientPromise ??=
-  createClientPromise());
+/**
+ * The shared, connected client. Callers that arrive while a connection is
+ * being made all wait on that one attempt.
+ *
+ * A failed attempt is not kept: after FAILURE_MEMORY_MS the next call tries
+ * again. Keeping it would turn one bad moment — Wi-Fi switching, a laptop
+ * waking up, Atlas failing over — into an outage that lasts until the server
+ * is restarted, with every visitor treated as signed out the whole time.
+ */
+export function getMongoClient(): Promise<MongoClient> {
+  const pending = globalThis._mongoClientPromise;
+  if (pending) return pending;
 
-// Without this, an unconfigured MONGODB_URI produces an unhandled promise
-// rejection the moment this module loads (before anything actually awaits
-// clientPromise) — Node treats that as fatal. This no-op catch keeps the
-// process alive; real callers still see the rejection through their own
-// await/catch, since attaching one handler doesn't consume it for others.
-clientPromise.catch(() => {});
+  const failure = globalThis._mongoLastFailure;
+  if (failure && Date.now() - failure.at < FAILURE_MEMORY_MS) return Promise.reject(failure.error);
+
+  const attempt: Promise<MongoClient> = connect().then(
+    (client) => {
+      globalThis._mongoLastFailure = undefined;
+      return client;
+    },
+    (error: unknown) => {
+      if (globalThis._mongoClientPromise === attempt) globalThis._mongoClientPromise = undefined;
+      globalThis._mongoLastFailure = { at: Date.now(), error };
+      throw error;
+    },
+  );
+  globalThis._mongoClientPromise = attempt;
+  return attempt;
+}
 
 /** The database named in the connection string's path segment (see MONGODB_URI in .env.local.example). */
 export async function getDb() {
-  const client = await clientPromise;
+  const client = await getMongoClient();
   return client.db();
+}
+
+/**
+ * Whether the database answers right now. Used to tell "this session is not
+ * valid" apart from "the session could not be looked up", which Auth.js
+ * reports the same way.
+ */
+export async function isDatabaseReachable(): Promise<boolean> {
+  try {
+    const db = await getDb();
+    await db.command({ ping: 1 });
+    return true;
+  } catch {
+    return false;
+  }
 }
