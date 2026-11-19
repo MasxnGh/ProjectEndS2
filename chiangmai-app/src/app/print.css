@@ -1,0 +1,476 @@
+/*
+ * The planner's printout (components/plan/print-itinerary.tsx): a summary
+ * sheet, then one sheet per day. Sized in print units and drawn in the brand
+ * primitives, which the dark theme leaves alone: paper is white whatever the
+ * screen is set to. The page margins and footer are set by the component,
+ * since the footer carries the trip's name.
+ *
+ * `print-color-adjust: exact` keeps the few fills (day label, tip box, marks)
+ * when "Background graphics" is off, which is how most people print.
+ */
+.trip-print {
+  --tp-green: var(--cmj-green);
+  --tp-ink: var(--cmj-ink);
+  --tp-stone: var(--cmj-stone);
+  --tp-sunset: var(--cmj-sunset);
+  --tp-leaf: var(--cmj-leaf);
+  --tp-paper: var(--cmj-paper);
+  --tp-line: color-mix(in oklab, var(--cmj-green) 20%, white);
+  --tp-line-soft: color-mix(in oklab, var(--cmj-green) 10%, white);
+  font-size: 9.5pt;
+  line-height: 1.55;
+  color: var(--tp-ink);
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.trip-print a {
+  color: inherit;
+  text-decoration: none;
+}
+.trip-print b {
+  font-weight: 600;
+}
+.tp-sep {
+  margin: 0 0.45em;
+  color: var(--tp-leaf);
+}
+.tp-mark-dot {
+  display: inline-block;
+  width: 1.6mm;
+  height: 1.6mm;
+  margin-right: 1.2mm;
+  border-radius: 50%;
+  background: var(--tp-sunset);
+  vertical-align: 0.15em;
+}
+
+/* Summary sheet */
+.tp-masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 3mm;
+  border-bottom: 1.4pt solid var(--tp-green);
+}
+.tp-brand {
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  color: var(--tp-green);
+}
+.tp-brand svg {
+  width: 12mm;
+  height: auto;
+}
+.tp-wordmark {
+  font-size: 10pt;
+  font-weight: 600;
+  line-height: 1.05;
+}
+.tp-wordmark span {
+  display: block;
+  font-weight: 500;
+}
+.tp-kind {
+  text-align: right;
+  font-size: 8pt;
+  line-height: 1.45;
+  color: var(--tp-stone);
+}
+.tp-kind strong {
+  display: block;
+  font-size: 10pt;
+  font-weight: 600;
+  color: var(--tp-green);
+}
+.tp-cover {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 8mm;
+  margin-top: 7mm;
+}
+.tp-cover h1 {
+  font-size: 24pt;
+  line-height: 1.25;
+  font-weight: 600;
+  color: var(--tp-green);
+  text-wrap: balance;
+}
+.tp-trip-line {
+  margin-top: 1.5mm;
+  font-size: 11pt;
+}
+.tp-qr-block {
+  display: grid;
+  justify-items: center;
+  gap: 1mm;
+  text-align: center;
+  font-size: 6.5pt;
+  line-height: 1.3;
+  color: var(--tp-stone);
+  text-wrap: balance;
+}
+.tp-qr-block.tp-share {
+  width: 27mm;
+  font-size: 7pt;
+}
+.tp-share svg {
+  width: 25mm;
+  height: 25mm;
+}
+.tp-facts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 6mm;
+  border-top: 0.6pt solid var(--tp-line);
+  border-bottom: 0.6pt solid var(--tp-line);
+}
+.tp-facts > div {
+  padding: 2.6mm 3mm 2.6mm 0;
+}
+.tp-facts > div + div {
+  padding-left: 3mm;
+  border-left: 0.6pt solid var(--tp-line-soft);
+}
+.tp-facts dt {
+  font-size: 7.5pt;
+  color: var(--tp-stone);
+}
+.tp-facts dd {
+  font-size: 13pt;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--tp-green);
+  font-variant-numeric: tabular-nums;
+}
+.tp-facts dd small {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 400;
+  color: var(--tp-ink);
+}
+.tp-section {
+  margin-top: 6mm;
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: var(--tp-green);
+}
+.tp-overview {
+  width: 100%;
+  margin-top: 2mm;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+}
+.tp-overview th,
+.tp-overview td {
+  padding: 1.8mm 2.5mm 1.8mm 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 0.6pt solid var(--tp-line-soft);
+}
+.tp-overview thead th {
+  font-size: 7.5pt;
+  font-weight: 400;
+  color: var(--tp-stone);
+  border-bottom-color: var(--tp-line);
+}
+.tp-overview tbody th {
+  font-weight: 600;
+  color: var(--tp-green);
+  white-space: nowrap;
+}
+.tp-overview small {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 400;
+  color: var(--tp-stone);
+}
+.tp-overview tr {
+  break-inside: avoid;
+}
+.tp-num {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tp-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9mm;
+  margin-top: 6mm;
+}
+/* A long trip pushes these onto the next sheet: they may split there, but never mid-line. */
+.tp-block-title {
+  margin-bottom: 2mm;
+  font-size: 10.5pt;
+  font-weight: 600;
+  color: var(--tp-green);
+  break-after: avoid;
+}
+.tp-money tr,
+.tp-check li,
+.tp-sos {
+  break-inside: avoid;
+}
+.tp-money {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.8pt;
+  font-variant-numeric: tabular-nums;
+}
+.tp-money td {
+  padding: 1.1mm 0;
+  vertical-align: top;
+  border-bottom: 0.6pt solid var(--tp-line-soft);
+}
+.tp-money td:last-child {
+  padding-left: 3mm;
+  text-align: right;
+  white-space: nowrap;
+}
+.tp-money small {
+  display: block;
+  font-size: 7.5pt;
+  color: var(--tp-stone);
+}
+.tp-money .tp-total td {
+  padding-top: 2mm;
+  font-size: 10pt;
+  font-weight: 600;
+  color: var(--tp-green);
+  border-top: 1pt solid var(--tp-green);
+  border-bottom: 0;
+}
+.tp-money .tp-after td {
+  border-bottom: 0;
+}
+.tp-money .tp-over td {
+  font-weight: 600;
+}
+.tp-fine {
+  margin-top: 2.5mm;
+  font-size: 7.5pt;
+  line-height: 1.5;
+  color: var(--tp-stone);
+}
+.tp-check li {
+  display: grid;
+  grid-template-columns: 4.2mm minmax(0, 1fr);
+  gap: 2mm;
+  padding: 1.1mm 0;
+  font-size: 8.8pt;
+  border-bottom: 0.6pt solid var(--tp-line-soft);
+}
+.tp-box {
+  display: grid;
+  place-items: center;
+  width: 3.4mm;
+  height: 3.4mm;
+  margin-top: 0.9mm;
+  border: 0.8pt solid var(--tp-green);
+  border-radius: 0.7mm;
+  color: var(--tp-green);
+}
+.tp-box svg {
+  width: 2.6mm;
+  height: 2.6mm;
+}
+.tp-check .tp-blank {
+  height: 7.5mm;
+}
+/* Emergency numbers: one line across the sheet, under the money and the packing list. */
+.tp-sos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 1mm 5mm;
+  margin-top: 5mm;
+  padding-top: 2.5mm;
+  font-size: 8.8pt;
+  border-top: 0.6pt solid var(--tp-line);
+}
+.tp-sos h2 {
+  font-size: 9.5pt;
+  font-weight: 600;
+  color: var(--tp-green);
+}
+.tp-sos dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1mm 5mm;
+}
+.tp-sos dl div {
+  display: flex;
+  gap: 1.6mm;
+}
+.tp-sos dt {
+  font-weight: 600;
+  color: var(--tp-green);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A day: its own sheet */
+.tp-day {
+  break-before: page;
+}
+.tp-day-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 6mm;
+  padding-bottom: 2.5mm;
+  border-bottom: 1pt solid var(--tp-green);
+  break-after: avoid;
+}
+.tp-day-no {
+  display: inline-block;
+  padding: 0.3mm 2.6mm;
+  border-radius: 99px;
+  font-size: 8pt;
+  font-weight: 500;
+  color: #fff;
+  background: var(--tp-green);
+}
+.tp-day-head h2 {
+  margin-top: 1.4mm;
+  font-size: 15pt;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--tp-green);
+}
+.tp-day-sum {
+  margin-top: 0.8mm;
+  font-size: 8.5pt;
+  font-variant-numeric: tabular-nums;
+}
+.tp-day-qr {
+  width: 22mm;
+}
+.tp-day-qr svg {
+  width: 19mm;
+  height: 19mm;
+}
+.tp-flag {
+  margin-top: 1mm;
+  font-size: 8pt;
+  font-weight: 500;
+}
+.tp-flag::before {
+  content: "";
+  display: inline-block;
+  width: 1.8mm;
+  height: 1.8mm;
+  margin-right: 1.4mm;
+  border-radius: 50%;
+  background: var(--tp-sunset);
+  vertical-align: 0.1em;
+}
+.tp-day-head .tp-flag {
+  margin-top: 1.4mm;
+}
+.tp-stops {
+  margin-top: 1mm;
+}
+.tp-stop,
+.tp-leg {
+  display: grid;
+  grid-template-columns: 19mm minmax(0, 1fr);
+  column-gap: 5mm;
+  break-inside: avoid;
+}
+.tp-stop {
+  position: relative;
+  padding: 3.2mm 0 3.4mm;
+}
+/* The stop's dot on the route line. */
+.tp-stop::before {
+  content: "";
+  position: absolute;
+  top: 5.2mm;
+  left: 21.2mm;
+  width: 2.2mm;
+  height: 2.2mm;
+  border-radius: 50%;
+  background: var(--tp-green);
+}
+.tp-when {
+  display: grid;
+  align-content: start;
+  padding-right: 1mm;
+  text-align: right;
+  font-size: 7.5pt;
+  color: var(--tp-stone);
+  font-variant-numeric: tabular-nums;
+}
+.tp-when .tp-time {
+  font-size: 13pt;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--tp-green);
+}
+.tp-what {
+  padding-left: 2.5mm;
+  border-left: 0.8pt solid var(--tp-line);
+}
+.tp-row1 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4mm;
+}
+.tp-row1 h3 {
+  font-size: 11.5pt;
+  line-height: 1.35;
+  font-weight: 600;
+}
+.tp-cost {
+  flex: none;
+  font-size: 8pt;
+  color: var(--tp-stone);
+  font-variant-numeric: tabular-nums;
+}
+.tp-meta {
+  font-size: 8pt;
+  color: var(--tp-stone);
+}
+.tp-desc {
+  margin-top: 1mm;
+}
+.tp-details {
+  margin-top: 1mm;
+  font-size: 8pt;
+}
+.tp-details + .tp-details {
+  margin-top: 0.4mm;
+  color: var(--tp-stone);
+}
+.tp-tip {
+  margin-top: 1.6mm;
+  padding: 1.6mm 2.6mm;
+  border-radius: 2mm;
+  font-size: 8.5pt;
+  background: var(--tp-paper);
+}
+.tp-tip b {
+  margin-right: 1.6mm;
+  color: var(--tp-green);
+}
+.tp-leg {
+  break-after: avoid;
+}
+.tp-leg p {
+  grid-column: 2;
+  padding: 0.6mm 0 0.6mm 2.5mm;
+  font-size: 8pt;
+  color: var(--tp-stone);
+  border-left: 0.8pt dashed var(--tp-leaf);
+  font-variant-numeric: tabular-nums;
+}
+.tp-leg.tp-long p {
+  color: var(--tp-ink);
+  border-left: 1.4pt solid var(--tp-sunset);
+}
+.tp-leg.tp-long b {
+  margin-left: 0.6em;
+}
