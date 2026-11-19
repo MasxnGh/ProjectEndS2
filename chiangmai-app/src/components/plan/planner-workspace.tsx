@@ -237,6 +237,17 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
     return result;
   }, [resolvedDays, dayForecasts, lockedTimes, baseLocation]);
 
+  // The printout's days, kept stable so hovering and dragging don't rebuild its numbers.
+  const printDays = useMemo(
+    () =>
+      resolvedDays.map((x) => ({
+        dayNumber: x.dayNumber,
+        date: dayForecasts.find((f) => f.dayId === x.id)?.date ?? undefined,
+        timeline: timelines.get(x.id)!,
+      })),
+    [resolvedDays, dayForecasts, timelines],
+  );
+
   const paceRelief = useMemo(
     () => suggestPaceRelief(resolvedDays.map((day) => ({ dayId: day.id, places: day.places, schedule: buildSchedule(day.places) }))),
     [resolvedDays],
@@ -842,14 +853,7 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
         )}
       </div>
 
-      <PrintItinerary
-        tripName={tripName}
-        days={resolvedDays.map((x) => ({
-          dayNumber: x.dayNumber,
-          date: dayForecasts.find((f) => f.dayId === x.id)?.date ?? undefined,
-          timeline: timelines.get(x.id)!,
-        }))}
-      />
+      <PrintItinerary tripName={tripName} days={printDays} />
 
       <PlacePickerDialog
         dayId={pickerDayId}

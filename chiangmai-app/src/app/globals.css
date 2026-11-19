@@ -3,6 +3,8 @@
 @import "./brand.css";
 /* Entrances, reveals and feedback (DESIGN.md, "Motion"). */
 @import "./motion.css";
+/* The planner's printout ("Print or PDF"). */
+@import "./print.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -123,6 +125,15 @@
 @media print {
   .no-print {
     display: none !important;
+  }
+  /*
+   * Paper is light even when the screen is dark: a dark color-scheme paints
+   * the page margins dark. !important because the theme script sets the
+   * scheme as an inline style on <html>.
+   */
+  html {
+    color-scheme: light !important;
+    background: white;
   }
   body {
     background: white;

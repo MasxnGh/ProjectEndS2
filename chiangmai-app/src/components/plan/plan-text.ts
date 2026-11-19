@@ -36,6 +36,22 @@ export function longDayDate(iso: string, locale: Locale): string {
   }).format(utc(iso));
 }
 
+/** "วันเสาร์ที่ 14 พฤศจิกายน พ.ศ. 2569" / "Saturday 14 November 2026" — a day's heading on paper, which outlives the trip's year. */
+export function fullDayDate(iso: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(utc(iso));
+}
+
+/** Today in the reader's own time zone, "19 พฤศจิกายน 2569" / "19 November 2026" — when a printout was made. */
+export function madeOnDate(locale: Locale, now: Date = new Date()): string {
+  return new Intl.DateTimeFormat(intlLocale(locale), { day: "numeric", month: "long", year: "numeric" }).format(now);
+}
+
 /** "14–16 พ.ย. 2569" / "14–16 Nov 2026" — the trip's dates on one chip. */
 export function tripRange(startIso: string, endIso: string, locale: Locale): string {
   const format = new Intl.DateTimeFormat(intlLocale(locale), {

@@ -16,6 +16,11 @@ export type SaveState = "local" | "saving" | "saved" | "failed";
 /** The `?plan=` link, unchanged: the day order, encoded into the address. */
 export function buildShareUrl(): string {
   const { dayIds, containers } = useTripStore.getState();
+  return shareUrlFor(dayIds, containers);
+}
+
+/** The same link for a given plan; the printout's QR code passes the plan it shows. */
+export function shareUrlFor(dayIds: string[], containers: Record<string, string[]>): string {
   const encoded = encodeURIComponent(btoa(JSON.stringify({ dayIds, containers })));
   return `${window.location.origin}${window.location.pathname}?plan=${encoded}`;
 }
