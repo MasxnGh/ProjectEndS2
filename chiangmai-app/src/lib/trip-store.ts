@@ -4,6 +4,7 @@ import { persist } from "zustand/middleware";
 import type { Trip, TravelMode } from "@/data/types";
 import type { SerializedTrip, TripWritablePayload } from "@/lib/db/types";
 import { addDaysIso } from "@/lib/date-utils";
+import type { TripCover } from "@/lib/trip-cover";
 
 export const UNSCHEDULED = "unscheduled";
 
@@ -51,6 +52,8 @@ export interface TripState {
   /** User-pinned arrival times set by dragging a stop on the Golden Hour timeline, keyed by `${dayId}::${slug}` as "HH:mm". Absent = the scheduler picks the time. */
   lockedTimes: Record<string, string>;
   packingItems: PackingItem[];
+  /** The picture the traveller chose for the top of the trip; null = the automatic one (see lib/trip-cover.ts). */
+  cover: TripCover | null;
   /** The cloud trip this device is syncing to, once signed in — null while the plan only exists locally (guest, or signed-out-and-detached). Persisted so returning to the page keeps syncing the same trip instead of creating a duplicate. */
   remoteTripId: string | null;
   /** The server's `updatedAt` as of the last successful sync — sent back as `expectedUpdatedAt` on the next write so the API can detect a conflicting edit from another tab/device. */
@@ -76,6 +79,7 @@ export interface TripState {
   clearAll: () => void;
   loadPlan: (data: { dayIds: string[]; containers: Record<string, string[]> }) => void;
   setTripName: (name: string) => void;
+  setCover: (cover: TripCover | null) => void;
   setTravelDate: (date: string) => void;
   setTravelers: (count: number) => void;
   setBudgetThb: (amount: number) => void;
@@ -150,7 +154,7 @@ export function buildTripSnapshot(state: SnapshotSource): Trip {
  * render loop, not a lint nitpick — see use-trip-cloud-sync.ts.
  */
 export function buildWritableTripPayload(
-  state: SnapshotSource & Pick<TripState, "travelers" | "budgetThb" | "accommodationThb" | "packingItems">
+  state: SnapshotSource & Pick<TripState, "travelers" | "budgetThb" | "accommodationThb" | "packingItems" | "cover">
 ): TripWritablePayload {
   const snapshot = buildTripSnapshot(state);
   return {
@@ -163,6 +167,7 @@ export function buildWritableTripPayload(
     budgetThb: state.budgetThb,
     accommodationThb: state.accommodationThb,
     packingItems: state.packingItems,
+    cover: state.cover,
   };
 }
 
@@ -181,6 +186,7 @@ export const useTripStore = create<TripState>()(
       travelMode: "walk",
       lockedTimes: {},
       packingItems: DEFAULT_PACKING_ITEMS,
+      cover: null,
       remoteTripId: null,
       remoteUpdatedAt: null,
       saveStatus: "idle",
@@ -321,6 +327,7 @@ export const useTripStore = create<TripState>()(
         }),
 
       setTripName: (tripName) => set({ tripName }),
+      setCover: (cover) => set({ cover }),
       setTravelDate: (travelDate) => set({ travelDate }),
       setTravelers: (travelers) => set({ travelers: Math.max(1, travelers) }),
       setBudgetThb: (budgetThb) => set({ budgetThb: Math.max(0, budgetThb) }),
@@ -415,6 +422,8 @@ export const useTripStore = create<TripState>()(
           budgetThb: trip.budgetThb,
           accommodationThb: trip.accommodationThb,
           packingItems: trip.packingItems,
+          // Trips saved before covers existed arrive without one.
+          cover: trip.cover ?? null,
           remoteTripId: trip.id,
           remoteUpdatedAt: trip.updatedAt,
           saveStatus: "saved",

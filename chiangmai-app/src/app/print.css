@@ -102,6 +102,62 @@
   margin-top: 1.5mm;
   font-size: 11pt;
 }
+/*
+ * The trip's cover photo, when it has one: the name set on it over a green
+ * scrim, about the height of the share QR beside it, so the sheet grows by
+ * only the credit line.
+ */
+.tp-has-photo {
+  align-items: stretch;
+}
+.tp-band {
+  position: relative;
+  display: grid;
+  align-content: end;
+  min-height: 33mm;
+  padding: 4mm 5mm;
+  overflow: hidden;
+  border-radius: 3mm;
+  color: var(--tp-paper);
+  background: var(--tp-green);
+}
+.tp-band img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* No warm grade here: a CSS filter makes Chrome re-encode the photo as a
+     much larger image in the PDF. Without it the JPEG goes in as it is. */
+}
+.tp-band::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(29 56 53 / 0.9),
+    rgb(29 56 53 / 0.6) 45%,
+    rgb(29 56 53 / 0.05) 85%
+  );
+}
+.tp-band > div {
+  position: relative;
+  z-index: 1;
+}
+.tp-band h1 {
+  font-size: 22pt;
+  color: var(--tp-paper);
+}
+.tp-band .tp-trip-line {
+  font-size: 10pt;
+}
+.tp-credit {
+  margin-top: 1.2mm;
+  font-size: 6.5pt;
+  line-height: 1.35;
+  color: var(--tp-stone);
+}
 .tp-qr-block {
   display: grid;
   justify-items: center;

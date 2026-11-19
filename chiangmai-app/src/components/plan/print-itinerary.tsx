@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
 import type { Place } from "@/data/types";
 import type { DayTimeline } from "@/lib/planner/golden-hour";
@@ -12,6 +12,10 @@ import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
 import { googleMapsPlaceUrl } from "@/lib/google-maps";
 import { categorySpendBreakdown, dayStats, estimateTripCostThb, placeSpendThb } from "@/lib/trip-calculations";
 import { useTripStore } from "@/lib/trip-store";
+import { coverSlug, uploadedCoverUrl } from "@/lib/trip-cover";
+import { getPlaceBySlug } from "@/data/places";
+import { getPlacePhoto } from "@/data/photo-manifest";
+import { creditSourceName, getPhotoCredit } from "@/data/photo-credits";
 import { useLocale } from "@/components/providers/locale-provider";
 import { BrandMark } from "@/components/brand/logo";
 import { fill, formatDistance, formatDuration, placeWhere } from "@/components/brand/place-text";
@@ -90,6 +94,7 @@ export function PrintItinerary({ tripName, days }: { tripName: string; days: Pri
   const packingItems = useTripStore((s) => s.packingItems);
   const dayIds = useTripStore((s) => s.dayIds);
   const containers = useTripStore((s) => s.containers);
+  const cover = useTripStore((s) => s.cover);
 
   const title = tripName || dict.plan.untitled;
 
@@ -142,6 +147,24 @@ export function PrintItinerary({ tripName, days }: { tripName: string; days: Pri
   const firstDate = used[0]?.date;
   const lastDate = used[used.length - 1]?.date;
   const modeLabel = dict.planner.summary.transport.modes[travelMode];
+
+  // The trip's cover, as on screen: the traveller's own photo, the chosen
+  // place photo, or the first stop that has one. The place photo is also what
+  // an upload falls back to when it will not load (a plan kept after signing
+  // out), and only a place photo carries a credit line.
+  const coverPlaceSlug = coverSlug(cover, used.flatMap((day) => day.places.map((place) => place.slug)));
+  const upload = cover?.kind === "upload" ? cover : null;
+  const [failedUploadId, setFailedUploadId] = useState<string | null>(null);
+  const showUpload = upload !== null && failedUploadId !== upload.id;
+  // JPEGs both ways, never the image optimiser's copy: Chrome puts a JPEG
+  // into the PDF as it is, but has to re-encode the optimiser's WebP, which
+  // came out more than twice the size. Uploads are stored as JPEG for this.
+  const coverSrc = showUpload
+    ? uploadedCoverUrl(upload.id)
+    : coverPlaceSlug
+      ? getPlacePhoto(coverPlaceSlug)
+      : undefined;
+  const coverCredit = !showUpload && coverPlaceSlug ? getPhotoCredit(coverPlaceSlug) : undefined;
 
   const packingLabels = dict.planner.summary.packing.items;
   const listed = new Set(packingItems.map((item) => item.labelKey).filter(Boolean));
@@ -207,19 +230,44 @@ export function PrintItinerary({ tripName, days }: { tripName: string; days: Pri
         </p>
       </header>
 
-      <div className="tp-cover">
+      <div className={coverSrc ? "tp-cover tp-has-photo" : "tp-cover"}>
         <div>
-          <h1>{title}</h1>
-          <p className="tp-trip-line">
-            <Line
-              parts={[
-                firstDate && lastDate ? tripRange(firstDate, lastDate, locale) : null,
-                dayCountLabel(days.length, dict),
-                people,
-                modeLabel,
-              ].filter(Boolean)}
-            />
-          </p>
+          <div className={coverSrc ? "tp-band" : undefined}>
+            {coverSrc ? (
+              // A plain <img>, loaded at once: this article is display:none
+              // until printing, and next/image's lazy loading would never
+              // fetch it before the print dialog takes its copy.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={coverSrc}
+                alt=""
+                loading="eager"
+                decoding="sync"
+                style={showUpload ? { objectPosition: `50% ${upload.focusY}%` } : undefined}
+                onError={showUpload ? () => setFailedUploadId(upload.id) : undefined}
+              />
+            ) : null}
+            <div>
+              <h1>{title}</h1>
+              <p className="tp-trip-line">
+                <Line
+                  parts={[
+                    firstDate && lastDate ? tripRange(firstDate, lastDate, locale) : null,
+                    dayCountLabel(days.length, dict),
+                    people,
+                    modeLabel,
+                  ].filter(Boolean)}
+                />
+              </p>
+            </div>
+          </div>
+          {coverSrc && coverPlaceSlug && coverCredit ? (
+            <p className="tp-credit">
+              {getPlaceBySlug(coverPlaceSlug)?.name[locale]} —{" "}
+              {fill(dict.ui.photoCredit, { artist: coverCredit.artist, licence: coverCredit.licence })} ·{" "}
+              {creditSourceName(coverCredit.sourceUrl)}
+            </p>
+          ) : null}
         </div>
         {shareUrl && stopCount > 0 ? (
           <div className="tp-qr-block tp-share">

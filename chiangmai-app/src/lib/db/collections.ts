@@ -1,6 +1,6 @@
 import type { Collection } from "mongodb";
 import { getDb } from "./mongodb";
-import type { TripDoc, FavoriteDoc } from "./types";
+import type { TripDoc, FavoriteDoc, CoverDoc } from "./types";
 
 /**
  * `createIndex` is idempotent (a no-op if the same spec already exists), so
@@ -19,6 +19,10 @@ async function ensureIndexes(): Promise<void> {
     db.collection<TripDoc>("trips").createIndex({ ownerId: 1 }),
     db.collection<TripDoc>("trips").createIndex({ shareToken: 1 }, { unique: true }),
     db.collection<FavoriteDoc>("favorites").createIndex({ userId: 1, placeSlug: 1 }, { unique: true }),
+    // Who is using an uploaded cover: the share-page check and the clean-up
+    // after a cover is replaced both look trips up by it.
+    db.collection<TripDoc>("trips").createIndex({ "cover.id": 1 }, { sparse: true }),
+    db.collection<CoverDoc>("trip_covers").createIndex({ ownerId: 1, createdAt: 1 }),
   ]);
 }
 
@@ -34,6 +38,12 @@ export async function getTripsCollection(): Promise<Collection<TripDoc>> {
   await ensureIndexesOnce();
   const db = await getDb();
   return db.collection<TripDoc>("trips");
+}
+
+export async function getCoversCollection(): Promise<Collection<CoverDoc>> {
+  await ensureIndexesOnce();
+  const db = await getDb();
+  return db.collection<CoverDoc>("trip_covers");
 }
 
 export async function getFavoritesCollection(): Promise<Collection<FavoriteDoc>> {

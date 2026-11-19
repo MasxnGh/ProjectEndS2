@@ -59,3 +59,42 @@ describe("parseTripWritablePayload", () => {
     ).toBeNull();
   });
 });
+
+describe("parseTripWritablePayload: cover", () => {
+  it("leaves the cover out when the client sent none, so an older client cannot wipe it", () => {
+    const result = parseTripWritablePayload(validPayload);
+    expect(result).not.toHaveProperty("cover");
+  });
+
+  it("passes a place cover and a cleared cover (null) through", () => {
+    const cover = { kind: "place", slug: "doi-inthanon" };
+    expect(parseTripWritablePayload({ ...validPayload, cover })?.cover).toEqual(cover);
+    const cleared = parseTripWritablePayload({ ...validPayload, cover: null });
+    expect(cleared).toHaveProperty("cover", null);
+  });
+
+  it("stores only the fields a cover has", () => {
+    const result = parseTripWritablePayload({
+      ...validPayload,
+      cover: { kind: "place", slug: "doi-inthanon", note: "<script>" },
+    });
+    expect(result?.cover).toEqual({ kind: "place", slug: "doi-inthanon" });
+  });
+
+  it("rejects a malformed cover", () => {
+    expect(parseTripWritablePayload({ ...validPayload, cover: "doi-inthanon" })).toBeNull();
+    expect(parseTripWritablePayload({ ...validPayload, cover: { kind: "upload", slug: "x" } })).toBeNull();
+    expect(parseTripWritablePayload({ ...validPayload, cover: { kind: "place", slug: "../etc" } })).toBeNull();
+    expect(
+      parseTripWritablePayload({ ...validPayload, cover: { kind: "upload", id: "AbCdEfGhIjKlMnOpQrSt_-", focusY: -1 } }),
+    ).toBeNull();
+  });
+
+  it("passes an uploaded cover through, its position rounded", () => {
+    const result = parseTripWritablePayload({
+      ...validPayload,
+      cover: { kind: "upload", id: "AbCdEfGhIjKlMnOpQrSt_-", focusY: 62.4, ownerId: "someone-else" },
+    });
+    expect(result?.cover).toEqual({ kind: "upload", id: "AbCdEfGhIjKlMnOpQrSt_-", focusY: 62 });
+  });
+});

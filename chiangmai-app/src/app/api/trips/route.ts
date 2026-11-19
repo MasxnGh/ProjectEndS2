@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { ObjectId } from "mongodb";
 import { getTripsCollection } from "@/lib/db/collections";
+import { vetCoverForOwner } from "@/lib/db/covers";
 import { generateShareToken } from "@/lib/db/share-token";
 import { parseTripWritablePayload, toSerializedTrip } from "@/lib/db/types";
 import { requireUserId, unauthorizedResponse, rateLimitResponse } from "@/lib/api-auth";
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
   if (!payload) {
     return Response.json({ error: "Malformed trip payload" }, { status: 400 });
   }
+  if (payload.cover !== undefined) payload.cover = await vetCoverForOwner(payload.cover, userId);
 
   const now = new Date();
   const trips = await getTripsCollection();

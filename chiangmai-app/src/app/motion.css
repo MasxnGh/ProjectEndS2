@@ -279,11 +279,18 @@
   transition: transform 2400ms var(--cmj-ease-out);
 }
 
-/* The closing script line, written by hand from left to right. */
-.cmj-write[data-reveal="hidden"] {
+/*
+ * The closing script line, written by hand from left to right.
+ *
+ * The clip is on the line's inner block, never on the <p> the reveal watches.
+ * Chrome's IntersectionObserver counts the target's own clip-path: with the
+ * <p> itself clipped to nothing, at phone and tablet widths it never counted
+ * as on screen, so it never played and the line stayed blank.
+ */
+.cmj-write[data-reveal="hidden"] > .cmj-write-ink {
   clip-path: inset(-40% 100% -40% -8%);
 }
-.cmj-write[data-reveal="shown"] {
+.cmj-write[data-reveal="shown"] > .cmj-write-ink {
   animation: cmj-write 1700ms var(--cmj-ease-draw) 150ms backwards;
 }
 
@@ -718,7 +725,7 @@ html[data-intro="skip"] .cmj-intro {
   .cmj-mark-draw [data-sparkle],
   .cmj-pop,
   .cmj-ring,
-  .cmj-write[data-reveal],
+  .cmj-write[data-reveal] > .cmj-write-ink,
   .cmj-route[data-reveal] [data-leg] {
     animation: none !important;
   }
@@ -791,7 +798,7 @@ html[data-intro="skip"] .cmj-intro {
   .cmj-stagger[data-reveal] > *,
   .cmj-hairline[data-reveal],
   .cmj-settle-view[data-reveal],
-  .cmj-write[data-reveal] {
+  .cmj-write[data-reveal] > .cmj-write-ink {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;

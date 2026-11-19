@@ -1,6 +1,7 @@
-import type { ObjectId } from "mongodb";
+import type { Binary, ObjectId } from "mongodb";
 import type { TripDay, TravelMode } from "@/data/types";
 import type { PackingItem } from "@/lib/trip-store";
+import { cleanCover, isTripCover, type TripCover } from "@/lib/trip-cover";
 
 export type TripVisibility = "private" | "unlisted";
 
@@ -30,6 +31,8 @@ export interface TripDoc {
   budgetThb: number;
   accommodationThb: number;
   packingItems: PackingItem[];
+  /** The picture at the top of the trip. Absent on trips saved before covers existed, which reads the same as null: the automatic cover. */
+  cover?: TripCover | null;
   /** Random, unguessable — never the document's own _id (an ObjectId's timestamp/counter structure makes it enumerable). Generated with crypto.randomBytes; see lib/db/share-token.ts. */
   shareToken: string;
   visibility: TripVisibility;
@@ -37,6 +40,24 @@ export interface TripDoc {
   updatedAt: Date;
   /** Soft delete for My Trips' undo window — null while active. A trip with deletedAt set must be excluded from every read path except the undo flow itself. */
   deletedAt: Date | null;
+}
+
+/**
+ * The `trip_covers` collection: a photo a signed-in traveller uploaded as a
+ * trip's cover, already resized and re-encoded (lib/db/covers.ts), so the
+ * camera's GPS position and other metadata never reach the database. The
+ * trip refers to it by `_id` (random, never an ObjectId: see newCoverId).
+ * Several of one owner's trips can share it (a duplicated trip does).
+ */
+export interface CoverDoc {
+  _id: string;
+  ownerId: string;
+  data: Binary;
+  contentType: "image/jpeg";
+  width: number;
+  height: number;
+  bytes: number;
+  createdAt: Date;
 }
 
 /** The `favorites` collection — one document per (user, place) pair. */
@@ -65,6 +86,7 @@ export interface SerializedTrip {
   budgetThb: number;
   accommodationThb: number;
   packingItems: PackingItem[];
+  cover: TripCover | null;
   shareToken: string;
   visibility: TripVisibility;
   createdAt: string;
@@ -85,6 +107,7 @@ export function toSerializedTrip(doc: TripDoc): SerializedTrip {
     budgetThb: doc.budgetThb,
     accommodationThb: doc.accommodationThb,
     packingItems: doc.packingItems,
+    cover: doc.cover ?? null,
     shareToken: doc.shareToken,
     visibility: doc.visibility,
     createdAt: doc.createdAt.toISOString(),
@@ -103,6 +126,8 @@ export interface TripWritablePayload {
   budgetThb: number;
   accommodationThb: number;
   packingItems: PackingItem[];
+  /** Optional so a client from before covers existed can still save: left out, the saved cover stays as it is. */
+  cover?: TripCover | null;
 }
 
 const TRAVEL_MODES: TravelMode[] = ["walk", "songthaew", "grab", "rented-bike", "rented-car"];
@@ -152,6 +177,7 @@ export function parseTripWritablePayload(body: unknown): TripWritablePayload | n
     const p = item as Record<string, unknown>;
     if (typeof p.id !== "string" || typeof p.checked !== "boolean") return null;
   }
+  if (b.cover !== undefined && b.cover !== null && !isTripCover(b.cover)) return null;
 
   return {
     title: b.title,
@@ -163,5 +189,9 @@ export function parseTripWritablePayload(body: unknown): TripWritablePayload | n
     budgetThb: b.budgetThb,
     accommodationThb: b.accommodationThb,
     packingItems: b.packingItems as PackingItem[],
+    // Only when sent: an `undefined` here would reach MongoDB's $set as null
+    // and wipe the cover of a trip saved by an older client. Rebuilt rather
+    // than passed through, so nothing else a client adds gets stored.
+    ...(b.cover !== undefined ? { cover: b.cover === null ? null : cleanCover(b.cover as TripCover) } : {}),
   };
 }
