@@ -6,7 +6,9 @@ import { getPlacePhoto } from "@/data/photo-manifest";
 import { isLocale, getDictionary } from "@/i18n";
 import { buildPageMetadata } from "@/lib/seo";
 import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
+import { CONTACT_EMAIL } from "@/lib/site";
 import { ButtonLink } from "@/components/brand/button";
+import { cx, focusRing } from "@/components/brand/cx";
 import { Brush, CATEGORY_ORDER, ICON_STROKE } from "@/components/brand/icons";
 import { BrandMark } from "@/components/brand/logo";
 import { Phrases } from "@/components/brand/phrases";
@@ -169,6 +171,18 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             {t.makerTitle}
           </h2>
           <p className="text-body text-ink">{dict.shell.madeAt}</p>
+          <p className="text-body text-pretty text-ink-soft">
+            {t.contactBody}{" "}
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className={cx(
+                "rounded-xs font-medium text-brand underline decoration-[1.5px] underline-offset-4 hover:decoration-2",
+                focusRing,
+              )}
+            >
+              {CONTACT_EMAIL}
+            </a>
+          </p>
         </section>
       </Wrap>
     </div>

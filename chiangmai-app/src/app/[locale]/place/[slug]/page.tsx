@@ -360,8 +360,14 @@ export default async function PlaceDetailPage({
           </figcaption>
         </figure>
 
-        <div className="grid gap-12 pt-10 lg:grid-cols-[minmax(0,1fr)_400px] lg:gap-14 lg:pt-12">
-          <article className="grid content-start gap-10">
+        {/* On a laptop the facts box sits beside the text, and the weather goes
+            under the text in the left column: with both in the right column it
+            ran far past a short description and left the page half empty. The
+            second row takes whatever height is left, so the text and the
+            weather stay together. A phone reads straight down: text, facts,
+            weather. */}
+        <div className="grid gap-12 pt-10 lg:grid-cols-[minmax(0,1fr)_400px] lg:grid-rows-[auto_1fr] lg:gap-x-14 lg:gap-y-10 lg:pt-12">
+          <article className="grid content-start gap-10 lg:col-start-1 lg:row-start-1">
             <section>
               <ArticleHeading>{t.about}</ArticleHeading>
               <Paragraphs text={place.description[locale]} />
@@ -443,7 +449,10 @@ export default async function PlaceDetailPage({
             ) : null}
           </article>
 
-          <aside aria-label={dict.place.practicalInfo} className="grid content-start gap-4 lg:sticky lg:top-24 lg:self-start">
+          <aside
+            aria-label={dict.place.practicalInfo}
+            className="grid content-start gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start"
+          >
             <Box className="grid gap-5 p-5">
               <dl className="grid gap-4">
                 <Fact icon={Clock} term={t.hours}>
@@ -485,11 +494,15 @@ export default async function PlaceDetailPage({
               <CompareMap place={place} />
               <PlanToggle slug={place.slug} placeName={name} variant="button" className="w-full" />
             </Box>
+          </aside>
 
+          {/* -mt-8: on a phone this follows the facts box at the 16px the two
+              were apart when they shared the column. */}
+          <div className="-mt-8 grid content-start gap-4 lg:col-start-1 lg:row-start-2 lg:mt-0 lg:max-w-[40rem]">
             <PlaceWeather place={place} />
 
             {place.outdoor ? <HazeNote /> : null}
-          </aside>
+          </div>
         </div>
 
         {nearby.length > 0 ? (

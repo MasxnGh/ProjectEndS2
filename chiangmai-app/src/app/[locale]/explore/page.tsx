@@ -5,7 +5,11 @@ import type { PlaceCategory } from "@/data/types";
 import { buildPageMetadata } from "@/lib/seo";
 import { breadcrumbJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
 import type { SquareBucket } from "@/lib/city-square";
+import { toExplorePlace } from "@/lib/explore/explore-place";
 import { ExploreClient } from "./explore-client";
+
+/** Only what the page reads goes to the browser; see ExplorePlace. */
+const EXPLORE_PLACES = places.map(toExplorePlace);
 
 const CATEGORIES: PlaceCategory[] = [
   "temple",
@@ -80,7 +84,7 @@ export default async function ExplorePage({
         )}
       />
       <ExploreClient
-        places={places}
+        places={EXPLORE_PLACES}
         initialCategory={initialCategory}
         initialZone={initialZone}
         initialQuery={q ?? ""}

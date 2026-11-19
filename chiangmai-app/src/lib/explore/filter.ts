@@ -40,7 +40,10 @@ export interface PlaceFacts {
  * reader's language plus the district's key, so "นิมมาน" or "nimman" finds
  * the places in Nimman.
  */
-export function placeFacts(place: Place, dict: Dictionary): PlaceFacts {
+export function placeFacts(
+  place: Pick<Place, "name" | "shortDescription" | "tags" | "district" | "category" | "coordinates">,
+  dict: Dictionary,
+): PlaceFacts {
   const haystack = [
     place.name.en,
     place.name.th,
@@ -67,7 +70,7 @@ export function queryTerms(query: string): string[] {
  * other filter that is on.
  */
 export function matchesFilters(
-  place: Place,
+  place: Pick<Place, "category" | "district" | "priceLevel" | "bestTime">,
   facts: PlaceFacts,
   filters: ExploreFilters,
   terms: string[],

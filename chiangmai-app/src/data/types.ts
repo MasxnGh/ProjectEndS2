@@ -158,6 +158,14 @@ export interface Place {
   bestTime: BestTime[];
   durationMinutes: number;
   priceLevel: PriceLevel;
+  /**
+   * True only where this entry's own `openingHoursText` says entry is free
+   * (a city gate, a monument, an open reservoir). The planner then budgets ฿0
+   * for the stop instead of the price-level allowance, so the stop card never
+   * says "free" beside a ฿250 charge. Leave unset when in doubt: an allowance
+   * that is slightly high is safer than a budget that comes up short.
+   */
+  freeEntry?: true;
   rating: number;
   shortDescription: LocalizedText;
   description: LocalizedText;

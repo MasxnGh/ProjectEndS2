@@ -41,6 +41,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         updatedLabel={dict.legal.updated}
         updatedDate={dict.legal.updatedDate}
         sections={dict.legal.privacy.sections}
+        contact={{ heading: dict.legal.contactHeading, body: dict.legal.privacy.contact }}
       />
     </>
   );

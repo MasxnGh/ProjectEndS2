@@ -15,3 +15,10 @@ function resolveSiteUrl(): string {
 }
 
 export const SITE_URL = resolveSiteUrl();
+
+/**
+ * Where readers write to: shown in the footer, on About, and in the privacy
+ * and terms pages (a privacy policy has to say whom to ask). The owner chose
+ * to publish this address.
+ */
+export const CONTACT_EMAIL = "game1991556@gmail.com";

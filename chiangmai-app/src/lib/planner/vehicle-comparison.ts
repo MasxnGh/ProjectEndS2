@@ -8,7 +8,7 @@ import { estimateRoadDistanceKm, terrainBetween } from "@/lib/geo/distance";
  * as typical/approximate in the UI, the same way schedule.ts's terrain
  * detour factors are disclosed as estimates rather than routed distances.
  */
-const VEHICLE_SPEED_KMH: Record<TravelMode, number> = {
+export const VEHICLE_SPEED_KMH: Record<TravelMode, number> = {
   walk: 4.5,
   songthaew: 20,
   grab: 25,

@@ -26,7 +26,7 @@ export function ExplorePopupCard({
   plannerDay = null,
   onClose,
 }: {
-  place: Place;
+  place: Pick<Place, "slug" | "name" | "category" | "district" | "coordinates" | "durationMinutes" | "priceLevel">;
   locale: Locale;
   dict: Dictionary;
   airQuality?: AirQualityResponse | null;

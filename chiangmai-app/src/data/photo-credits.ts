@@ -171,9 +171,9 @@ const photoCredits: Record<string, PhotoCredit> = {
     sourceUrl: "https://commons.wikimedia.org/wiki/File:Wachirathan_Falls.jpg",
   },
   "wat-ban-den": {
-    artist: "FredTC",
+    artist: "ManoiCMU",
     licence: "CC BY-SA 4.0",
-    sourceUrl: "https://commons.wikimedia.org/wiki/File:Wat_Ban_Den,_the_Ubosot_building_and_surrounding_buildings_P_20180109_134854_1_p.jpg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Wat_Ban_Den,_Chiang_Mai.jpg",
     entity: "Q99736007",
   },
   "wat-buak-khrok-luang": {

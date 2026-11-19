@@ -21,10 +21,13 @@ interface PointProperties {
   slug: string;
 }
 
+/** What a dot and its popup read; Explore passes its trimmed places. */
+type MapPlace = Pick<Place, "slug" | "name" | "category" | "district" | "coordinates" | "durationMinutes" | "priceLevel">;
+
 export interface ExploreMapProps {
-  places: Place[];
+  places: MapPlace[];
   /** What the camera frames; defaults to `places`. Explore frames the city, not the whole province, until a filter is on. */
-  framePlaces?: Place[];
+  framePlaces?: MapPlace[];
   /** Places joined by a dashed line, in order: the compare selection. */
   highlightSlugs?: string[];
   hoveredSlug?: string | null;
@@ -115,7 +118,7 @@ export function ExploreMap({
   const routeGeoJson = useMemo(() => {
     const coordinates = highlightSlugs
       .map((slug) => placeBySlug.get(slug))
-      .filter((p): p is Place => Boolean(p))
+      .filter((p): p is MapPlace => Boolean(p))
       .map((p) => [p.coordinates.lng, p.coordinates.lat] as [number, number]);
     if (coordinates.length < 2) return null;
     return { type: "Feature" as const, properties: {}, geometry: { type: "LineString" as const, coordinates } };

@@ -41,6 +41,7 @@ export default async function TermsPage({ params }: { params: Promise<{ locale: 
         updatedLabel={dict.legal.updated}
         updatedDate={dict.legal.updatedDate}
         sections={dict.legal.terms.sections}
+        contact={{ heading: dict.legal.contactHeading, body: dict.legal.terms.contact }}
       />
     </>
   );

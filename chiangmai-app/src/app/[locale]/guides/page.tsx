@@ -43,6 +43,9 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
     month: "short",
     year: "numeric",
   });
+  // Newest first: each entry shows its date, and in data order they read
+  // 14 Jan, 2 Feb, 28 Jan. ISO dates sort as text.
+  const newestFirst = [...guides].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 
   return (
     <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-24">
@@ -64,7 +67,7 @@ export default async function GuidesPage({ params }: { params: Promise<{ locale:
         </header>
 
         <ol className="grid gap-14 sm:gap-20">
-          {guides.map((guide, index) => {
+          {newestFirst.map((guide, index) => {
             const href = `/${locale}/guides/${guide.slug}`;
             const title = guide.title[locale];
             const places = guide.relatedPlaceSlugs

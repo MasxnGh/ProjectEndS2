@@ -215,11 +215,13 @@
     {
       "slug": "wat-ban-den",
       "entity": "Q99736007",
-      "distanceM": 37,
-      "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Wat_Ban_Den%2C_the_Ubosot_building_and_surrounding_buildings_P_20180109_134854_1_p.jpg/1920px-Wat_Ban_Den%2C_the_Ubosot_building_and_surrounding_buildings_P_20180109_134854_1_p.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Wat_Ban_Den%2C_Chiang_Mai.jpg/1920px-Wat_Ban_Den%2C_Chiang_Mai.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
       "licence": "CC BY-SA 4.0",
-      "artist": "FredTC",
-      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Ban_Den,_the_Ubosot_building_and_surrounding_buildings_P_20180109_134854_1_p.jpg"
+      "artistRaw": "ManoiCMU",
+      "artist": "ManoiCMU",
+      "descriptionUrl": "https://commons.wikimedia.org/wiki/File:Wat_Ban_Den,_Chiang_Mai.jpg",
+      "pick": true,
+      "evidence": "File is in the entity's own Commons category (Wat Ban Den, Mae Taeng) and its title names the temple; its camera location is about 107 m from the catalogue coordinate. Shows the green naga and the blue-roofed halls. Checked by eye."
     },
     {
       "slug": "wat-buak-khrok-luang",
