@@ -611,6 +611,11 @@ const en = {
       fixThisDay: "Move to a day that works",
       fixThisDayOne: "Moves {place} to day {toDay}.",
       fixThisDayMany: "Moves {count} places to days that work.",
+      anchorEarly: "This day is timed around the best hours at {place}, so the stops before it are counted back to {time}, while some of them are still closed.",
+      anchorFirstAll: "Move {place} to the start and every stop is open when you arrive.",
+      anchorFirstSome: "Move {place} to the start. Stops still closed when you arrive: {count}.",
+      anchorFirstButton: "Move to the start",
+      anchorFirstApplied: "{place} is now the first stop of day {day}.",
     },
     festival: {
       dismiss: "Dismiss",

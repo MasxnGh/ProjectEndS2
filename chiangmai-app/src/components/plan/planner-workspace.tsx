@@ -32,6 +32,7 @@ import { minutesToClock } from "@/lib/opening-hours";
 import { categorySpendBreakdown, dayStats, estimateTripCostThb } from "@/lib/trip-calculations";
 import { buildSchedule } from "@/lib/planner/schedule";
 import { buildDayTimeline, resolveSunTimes, type DayTimeline } from "@/lib/planner/golden-hour";
+import { suggestAnchorFirst, type AnchorFirstSuggestion } from "@/lib/planner/anchor-first";
 import { checkDayFeasibility, suggestDayFixes } from "@/lib/planner/feasibility";
 import { computeDayPace, suggestPaceRelief } from "@/lib/planner/pace";
 import { derivePlanProgress } from "@/lib/planner/plan-progress";
@@ -143,6 +144,7 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
   const remoteTripId = useTripStore((s) => s.remoteTripId);
   const addDay = useTripStore((s) => s.addDay);
   const removeDay = useTripStore((s) => s.removeDay);
+  const reorderDay = useTripStore((s) => s.reorderDay);
   const loadPlan = useTripStore((s) => s.loadPlan);
   const setBaseLocation = useTripStore((s) => s.setBaseLocation);
 
@@ -222,8 +224,11 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
   );
 
   // Every day's Golden Hour timeline: the open day's list and the printout read the same one.
-  const timelines = useMemo(() => {
+  // Beside it, the one reorder that would stop a day being counted back to
+  // before its places open (a suggestion only; the timeline is unchanged).
+  const { timelines, anchorFirstByDay } = useMemo(() => {
     const result = new Map<string, DayTimeline>();
+    const anchorFirst = new Map<string, AnchorFirstSuggestion>();
     for (const day of resolvedDays) {
       const forecast = dayForecasts.find((d) => d.dayId === day.id);
       const prefix = `${day.id}::`;
@@ -232,9 +237,12 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
         if (key.startsWith(prefix)) lockedArrivals[key.slice(prefix.length)] = clock;
       }
       const sun = resolveSunTimes(forecast?.entry, CHIANGMAI_CENTER.lat, CHIANGMAI_CENTER.lng, forecast?.date ?? todayIso());
-      result.set(day.id, buildDayTimeline({ order: day.places, sun, baseLocation, lockedArrivals }));
+      const timeline = buildDayTimeline({ order: day.places, sun, baseLocation, lockedArrivals });
+      result.set(day.id, timeline);
+      const suggestion = suggestAnchorFirst({ order: day.places, timeline, sun, baseLocation, lockedArrivals });
+      if (suggestion) anchorFirst.set(day.id, suggestion);
     }
-    return result;
+    return { timelines: result, anchorFirstByDay: anchorFirst };
   }, [resolvedDays, dayForecasts, lockedTimes, baseLocation]);
 
   // The printout's days, kept stable so hovering and dragging don't rebuild its numbers.
@@ -368,6 +376,22 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
       message: fill(dict.plan.days.removed, { day: day.dayNumber }),
       actions: [{ label: dict.planner.toast.undo, onClick: () => loadPlan(previous) }],
     });
+  }
+
+  function handleApplyAnchorFirst(dayId: string, dayNumber: number) {
+    const suggestion = anchorFirstByDay.get(dayId);
+    if (!suggestion) return;
+    const previous = useTripStore.getState().containers[dayId] ?? [];
+    reorderDay(dayId, [suggestion.placeSlug, ...previous.filter((slug) => slug !== suggestion.placeSlug)]);
+    showToast({
+      message: fill(dict.planner.feasibility.anchorFirstApplied, {
+        place: bySlug.get(suggestion.placeSlug)?.name[locale] ?? suggestion.placeSlug,
+        day: dayNumber,
+      }),
+      actions: [{ label: dict.planner.toast.undo, onClick: () => reorderDay(dayId, previous) }],
+    });
+    // The button leaves with the suggestion; keep focus in the day's checks.
+    setTimeout(() => document.getElementById(`${dayId}-checks`)?.focus());
   }
 
   function handleApplyDayRelocations(fromDayId: string) {
@@ -787,6 +811,8 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
                           issues={checkDayFeasibility(day.places, forecast?.date ?? null)}
                           relocations={relocationsByDay.get(day.id)}
                           onApplyRelocations={() => handleApplyDayRelocations(day.id)}
+                          anchorFirst={anchorFirstByDay.get(day.id)}
+                          onApplyAnchorFirst={() => handleApplyAnchorFirst(day.id, day.dayNumber)}
                           paceEaseLabel={
                             paceRelief?.fromDayId === day.id
                               ? fill(dict.planner.pace.ease, {

@@ -612,6 +612,11 @@ const th: Dictionary = {
       fixThisDay: "ย้ายไปวันที่เหมาะกว่า",
       fixThisDayOne: "ย้าย {place} ไปวันที่ {toDay}",
       fixThisDayMany: "ย้าย {count} แห่งไปวันที่เหมาะกว่า",
+      anchorEarly: "วันนี้จัดเวลาตามช่วงที่ดีที่สุดของ {place} ที่ที่อยู่ก่อนหน้าจึงถูกนับย้อนให้เริ่ม {time} ซึ่งบางแห่งยังไม่เปิด",
+      anchorFirstAll: "ย้าย {place} ขึ้นเป็นจุดแรก แล้วทุกที่จะเปิดตอนไปถึง",
+      anchorFirstSome: "ย้าย {place} ขึ้นเป็นจุดแรก ที่ที่ยังไม่เปิดตอนไปถึงจะเหลือ {count} แห่ง",
+      anchorFirstButton: "ย้ายขึ้นเป็นจุดแรก",
+      anchorFirstApplied: "ย้าย {place} ขึ้นเป็นจุดแรกของวันที่ {day} แล้ว",
     },
     festival: {
       dismiss: "ปิด",
