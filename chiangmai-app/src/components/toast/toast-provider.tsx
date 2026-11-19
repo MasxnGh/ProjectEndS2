@@ -78,7 +78,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
               transition={
-                shouldReduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 420, damping: 32 }
+                shouldReduceMotion ? { duration: 0.01 } : { type: "spring", duration: 0.3, bounce: 0 }
               }
               className="pointer-events-auto flex max-w-[min(560px,calc(100vw-2rem))] flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-forest py-2 pr-2 pl-5 text-on-forest shadow-lift dark:ring-1 dark:ring-line-strong"
             >

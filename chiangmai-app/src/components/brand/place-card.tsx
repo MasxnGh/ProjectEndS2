@@ -82,7 +82,7 @@ export function PlaceCard({
       {...rest}
       className={cx(
         "group/card relative grid rounded-lg border border-line bg-panel p-3 font-brand shadow-float",
-        "transition-[transform,box-shadow,border-color] duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift",
+        "transition-[translate,box-shadow,border-color] duration-300 ease-brand hover:-translate-y-0.5 hover:shadow-lift",
         "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         active && "border-brand shadow-lift",
         GRID[layout],
