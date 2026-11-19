@@ -356,7 +356,14 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
 
   function handleRemoveDay() {
     const previous = { dayIds: [...dayIds], containers: structuredClone(containers) };
+    // Open the day beside the removed one and move focus to its tab: the
+    // remove button goes with its day, and focus would otherwise fall back to
+    // the top of the page.
+    const at = dayIds.indexOf(day.id);
+    const neighbour = dayIds.filter((id) => id !== day.id)[Math.max(0, at - 1)] ?? null;
     removeDay(day.id);
+    setSelectedDayId(neighbour);
+    if (neighbour) setTimeout(() => document.getElementById(`tab-${neighbour}`)?.focus());
     showToast({
       message: fill(dict.plan.days.removed, { day: day.dayNumber }),
       actions: [{ label: dict.planner.toast.undo, onClick: () => loadPlan(previous) }],

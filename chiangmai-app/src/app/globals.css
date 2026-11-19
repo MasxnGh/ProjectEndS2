@@ -68,6 +68,9 @@
 
   html {
     color-scheme: light;
+    /* The sticky header (72px and its 1px rule). Focus and in-page anchors
+       land below it instead of under it (WCAG 2.4.11). */
+    scroll-padding-top: 73px;
   }
 
   html.dark {

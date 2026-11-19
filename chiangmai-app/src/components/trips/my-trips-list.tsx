@@ -121,26 +121,29 @@ export function MyTripsList({
         return;
       }
 
+      // The restore route has no deadline, so a failed undo can always be
+      // tried again: the failure toast carries that action instead of
+      // leaving the trip lost.
+      const restore = async () => {
+        const response = await fetch(`/api/trips/${trip.id}/restore`, { method: "POST" }).catch(() => null);
+        if (!response?.ok) {
+          showToast({
+            message: t.remove.restoreFailed,
+            actions: [{ label: t.remove.restoreRetry, onClick: restore }],
+          });
+          return;
+        }
+        const data = await response.json();
+        setTrips((current) =>
+          current.some((item) => item.id === trip.id)
+            ? current
+            : [data.trip as SerializedTrip, ...current]
+        );
+      };
+
       showToast({
         message: t.remove.done,
-        actions: [
-          {
-            label: t.remove.undo,
-            onClick: async () => {
-              const restore = await fetch(`/api/trips/${trip.id}/restore`, { method: "POST" });
-              if (!restore.ok) {
-                showToast({ message: t.remove.restoreFailed });
-                return;
-              }
-              const data = await restore.json();
-              setTrips((current) =>
-                current.some((item) => item.id === trip.id)
-                  ? current
-                  : [data.trip as SerializedTrip, ...current]
-              );
-            },
-          },
-        ],
+        actions: [{ label: t.remove.undo, onClick: restore }],
       });
     },
     [trips, showToast, t.remove]

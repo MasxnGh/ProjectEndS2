@@ -296,7 +296,8 @@ const th: Dictionary = {
       done: "ลบทริปแล้ว",
       undo: "เลิกทำ",
       failed: "ลบไม่สำเร็จ ลองอีกครั้งนะ",
-      restoreFailed: "กู้ทริปคืนไม่สำเร็จ",
+      restoreFailed: "กู้ทริปคืนไม่สำเร็จ ตรวจการเชื่อมต่อแล้วลองอีกครั้งนะ",
+      restoreRetry: "ลองอีกครั้ง",
     },
     duplicate: {
       suffix: "{title} (สำเนา)",

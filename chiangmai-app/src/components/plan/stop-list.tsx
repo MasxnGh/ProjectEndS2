@@ -142,6 +142,7 @@ export function StopList({
 
       <ol
         ref={setNodeRef}
+        tabIndex={-1}
         aria-label={fill(t.stopsLabel, { day: dayNumber })}
         className={cx("grid rounded-lg transition-colors duration-150", isOver && "bg-leaf-fill")}
       >
@@ -431,6 +432,7 @@ function StopItem({
 
         <button
           type="button"
+          data-stop-toggle
           aria-expanded={open}
           aria-controls={toolsId}
           aria-label={fill(t.stopOptions, { place: name })}
@@ -514,9 +516,24 @@ function StopTools({
   const name = stop.place.name[locale];
   const moveId = useId();
 
+  // The row these tools sit in leaves the list, taking the focused control
+  // with it. Hand focus to the stop that took its place (or the one before),
+  // or to the list itself once it is empty, so a keyboard user is not dropped
+  // back at the top of the page.
+  function keepFocusInList() {
+    const list = document.getElementById(id)?.closest("ol");
+    if (!list) return;
+    // After React has committed the list without this row.
+    setTimeout(() => {
+      const toggles = list.querySelectorAll<HTMLElement>("[data-stop-toggle]");
+      (toggles[Math.min(index, toggles.length - 1)] ?? list).focus();
+    });
+  }
+
   function moveTo(target: string) {
     if (!target) return;
     if (!moveFromTo(slug, dayId, target, containers[target]?.length ?? 0)) return;
+    keepFocusInList();
     const targetDay = days.find((d) => d.id === target);
     showToast({
       message: targetDay ? fill(toast.moved, { day: targetDay.dayNumber }) : fill(t.movedToTray, { place: name }),
@@ -525,6 +542,7 @@ function StopTools({
   }
 
   function remove() {
+    keepFocusInList();
     removeFromPlan(slug, dayId);
     showToast({
       message: fill(toast.removedFromDay, { day: dayNumber }),

@@ -44,7 +44,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     idRef.current += 1;
     const id = idRef.current;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
     setToast({ id, ...options });
+    // A toast with an action (undo, retry, add anyway) stays until it is used
+    // or closed: a timer would take the action away from anyone who needs
+    // longer to reach it, such as a keyboard user tabbing down to it (WCAG
+    // 2.2.1). A newer toast still replaces it.
+    if (options.actions?.length) return;
     timeoutRef.current = setTimeout(() => {
       setToast((current) => (current?.id === id ? null : current));
     }, options.durationMs ?? DEFAULT_DURATION_MS);
@@ -72,7 +78,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.96 }}
               transition={
-                shouldReduceMotion ? { duration: 0.01 } : { type: "spring", stiffness: 420, damping: 32 }
+                shouldReduceMotion ? { duration: 0.01 } : { type: "spring", duration: 0.3, bounce: 0 }
               }
               className="pointer-events-auto flex max-w-[min(560px,calc(100vw-2rem))] flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-forest py-2 pr-2 pl-5 text-on-forest shadow-lift dark:ring-1 dark:ring-line-strong"
             >

@@ -16,7 +16,7 @@ export function iconButtonStyles({
 }: { tone?: IconButtonTone; size?: IconButtonSize } = {}) {
   return cx(
     "inline-grid flex-none cursor-pointer place-items-center rounded-full",
-    "transition-[background-color,color,transform] duration-150 ease-brand active:scale-95 motion-reduce:active:scale-100",
+    "transition-[background-color,color,translate] duration-150 ease-brand active:translate-y-px",
     "disabled:cursor-not-allowed disabled:opacity-45",
     "aria-pressed:bg-brand aria-pressed:text-on-brand",
     focusRing,
