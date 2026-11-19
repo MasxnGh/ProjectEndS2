@@ -85,10 +85,36 @@ export function getMongoClient(): Promise<MongoClient> {
   return attempt;
 }
 
-/** The database named in the connection string's path segment (see MONGODB_URI in .env.local.example). */
+/**
+ * Where everything lives when the connection string doesn't name a
+ * database. Left to itself the driver falls back to `test`, and the string
+ * Atlas's "Connect" dialog hands out has no database in it, which is how
+ * the deployed site's favourites and trips ended up in `test`.
+ */
+export const DEFAULT_DATABASE = "chiangmai-journey";
+
+/**
+ * The database named in the connection string's path, or DEFAULT_DATABASE.
+ * Shared by getDb() and the Auth.js adapter so accounts and the data they
+ * own can't end up in different databases.
+ */
+export function databaseName(uri = process.env.MONGODB_URI): string {
+  if (!uri) return DEFAULT_DATABASE;
+  // Reserved characters in credentials or the name must be percent-encoded
+  // in a valid URI, so the first "?" starts the options and the first "/"
+  // after the credentials ends the host list. A trailing "/" (".../name/")
+  // is dropped: the driver would keep it, and "name/" is not the database
+  // anyone meant.
+  const [beforeQuery] = uri.split("?");
+  const afterScheme = beforeQuery.slice(beforeQuery.indexOf("://") + 3);
+  const hostsEnd = afterScheme.indexOf("/", afterScheme.lastIndexOf("@") + 1);
+  const path = hostsEnd === -1 ? "" : afterScheme.slice(hostsEnd + 1).replace(/\/+$/, "");
+  return path ? decodeURIComponent(path) : DEFAULT_DATABASE;
+}
+
 export async function getDb() {
   const client = await getMongoClient();
-  return client.db();
+  return client.db(databaseName());
 }
 
 /**

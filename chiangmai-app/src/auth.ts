@@ -1,7 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import { getMongoClient } from "@/lib/db/mongodb";
+import { databaseName, getMongoClient } from "@/lib/db/mongodb";
 
 /**
  * Google is the only provider on purpose — no homegrown password system.
@@ -17,7 +17,9 @@ import { getMongoClient } from "@/lib/db/mongodb";
  * The adapter gets a function, not a client, so each lookup asks for the
  * shared client afresh and a failed connection is retried on the next
  * request (see getMongoClient). With no `onClose` option the adapter never
- * closes the client it is given.
+ * closes the client it is given. It writes users, accounts and sessions to
+ * the same database as trips and favourites (databaseName), not to the
+ * driver's `test` when the connection string names none.
  *
  * The cost of database sessions: when the database can't be reached,
  * Auth.js logs the error and answers "no session", exactly as for a signed-out
@@ -25,7 +27,7 @@ import { getMongoClient } from "@/lib/db/mongodb";
  * getSessionState (lib/session-state.ts).
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: MongoDBAdapter(getMongoClient),
+  adapter: MongoDBAdapter(getMongoClient, { databaseName: databaseName() }),
   providers: [Google],
   trustHost: true,
   session: {

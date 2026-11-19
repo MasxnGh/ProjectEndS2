@@ -4,6 +4,7 @@ const driver = vi.hoisted(() => ({
   connect: vi.fn(),
   close: vi.fn(),
   options: [] as unknown[],
+  dbNames: [] as (string | undefined)[],
 }));
 
 vi.mock("mongodb", () => ({
@@ -17,14 +18,18 @@ vi.mock("mongodb", () => ({
     close() {
       return driver.close();
     }
-    db() {
+    db(name?: string) {
+      driver.dbNames.push(name);
       return { command: vi.fn().mockResolvedValue({ ok: 1 }) };
     }
   },
 }));
 
 import {
+  databaseName,
+  DEFAULT_DATABASE,
   FAILURE_MEMORY_MS,
+  getDb,
   getMongoClient,
   isDatabaseReachable,
   SERVER_SELECTION_TIMEOUT_MS,
@@ -40,6 +45,7 @@ describe("getMongoClient", () => {
     driver.connect.mockReset();
     driver.close.mockReset().mockResolvedValue(undefined);
     driver.options.length = 0;
+    driver.dbNames.length = 0;
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -102,5 +108,49 @@ describe("getMongoClient", () => {
     vi.setSystemTime(Date.now() + FAILURE_MEMORY_MS);
     driver.connect.mockImplementationOnce(async (client: unknown) => client);
     expect(await isDatabaseReachable()).toBe(true);
+  });
+});
+
+describe("databaseName", () => {
+  it("uses the database named in the path", () => {
+    expect(databaseName("mongodb+srv://u:p@cluster0.example.net/chiangmai-journey?retryWrites=true")).toBe("chiangmai-journey");
+    expect(databaseName("mongodb://h1:27017,h2:27017,h3:27017/trips-dev?replicaSet=rs0&tls=true")).toBe("trips-dev");
+    expect(databaseName("mongodb://localhost:27017/test")).toBe("test");
+  });
+
+  it("falls back to the app's database, not the driver's `test`, when the path names none", () => {
+    // Atlas's "Connect" string: how the deployed site's data ended up in `test`.
+    expect(databaseName("mongodb+srv://u:p@cluster0.example.net/?retryWrites=true&w=majority&appName=Cluster0")).toBe(DEFAULT_DATABASE);
+    expect(databaseName("mongodb+srv://u:p@cluster0.example.net?retryWrites=true")).toBe(DEFAULT_DATABASE);
+    expect(databaseName("mongodb://h1:27017,h2:27017")).toBe(DEFAULT_DATABASE);
+    expect(databaseName("")).toBe(DEFAULT_DATABASE);
+    expect(DEFAULT_DATABASE).toBe("chiangmai-journey");
+  });
+
+  it("isn't thrown by encoded characters in the credentials", () => {
+    expect(databaseName("mongodb+srv://us%2Fer:p%40ss%3Fw@cluster0.example.net/?w=majority")).toBe(DEFAULT_DATABASE);
+    expect(databaseName("mongodb+srv://us%2Fer:p%40ss@cluster0.example.net/chiangmai-journey")).toBe("chiangmai-journey");
+  });
+
+  it("drops a trailing slash after the name, which the driver would keep", () => {
+    expect(databaseName("mongodb+srv://u:p@cluster0.example.net/chiangmai-journey/")).toBe("chiangmai-journey");
+    expect(databaseName("mongodb+srv://u:p@cluster0.example.net/chiangmai-journey/?retryWrites=true")).toBe("chiangmai-journey");
+    expect(databaseName("mongodb+srv://u:p@cluster0.example.net//?retryWrites=true")).toBe(DEFAULT_DATABASE);
+  });
+
+  it("decodes an encoded name", () => {
+    expect(databaseName("mongodb://localhost:27017/my%20db")).toBe("my db");
+  });
+
+  it("is what getDb() opens", async () => {
+    vi.stubEnv("MONGODB_URI", "mongodb+srv://u:p@cluster0.example.net/?retryWrites=true");
+    globalThis._mongoClientPromise = undefined;
+    globalThis._mongoLastFailure = undefined;
+    driver.connect.mockReset().mockImplementation(async (client: unknown) => client);
+    driver.dbNames.length = 0;
+    await getDb();
+    expect(driver.dbNames).toEqual([DEFAULT_DATABASE]);
+    vi.unstubAllEnvs();
+    globalThis._mongoClientPromise = undefined;
   });
 });
