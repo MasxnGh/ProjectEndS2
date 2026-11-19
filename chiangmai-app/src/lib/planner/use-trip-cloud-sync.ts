@@ -75,6 +75,7 @@ export function useTripCloudSync() {
   const budgetThb = useTripStore((s) => s.budgetThb);
   const accommodationThb = useTripStore((s) => s.accommodationThb);
   const packingItems = useTripStore((s) => s.packingItems);
+  const cover = useTripStore((s) => s.cover);
   const remoteTripId = useTripStore((s) => s.remoteTripId);
   const remoteUpdatedAt = useTripStore((s) => s.remoteUpdatedAt);
   const saveStatus = useTripStore((s) => s.saveStatus);
@@ -106,8 +107,9 @@ export function useTripCloudSync() {
         budgetThb,
         accommodationThb,
         packingItems,
+        cover,
       }),
-    [dayIds, containers, tripName, travelDate, baseLocation, travelMode, lockedTimes, travelers, budgetThb, accommodationThb, packingItems]
+    [dayIds, containers, tripName, travelDate, baseLocation, travelMode, lockedTimes, travelers, budgetThb, accommodationThb, packingItems, cover]
   );
   const payloadJson = JSON.stringify(payload);
 

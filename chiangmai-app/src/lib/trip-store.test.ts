@@ -19,7 +19,7 @@ const storage = vi.hoisted(() => {
   return items;
 });
 
-import { buildTripSnapshot, UNSCHEDULED, useTripStore, type TripState } from "./trip-store";
+import { buildTripSnapshot, buildWritableTripPayload, UNSCHEDULED, useTripStore, type TripState } from "./trip-store";
 import type { SerializedTrip } from "@/lib/db/types";
 
 function fakeState(overrides: Partial<TripState>): TripState {
@@ -127,6 +127,7 @@ describe("loadRevision", () => {
     budgetThb: 0,
     accommodationThb: 0,
     packingItems: [],
+    cover: null,
     shareToken: "token",
     visibility: "private",
     createdAt: "2026-08-14T00:00:00.000Z",
@@ -148,5 +149,44 @@ describe("loadRevision", () => {
     expect(written.state).not.toHaveProperty("loadRevision");
     expect(written.state).not.toHaveProperty("saveStatus");
     expect(written.state).toHaveProperty("remoteTripId", "trip-1");
+  });
+});
+
+describe("cover", () => {
+  const base: SerializedTrip = {
+    id: "trip-2",
+    ownerId: "u1",
+    title: "Covers",
+    startDate: null,
+    baseLocation: null,
+    days: [{ date: null, stops: [] }],
+    travelMode: "walk",
+    travelers: 2,
+    budgetThb: 0,
+    accommodationThb: 0,
+    packingItems: [],
+    cover: { kind: "place", slug: "doi-inthanon" },
+    shareToken: "token",
+    visibility: "private",
+    createdAt: "2026-08-14T00:00:00.000Z",
+    updatedAt: "2026-08-22T00:00:00.000Z",
+  };
+
+  it("comes back with a saved trip, and a trip saved before covers existed opens with none", () => {
+    useTripStore.getState().loadRemoteTrip(base);
+    expect(useTripStore.getState().cover).toEqual({ kind: "place", slug: "doi-inthanon" });
+
+    const older = { ...base } as Partial<SerializedTrip>;
+    delete older.cover;
+    useTripStore.getState().loadRemoteTrip(older as SerializedTrip);
+    expect(useTripStore.getState().cover).toBeNull();
+  });
+
+  it("is saved with the rest of the trip", () => {
+    useTripStore.getState().setCover({ kind: "place", slug: "tha-phae-gate" });
+    const state = useTripStore.getState();
+    expect(buildWritableTripPayload(state).cover).toEqual({ kind: "place", slug: "tha-phae-gate" });
+    useTripStore.getState().setCover(null);
+    expect(buildWritableTripPayload(useTripStore.getState()).cover).toBeNull();
   });
 });

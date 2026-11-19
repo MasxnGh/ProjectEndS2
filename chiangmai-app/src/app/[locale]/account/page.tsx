@@ -69,6 +69,7 @@ export default async function AccountPage({ params }: { params: Promise<{ locale
     { label: t.fields.userId, value: (data.account?.id as string) ?? "—" },
     { label: t.fields.trips, value: String(data.trips.length) },
     { label: t.fields.favorites, value: String(data.favorites.length) },
+    { label: t.fields.covers, value: String(data.covers.length) },
     {
       label: t.fields.signInLinks,
       value: data.signInRecords.map((record) => String(record.provider)).join(", ") || "—",

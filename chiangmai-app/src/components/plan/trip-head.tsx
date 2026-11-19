@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import {
   Bike,
   Bus,
@@ -10,6 +10,7 @@ import {
   CircleDashed,
   CloudSun,
   Footprints,
+  ImageIcon,
   Minus,
   Pencil,
   Plus,
@@ -21,15 +22,20 @@ import {
 import type { TravelMode } from "@/data/types";
 import type { PlanProgress } from "@/lib/planner/plan-progress";
 import { useLocale } from "@/components/providers/locale-provider";
-import { useTripStore } from "@/lib/trip-store";
+import { UNSCHEDULED, useTripStore } from "@/lib/trip-store";
+import { coverSlug } from "@/lib/trip-cover";
+import { getPlaceBySlug } from "@/data/places";
 import { Button } from "@/components/brand/button";
 import { IconButton } from "@/components/brand/icon-button";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { Popover, fieldChipStyles } from "@/components/brand/popover";
 import { cx, focusRing } from "@/components/brand/cx";
 import { fill } from "@/components/brand/place-text";
+import { PhotoCredit } from "@/components/brand/place-photo";
 import { DateRangeField } from "./date-range-field";
 import { BaseLocationField } from "./base-location-field";
+import { CoverPickerDialog } from "./cover-picker-dialog";
+import { TripCoverFigure } from "./trip-cover-image";
 import { baht } from "./plan-text";
 
 export const MODE_ICON: Record<TravelMode, LucideIcon> = {
@@ -48,7 +54,7 @@ const inputStyles = cx(
 );
 
 /**
- * The top of the planner: what the trip is called, the five things that
+ * The top of the planner: the trip's cover picture, what the trip is called, the five things that
  * shape every day (dates, people, budget, how you get around, where you
  * sleep), how far along the plan is, and the two ways to fill it.
  */
@@ -97,6 +103,7 @@ export function TripHead({
 
   return (
     <header className="grid gap-4">
+      <TripCover />
       <TripTitle name={tripName} />
       {saveIndicator}
 
@@ -143,6 +150,72 @@ export function TripHead({
         ) : null}
       </div>
     </header>
+  );
+}
+
+/**
+ * The cover band: the chosen photo, or the first stop that has one, with a
+ * pill to change it. With no photo to show yet (an empty plan, or only
+ * places without photos) it is a slim dashed strip, so an empty plan does not
+ * open on a large blank.
+ */
+function TripCover() {
+  const { locale, dict } = useLocale();
+  const t = dict.plan.cover;
+  const cover = useTripStore((s) => s.cover);
+  const dayIds = useTripStore((s) => s.dayIds);
+  const containers = useTripStore((s) => s.containers);
+  const [picking, setPicking] = useState(false);
+
+  const daySlugs = useMemo(() => dayIds.flatMap((id) => containers[id] ?? []), [dayIds, containers]);
+  const traySlugs = containers[UNSCHEDULED] ?? [];
+  // The place photo is the cover, or what an uploaded cover falls back to.
+  const slug = coverSlug(cover, daySlugs);
+  const place = slug ? getPlaceBySlug(slug) : undefined;
+  const upload = cover?.kind === "upload" ? cover : null;
+
+  return (
+    <>
+      {upload || slug ? (
+        <TripCoverFigure
+          upload={upload}
+          placeSlug={slug}
+          uploadAlt={t.altUpload}
+          placeAlt={place ? fill(t.alt, { place: place.name[locale] }) : ""}
+          sizes="(max-width: 1024px) calc(100vw - 32px), 456px"
+          eager
+          className="grid gap-1.5"
+          frameClassName="relative aspect-[2/1] overflow-hidden rounded-lg bg-sand-fill lg:aspect-[5/2]"
+          overlay={
+            <Button
+              variant="on-photo"
+              size="sm"
+              onClick={() => setPicking(true)}
+              icon={<ImageIcon aria-hidden strokeWidth={ICON_STROKE} className="size-4" />}
+              className="absolute right-2.5 bottom-2.5 shadow-float"
+            >
+              {t.change}
+            </Button>
+          }
+          credit={slug ? <PhotoCredit slug={slug} dict={dict} placeName={place?.name[locale]} /> : null}
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => setPicking(true)}
+          className={cx(
+            "flex min-h-14 cursor-pointer items-center gap-2.5 rounded-lg border-[1.5px] border-dashed px-4 text-left font-brand text-label text-brand",
+            "border-[color-mix(in_oklab,var(--cmj-brand)_32%,transparent)] transition-colors duration-150 hover:bg-well",
+            focusRing,
+          )}
+        >
+          <Plus aria-hidden strokeWidth={ICON_STROKE} className="size-5 flex-none" />
+          {t.add}
+          <span className="ml-auto text-small font-normal text-ink-soft">{t.optional}</span>
+        </button>
+      )}
+      <CoverPickerDialog open={picking} onClose={() => setPicking(false)} daySlugs={daySlugs} traySlugs={traySlugs} />
+    </>
   );
 }
 

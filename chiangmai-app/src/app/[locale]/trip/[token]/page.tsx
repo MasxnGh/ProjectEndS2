@@ -11,10 +11,12 @@ import { Badge } from "@/components/brand/badge";
 import { ButtonLink, buttonStyles } from "@/components/brand/button";
 import { cx, focusRing } from "@/components/brand/cx";
 import { categoryIcon, ICON_STROKE } from "@/components/brand/icons";
-import { NoPhoto, PlacePhoto } from "@/components/brand/place-photo";
+import { NoPhoto, PhotoCredit, PlacePhoto } from "@/components/brand/place-photo";
+import { coverSlug, tripStopSlugs } from "@/lib/trip-cover";
 import { fill, placeWhere } from "@/components/brand/place-text";
 import { Wrap } from "@/components/brand/surface";
 import { dayMapsLink } from "@/components/plan/maps-link";
+import { TripCoverFigure } from "@/components/plan/trip-cover-image";
 import { dayCountLabel, longDayDate, placeCountLabel, stopsLabel, tripRange } from "@/components/plan/plan-text";
 import { CopySharedTripButton } from "@/components/trips/copy-shared-trip-button";
 import { ThaiName } from "@/components/brand/thai-name";
@@ -79,11 +81,29 @@ export default async function SharedTripPage({
 
   const placeTotal = countPlaces(trip);
   const dates = datesLabel(trip, loc);
+  // The place photo is the cover, or what an uploaded cover falls back to.
+  const cover = coverSlug(trip.cover, tripStopSlugs(trip.days));
+  const coverPlace = cover ? getPlaceBySlug(cover) : undefined;
+  const upload = trip.cover?.kind === "upload" ? trip.cover : null;
 
   return (
     <div data-brand className="bg-page pb-16 font-brand text-ink lg:pb-20">
       <Wrap className="max-w-[calc(880px+4rem)]">
         <header className="grid gap-4 pt-8 pb-10 sm:pt-12">
+          {upload || cover ? (
+            <TripCoverFigure
+              upload={upload}
+              placeSlug={cover}
+              uploadAlt={dict.plan.cover.altUpload}
+              placeAlt={coverPlace ? fill(dict.plan.cover.alt, { place: coverPlace.name[loc] }) : ""}
+              sizes="(max-width: 960px) calc(100vw - 32px), 880px"
+              grade="golden"
+              eager
+              className="mb-2 grid gap-2"
+              frameClassName="relative aspect-[2/1] overflow-hidden rounded-lg bg-sand-fill sm:aspect-[5/2]"
+              credit={cover ? <PhotoCredit slug={cover} dict={dict} placeName={coverPlace?.name[loc]} /> : null}
+            />
+          ) : null}
           {/* No kicker above the title (DESIGN.md): that it was shared is a badge beside the facts. */}
           <h1 className="text-[clamp(2rem,1.5rem+2.2vw,3.25rem)] leading-[1.25] font-semibold text-balance text-brand">
             {trip.title || dict.myTrips.untitled}

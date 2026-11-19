@@ -8,10 +8,12 @@ import { ButtonLink } from "@/components/brand/button";
 import { cx, focusRing } from "@/components/brand/cx";
 import { IconButton } from "@/components/brand/icon-button";
 import { categoryIcon, ICON_STROKE } from "@/components/brand/icons";
-import { NoPhoto, PlacePhoto } from "@/components/brand/place-photo";
+import { NoPhoto } from "@/components/brand/place-photo";
 import { fill } from "@/components/brand/place-text";
 import { dayCountLabel, placeCountLabel } from "@/components/plan/plan-text";
 import { useLocale } from "@/components/providers/locale-provider";
+import { coverSlug, tripStopSlugs } from "@/lib/trip-cover";
+import { TripCoverImage } from "@/components/plan/trip-cover-image";
 import { useToast } from "@/components/toast/toast-provider";
 import type { SerializedTrip } from "@/lib/db/types";
 import type { Locale } from "@/i18n";
@@ -170,6 +172,8 @@ export function MyTripsList({
         {trips.map((trip, index) => {
           const slug = firstPlaceSlug(trip);
           const place = slug ? getPlaceBySlug(slug) : null;
+          const cover = coverSlug(trip.cover, tripStopSlugs(trip.days));
+          const upload = trip.cover?.kind === "upload" ? trip.cover : null;
           const places = countPlaces(trip);
           const title = trip.title || t.untitled;
 
@@ -188,23 +192,27 @@ export function MyTripsList({
                 className={cx("group/trip block rounded-t-lg", focusRing, "focus-visible:outline-offset-[-3px]")}
               >
                 <div className="relative aspect-[16/9] w-full overflow-hidden">
-                  {place ? (
-                    <PlacePhoto
-                      slug={place.slug}
-                      alt=""
-                      sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1024px) 45vw, 400px"
-                      fallback={
+                  {/* The trip's cover, or its first stop with a photo; a trip with
+                      no photographed stop shows its first place's art. */}
+                  <TripCoverImage
+                    upload={upload}
+                    placeSlug={cover}
+                    uploadAlt=""
+                    placeAlt=""
+                    sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1024px) 45vw, 400px"
+                    fallback={
+                      place ? (
                         <NoPhoto
                           icon={categoryIcon[place.category]}
                           caption={place.name[locale]}
                           label={place.name[locale]}
                           size="md"
                         />
-                      }
-                    />
-                  ) : (
-                    <NoPhoto icon={Luggage} label={title} size="md" />
-                  )}
+                      ) : (
+                        <NoPhoto icon={Luggage} label={title} size="md" />
+                      )
+                    }
+                  />
                 </div>
                 <h2 className="px-5 pt-4 text-title font-semibold text-pretty text-ink group-hover/trip:text-brand group-hover/trip:underline group-hover/trip:decoration-[1.5px] group-hover/trip:underline-offset-4">
                   {title}

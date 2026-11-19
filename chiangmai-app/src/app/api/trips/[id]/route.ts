@@ -1,6 +1,7 @@
-import type { NextRequest } from "next/server";
+import { after, type NextRequest } from "next/server";
 import { ObjectId } from "mongodb";
 import { getTripsCollection } from "@/lib/db/collections";
+import { deleteCoverIfUnused, vetCoverForOwner } from "@/lib/db/covers";
 import { parseTripWritablePayload, toSerializedTrip } from "@/lib/db/types";
 import { requireUserId, unauthorizedResponse, rateLimitResponse } from "@/lib/api-auth";
 
@@ -75,11 +76,24 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
   const conflict = expectedUpdatedAt !== null && existing.updatedAt.toISOString() !== expectedUpdatedAt;
 
+  if (payload.cover !== undefined) payload.cover = await vetCoverForOwner(payload.cover, userId);
+
   const now = new Date();
   await trips.updateOne({ _id, ownerId: userId }, { $set: { ...payload, updatedAt: now } });
   const updated = await trips.findOne({ _id, ownerId: userId });
   if (!updated) {
     return Response.json({ error: "Trip was updated but could not be reloaded" }, { status: 500 });
+  }
+
+  // A replaced upload goes once nothing uses it (a duplicate of this trip may
+  // still). After the response: the save has already succeeded, and a failed
+  // clean-up only leaves a photo for the next upload's sweep to find.
+  const previous = existing.cover;
+  if (previous?.kind === "upload" && payload.cover !== undefined) {
+    const next = payload.cover;
+    if (next?.kind !== "upload" || next.id !== previous.id) {
+      after(() => deleteCoverIfUnused(previous.id).catch(() => {}));
+    }
   }
 
   return Response.json({ trip: toSerializedTrip(updated), conflict });

@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { ObjectId } from "mongodb";
 import { getTripsCollection } from "@/lib/db/collections";
+import { copyCoverFor } from "@/lib/db/covers";
 import { findSharedTripByToken } from "@/lib/db/shared-trip";
 import { toSerializedTrip } from "@/lib/db/types";
 import { generateShareToken } from "@/lib/db/share-token";
@@ -37,9 +38,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const body: unknown = await request.json().catch(() => ({}));
   const requestedTitle = (body as Record<string, unknown> | null)?.title;
 
+  // Someone else's uploaded photo is copied for the new owner rather than
+  // shared, so the copy keeps its cover when the original changes it, stops
+  // sharing, or is deleted. Past the new owner's limit it takes the automatic
+  // cover instead.
+  let cover = source.cover ?? null;
+  if (cover?.kind === "upload") {
+    const copiedId = await copyCoverFor(cover.id, userId);
+    cover = copiedId ? { ...cover, id: copiedId } : null;
+  }
+
   const now = new Date();
   const copy = {
     ...source,
+    cover,
     _id: new ObjectId(),
     title: (typeof requestedTitle === "string" && requestedTitle.trim()
       ? requestedTitle.trim()

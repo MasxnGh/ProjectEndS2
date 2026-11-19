@@ -2,6 +2,7 @@ import "server-only";
 
 import { ObjectId } from "mongodb";
 import { getDb } from "@/lib/db/mongodb";
+import { uploadedCoverUrl } from "@/lib/trip-cover";
 
 /**
  * Every collection this app stores personal data in.
@@ -20,6 +21,8 @@ export interface AccountExport {
   account: Record<string, unknown> | null;
   trips: Record<string, unknown>[];
   favorites: Record<string, unknown>[];
+  /** Photos uploaded as trip covers: what is stored about each, and where to download it while signed in. */
+  covers: Record<string, unknown>[];
   /** Rows in the OAuth/session bookkeeping the adapter owns, with secrets removed. */
   signInRecords: Record<string, unknown>[];
 }
@@ -33,10 +36,13 @@ export async function collectUserData(userId: string): Promise<AccountExport> {
   const db = await getDb();
   const _id = ObjectId.isValid(userId) ? new ObjectId(userId) : null;
 
-  const [userDoc, trips, favorites, accounts] = await Promise.all([
+  const [userDoc, trips, favorites, covers, accounts] = await Promise.all([
     _id ? db.collection("users").findOne({ _id }) : null,
     db.collection("trips").find({ ownerId: userId }).toArray(),
     db.collection("favorites").find({ userId }).toArray(),
+    // The photo bytes stay out of the JSON (they would make it several MB of
+    // base64); each entry says where to download the photo instead.
+    db.collection("trip_covers").find({ ownerId: userId }, { projection: { data: 0 } }).toArray(),
     db.collection("accounts").find({ userId: _id }).toArray(),
   ]);
 
@@ -53,6 +59,7 @@ export async function collectUserData(userId: string): Promise<AccountExport> {
       : null,
     trips: trips.map((doc) => ({ ...doc, _id: doc._id.toString() })),
     favorites: favorites.map((doc) => ({ ...doc, _id: doc._id.toString() })),
+    covers: covers.map((doc) => ({ ...doc, _id: String(doc._id), url: uploadedCoverUrl(String(doc._id)) })),
     // OAuth tokens are deliberately stripped: they are credentials that can
     // act on the user's Google account, and putting them in a file the user
     // downloads (and might email or upload) turns a data export into a
@@ -72,6 +79,7 @@ export interface DeletionSummary {
   users: number;
   trips: number;
   favorites: number;
+  covers: number;
   accounts: number;
   sessions: number;
   verification_tokens: number;
@@ -95,6 +103,9 @@ export async function deleteAllUserData(userId: string): Promise<DeletionSummary
 
   const trips = await db.collection("trips").deleteMany({ ownerId: userId });
   const favorites = await db.collection("favorites").deleteMany({ userId });
+  // Covers this user copied from someone else's shared trip are their own
+  // copies (copyCoverFor), so this takes nothing from anyone else's trips.
+  const covers = await db.collection("trip_covers").deleteMany({ ownerId: userId });
 
   const authCounts: Record<string, number> = {};
   for (const name of AUTH_COLLECTIONS) {
@@ -110,6 +121,7 @@ export async function deleteAllUserData(userId: string): Promise<DeletionSummary
     users: users.deletedCount ?? 0,
     trips: trips.deletedCount ?? 0,
     favorites: favorites.deletedCount ?? 0,
+    covers: covers.deletedCount ?? 0,
     accounts: authCounts.accounts ?? 0,
     sessions: authCounts.sessions ?? 0,
     verification_tokens: authCounts.verification_tokens ?? 0,
