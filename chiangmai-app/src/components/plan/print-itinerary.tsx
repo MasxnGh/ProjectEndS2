@@ -358,12 +358,6 @@ export function PrintItinerary({ tripName, days }: { tripName: string; days: Pri
                     {item.label}
                   </li>
                 ))}
-                <li aria-hidden className="tp-blank">
-                  <span className="tp-box" />
-                </li>
-                <li aria-hidden className="tp-blank">
-                  <span className="tp-box" />
-                </li>
               </ul>
             </section>
           </div>
