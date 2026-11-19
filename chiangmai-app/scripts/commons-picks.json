@@ -67,6 +67,13 @@
     "evidence": "Commons file geotagged within 350 m of the catalogue coordinate, and its title names the place. Checked by eye."
   },
   {
+    "slug": "wat-ban-den",
+    "file": "File:Wat Ban Den, Chiang Mai.jpg",
+    "entity": "Q99736007",
+    "replaces": "FredTC's wide view of the ubosot forecourt, which has the camera's date stamp (09.01.2018) burnt into the corner",
+    "evidence": "File is in the entity's own Commons category (Wat Ban Den, Mae Taeng) and its title names the temple; its camera location is about 107 m from the catalogue coordinate. Shows the green naga and the blue-roofed halls. Checked by eye."
+  },
+  {
     "slug": "wat-inthakhin-sadue-muang",
     "file": "File:วัดอินทขีล.jpg",
     "entity": "Q18920949",
