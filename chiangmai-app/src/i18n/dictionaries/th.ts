@@ -1069,6 +1069,9 @@ const th: Dictionary = {
     costValue: { 1: "ต่ำกว่า ฿300 ต่อคน", 2: "฿300–1,000 ต่อคน", 3: "มากกว่า ฿1,000 ต่อคน" },
     address: "ที่ตั้ง",
     directions: "เส้นทางใน Google Maps",
+    reviewsTerm: "เสียงจากคนที่เคยไป",
+    reviewsLink: "ดูรีวิวและรูปใน Google Maps",
+    reviewsHint: "เปิดด้วยการค้นชื่อ รีวิวเขียนโดยผู้ใช้ Google ไม่ใช่โดยเรา",
     share: "แชร์",
     shareCopied: "คัดลอกลิงก์แล้ว",
     noPhoto: "ยังไม่มีภาพถ่ายที่ยืนยันได้ว่าเป็นที่นี่ เราจึงไม่ใส่ภาพที่ไม่ใช่",
@@ -1200,6 +1203,7 @@ const th: Dictionary = {
     moveTo: "ย้ายไป",
     moveToDay: "วันที่ {day}",
     viewPlace: "เปิดหน้าสถานที่",
+    reviews: "รีวิวใน Google Maps",
     addToDay: "เพิ่มสถานที่ลงวันที่ {day}",
     emptyDay: "วันนี้ยังว่าง เพิ่มสถานที่ หรือลากจากด้านล่างมาวาง",
     checks: {

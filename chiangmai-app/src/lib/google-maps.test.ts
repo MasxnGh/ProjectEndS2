@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Place } from "@/data/types";
-import { googleMapsDirectionsUrl, googleMapsPlaceUrl, MAX_WAYPOINTS } from "./google-maps";
+import { googleMapsDirectionsUrl, googleMapsPlaceUrl, googleMapsReviewsUrl, MAX_WAYPOINTS } from "./google-maps";
+import { places } from "@/data/places";
 
 function stop(n: number): Place {
   return {
@@ -68,5 +69,37 @@ describe("googleMapsPlaceUrl", () => {
     expect(googleMapsPlaceUrl(stop(1))).toBe(
       "https://www.google.com/maps/search/?api=1&query=18.781,98.991"
     );
+  });
+});
+
+describe("googleMapsReviewsUrl", () => {
+  it("searches by the English name, so Google opens the listing with its reviews", () => {
+    const url = googleMapsReviewsUrl(stop(3));
+    expect(url).not.toBeNull();
+    const parsed = new URL(url!);
+    expect(parsed.origin + parsed.pathname).toBe("https://www.google.com/maps/search/");
+    expect(parsed.searchParams.get("api")).toBe("1");
+    expect(parsed.searchParams.get("query")).toBe("Stop 3, Chiang Mai");
+  });
+
+  it("keeps names with symbols intact through the URL", () => {
+    const place = { ...stop(1), name: { en: "Woo Café & Art Gallery", th: "วู คาเฟ่" } } as Place;
+    expect(new URL(googleMapsReviewsUrl(place)!).searchParams.get("query")).toBe("Woo Café & Art Gallery, Chiang Mai");
+  });
+
+  it("offers no link for a place with no single listing", () => {
+    expect(googleMapsReviewsUrl({ ...stop(1), mapsListing: false } as Place)).toBeNull();
+  });
+
+  it("marks the catalogue's areas, trails and kinds of activity as having no listing", () => {
+    const without = places.filter((p) => googleMapsReviewsUrl(p) === null).map((p) => p.slug).sort();
+    expect(without).toEqual([
+      "ethical-elephant-sanctuary",
+      "mae-ping-river-cruise",
+      "old-city-coffee-trail",
+      "riverside-ping",
+      "thai-cooking-class",
+      "thai-massage-spa",
+    ]);
   });
 });

@@ -13,6 +13,7 @@ import {
   Footprints,
   Info,
   MapPin,
+  MessageSquareText,
   Moon,
   Mountain,
   Shirt,
@@ -27,6 +28,7 @@ import { getPlacePhoto } from "@/data/photo-manifest";
 import type { Award, GoldenHourType, Place } from "@/data/types";
 import { isLocale, getDictionary, type Dictionary, type Locale } from "@/i18n";
 import { locateInSquare } from "@/lib/city-square";
+import { googleMapsReviewsUrl } from "@/lib/google-maps";
 import { findNearbyExcluding } from "@/lib/geo/nearby";
 import { buildPageMetadata } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
@@ -217,6 +219,7 @@ export default async function PlaceDetailPage({
   const placement = locateInSquare(place.coordinates);
   const zoneCount = places.filter((p) => locateInSquare(p.coordinates).bucket === placement.bucket).length;
   const before = beforeYouGo(place, locale, dict);
+  const reviewsUrl = googleMapsReviewsUrl(place);
   const nearby = findNearbyExcluding(
     place.coordinates,
     places,
@@ -474,6 +477,25 @@ export default async function PlaceDetailPage({
                 <Fact icon={MapPin} term={t.address}>
                   <span className="font-normal">{place.address[locale]}</span>
                 </Fact>
+                {/* Reviews are the one thing this guide leaves to others, so it
+                    hands the visitor to them by name and says whose they are. */}
+                {reviewsUrl ? (
+                  <Fact icon={MessageSquareText} term={t.reviewsTerm}>
+                    <a
+                      href={reviewsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cx(
+                        "inline-flex min-h-11 items-center gap-1.5 rounded-sm text-brand underline-offset-4 hover:underline",
+                        focusRing,
+                      )}
+                    >
+                      {t.reviewsLink}
+                      <ExternalLink aria-hidden strokeWidth={ICON_STROKE} className="size-3.5 flex-none" />
+                    </a>
+                    <span className="block text-small font-normal text-ink-soft">{t.reviewsHint}</span>
+                  </Fact>
+                ) : null}
                 <Fact icon={Compass} term={t.where}>
                   {dict.square.zones[placement.bucket]}
                   <span className="block text-small font-normal text-ink-soft tabular-nums">

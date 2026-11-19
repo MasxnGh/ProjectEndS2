@@ -1074,6 +1074,9 @@ const en = {
     costValue: { 1: "under ฿300 per person", 2: "฿300–1,000 per person", 3: "over ฿1,000 per person" },
     address: "Address",
     directions: "Directions in Google Maps",
+    reviewsTerm: "From people who have been",
+    reviewsLink: "Reviews and photos on Google Maps",
+    reviewsHint: "Opened by a name search. Reviews are written by Google users, not by us.",
     share: "Share",
     shareCopied: "Link copied",
     noPhoto: "No photo yet that we can confirm shows this place, so we have not used one that doesn't.",
@@ -1206,6 +1209,7 @@ const en = {
     moveTo: "Move to",
     moveToDay: "Day {day}",
     viewPlace: "Open the place page",
+    reviews: "Reviews on Google Maps",
     addToDay: "Add a place to day {day}",
     emptyDay: "Nothing on this day yet. Add a place, or drag one in from below.",
     checks: {
