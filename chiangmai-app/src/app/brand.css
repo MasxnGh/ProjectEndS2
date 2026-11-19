@@ -220,6 +220,11 @@
       /* The dock's height: 12px + 48px button + 12px, and its 1px top rule. */
       padding-bottom: calc(4.5rem + 1px + env(safe-area-inset-bottom));
     }
+    /* …and a control that takes focus near the foot of the window scrolls
+       clear of the dock rather than behind it (WCAG 2.4.11). */
+    html:has([data-place-dock]) {
+      scroll-padding-bottom: calc(4.5rem + 1px + env(safe-area-inset-bottom));
+    }
   }
 
   /*

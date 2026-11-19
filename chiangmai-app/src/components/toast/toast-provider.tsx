@@ -44,7 +44,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     idRef.current += 1;
     const id = idRef.current;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
     setToast({ id, ...options });
+    // A toast with an action (undo, retry, add anyway) stays until it is used
+    // or closed: a timer would take the action away from anyone who needs
+    // longer to reach it, such as a keyboard user tabbing down to it (WCAG
+    // 2.2.1). A newer toast still replaces it.
+    if (options.actions?.length) return;
     timeoutRef.current = setTimeout(() => {
       setToast((current) => (current?.id === id ? null : current));
     }, options.durationMs ?? DEFAULT_DURATION_MS);

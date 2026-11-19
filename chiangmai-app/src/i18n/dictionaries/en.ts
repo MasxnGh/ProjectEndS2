@@ -299,7 +299,8 @@ const en = {
       done: "Trip deleted",
       undo: "Undo",
       failed: "Couldn't delete that trip. Please try again.",
-      restoreFailed: "Couldn't restore that trip.",
+      restoreFailed: "Couldn't restore that trip. Check your connection and try again.",
+      restoreRetry: "Try again",
     },
     duplicate: {
       suffix: "{title} (copy)",
