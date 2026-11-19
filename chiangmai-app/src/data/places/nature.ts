@@ -760,6 +760,7 @@ export const nature: Place[] = [
     bestTime: ["morning", "evening"],
     durationMinutes: 60,
     priceLevel: 1,
+    freeEntry: true,
     rating: 4.4,
     shortDescription: {
       en: "The university's reservoir, with Doi Suthep reflected in it at both ends of the day.",

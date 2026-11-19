@@ -2,6 +2,9 @@ import type { Place } from "@/data/types";
 import { getPlacePhoto } from "@/data/photo-manifest";
 import { haversineKm, type LatLng } from "@/lib/geo/distance";
 
+/** What sorting reads; Explore passes a trimmed place (ExplorePlace), not the whole record. */
+type SortablePlace = Pick<Place, "slug" | "rating" | "durationMinutes" | "coordinates">;
+
 export type ExploreSort = "recommended" | "rating" | "nearest" | "shortest";
 
 export const EXPLORE_SORTS: readonly ExploreSort[] = [
@@ -34,17 +37,17 @@ export const EXPLORE_SORTS: readonly ExploreSort[] = [
  * the order is stable across renders rather than depending on the engine's
  * sort implementation.
  */
-export function sortPlaces(
-  places: Place[],
+export function sortPlaces<T extends SortablePlace>(
+  places: T[],
   sort: ExploreSort,
   reference: LatLng | null
-): Place[] {
+): T[] {
   // A stable partition rather than a comparator: within each half the
   // catalogue's own order survives untouched, which is the point of
   // "recommended".
-  const photographedFirst = (list: Place[]) => {
-    const withPhoto: Place[] = [];
-    const without: Place[] = [];
+  const photographedFirst = (list: T[]) => {
+    const withPhoto: T[] = [];
+    const without: T[] = [];
     for (const place of list) {
       (getPlacePhoto(place.slug) ? withPhoto : without).push(place);
     }
@@ -57,8 +60,8 @@ export function sortPlaces(
   // the editorial order rather than to an arbitrary one.
   if (sort === "nearest" && !reference) return photographedFirst(places);
 
-  const bySlug = (a: Place, b: Place) => a.slug.localeCompare(b.slug);
-  const byPhoto = (a: Place, b: Place) =>
+  const bySlug = (a: T, b: T) => a.slug.localeCompare(b.slug);
+  const byPhoto = (a: T, b: T) =>
     Number(Boolean(getPlacePhoto(b.slug))) - Number(Boolean(getPlacePhoto(a.slug)));
 
   return [...places].sort((a, b) => {
@@ -93,15 +96,15 @@ export function isSortAvailable(sort: ExploreSort, reference: LatLng | null): bo
  * about the order: photographed places still come first, and inside each
  * category the editorial sequence is untouched. Only the interleaving is new.
  */
-export function mixCategories(places: Place[]): Place[] {
-  const deal = (list: Place[]) => {
-    const queues = new Map<string, Place[]>();
+export function mixCategories<T extends Pick<Place, "slug" | "category">>(places: T[]): T[] {
+  const deal = (list: T[]) => {
+    const queues = new Map<string, T[]>();
     for (const place of list) {
       const queue = queues.get(place.category);
       if (queue) queue.push(place);
       else queues.set(place.category, [place]);
     }
-    const out: Place[] = [];
+    const out: T[] = [];
     const lanes = [...queues.values()];
     for (let i = 0; out.length < list.length; i++) {
       for (const lane of lanes) if (i < lane.length) out.push(lane[i]);

@@ -238,6 +238,7 @@ export const villages: Place[] = [
     bestTime: ["evening"],
     durationMinutes: 30,
     priceLevel: 1,
+    freeEntry: true,
     rating: 4.3,
     shortDescription: {
       en: "The old city's eastern gate and the square everyone ends up in eventually.",
@@ -287,6 +288,7 @@ export const villages: Place[] = [
     bestTime: ["morning"],
     durationMinutes: 20,
     priceLevel: 1,
+    freeEntry: true,
     rating: 3.7,
     shortDescription: {
       en: "The south-west bastion, and the corner that completes the square.",
@@ -328,6 +330,7 @@ export const villages: Place[] = [
     bestTime: ["evening"],
     durationMinutes: 25,
     priceLevel: 1,
+    freeEntry: true,
     rating: 4.1,
     shortDescription: {
       en: "The south gate, where the old city eats rather than sightsees.",
@@ -377,6 +380,7 @@ export const villages: Place[] = [
     bestTime: ["afternoon"],
     durationMinutes: 20,
     priceLevel: 1,
+    freeEntry: true,
     rating: 3.9,
     shortDescription: {
       en: "The fifth gate, cut later and opened only for the dead.",
@@ -418,6 +422,7 @@ export const villages: Place[] = [
     bestTime: ["morning"],
     durationMinutes: 20,
     priceLevel: 1,
+    freeEntry: true,
     rating: 3.8,
     shortDescription: {
       en: "The north-west bastion, where the water came in.",
@@ -459,6 +464,7 @@ export const villages: Place[] = [
     bestTime: ["evening"],
     durationMinutes: 20,
     priceLevel: 1,
+    freeEntry: true,
     rating: 3.7,
     shortDescription: {
       en: "The south-east bastion, named after a fish trap.",
@@ -500,6 +506,7 @@ export const villages: Place[] = [
     bestTime: ["morning", "evening"],
     durationMinutes: 20,
     priceLevel: 1,
+    freeEntry: true,
     rating: 4.2,
     shortDescription: {
       en: "The three rulers who planned Chiang Mai, standing at the exact centre of their city.",

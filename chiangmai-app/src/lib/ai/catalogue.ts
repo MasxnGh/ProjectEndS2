@@ -15,7 +15,9 @@ function line(place: (typeof places)[number]): string {
     `${place.name.en} / ${place.name.th}`,
     place.category,
     place.district,
-    "฿".repeat(place.priceLevel),
+    // Same rule as placeSpendThb: a place whose entry says it is free costs
+    // nothing in the planner's estimate, so the model must not budget for it.
+    place.freeEntry ? "free" : "฿".repeat(place.priceLevel),
     `${place.durationMinutes}min`,
     `${place.rating}`,
     place.openingHours ? `${place.openingHours.opens}-${place.openingHours.closes}` : "hours vary",
@@ -65,7 +67,7 @@ export function buildPlaceCatalogue(): string {
     ...rows,
     "",
     "Per-person spend estimate the planner applies, by price level:",
-    `฿ = ${SPEND_ESTIMATE_THB[1]} THB, ฿฿ = ${SPEND_ESTIMATE_THB[2]} THB, ฿฿฿ = ${SPEND_ESTIMATE_THB[3]} THB.`,
+    `free = 0 THB, ฿ = ${SPEND_ESTIMATE_THB[1]} THB, ฿฿ = ${SPEND_ESTIMATE_THB[2]} THB, ฿฿฿ = ${SPEND_ESTIMATE_THB[3]} THB.`,
     "Transport between stops is roughly 8 THB per km and is shared, not per person.",
   ].join("\n");
 }

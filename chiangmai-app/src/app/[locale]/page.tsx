@@ -9,6 +9,7 @@ import { buildSchedule } from "@/lib/planner/schedule";
 import { dayStats } from "@/lib/trip-calculations";
 import { buildPageMetadata } from "@/lib/seo";
 import { websiteJsonLd, jsonLdScriptProps } from "@/lib/json-ld";
+import { fill } from "@/components/brand/place-text";
 import {
   HomeCategories,
   HomeClosing,
@@ -26,11 +27,13 @@ export async function generateMetadata({
   const { locale } = await params;
   const loc = isLocale(locale) ? locale : "en";
   const dict = getDictionary(loc);
+  // The intro paragraph is too long for a search result (Google cuts near 160
+  // characters), so the page states plainly what the site is instead.
   return buildPageMetadata({
     locale: loc,
     path: "",
-    title: dict.meta.titleSuffix,
-    description: dict.home.intro.body,
+    title: dict.meta.homeTitle,
+    description: fill(dict.meta.description, { count: places.length }),
   });
 }
 

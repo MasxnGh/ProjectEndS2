@@ -33,7 +33,7 @@ export function priceSymbol(level: PriceLevel): string {
  * Where a place is, the way people here give directions: the district, and the
  * old-city square only where it adds something (inside the walls or on the moat).
  */
-export function placeWhere(place: Place, dict: Dictionary): string {
+export function placeWhere(place: Pick<Place, "coordinates" | "district">, dict: Dictionary): string {
   const { bucket } = locateInSquare(place.coordinates);
   const zones = dict.square.zones;
   const district = dict.common.districts[place.district] ?? zones[bucket];
@@ -41,7 +41,7 @@ export function placeWhere(place: Place, dict: Dictionary): string {
 }
 
 /** "วัดวาอาราม · อยู่ราว 2 ชม. · ฿" */
-export function placeMeta(place: Place, dict: Dictionary): string {
+export function placeMeta(place: Pick<Place, "category" | "durationMinutes" | "priceLevel">, dict: Dictionary): string {
   return [
     dict.common.categories[place.category],
     fill(dict.ui.stay, { duration: formatDuration(place.durationMinutes, dict) }),

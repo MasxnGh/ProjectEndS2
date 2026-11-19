@@ -42,12 +42,17 @@ export function UnscheduledTray({
         isOver && "shadow-[0_0_0_3px_var(--cmj-brand)]",
       )}
     >
-      <h3 id="planner-tray-title" className="flex items-center justify-between gap-3 text-label text-brand">
-        {dict.planner.unscheduled}
-        <span className="grid min-h-[30px] min-w-[30px] place-items-center rounded-full bg-panel px-2 text-small font-semibold tabular-nums">
-          {places.length}
+      {/* The count sits beside the heading, not inside it: inside, the
+          heading's name read as "…0" with no space or unit. */}
+      <div className="flex items-center justify-between gap-3">
+        <h3 id="planner-tray-title" className="text-label text-brand">
+          {dict.planner.unscheduled}
+        </h3>
+        <span className="grid min-h-[30px] min-w-[30px] place-items-center rounded-full bg-panel px-2 text-small font-semibold text-brand tabular-nums">
+          <span aria-hidden>{places.length}</span>
+          <span className="sr-only">{fill(dict.ui.placeCount, { count: places.length })}</span>
         </span>
-      </h3>
+      </div>
       <p className="text-small text-pretty text-ink-soft">{dict.plan.tray.body}</p>
       <ul ref={setNodeRef} className="grid min-h-2 gap-2">
         <SortableContext items={places.map((p) => itemId(UNSCHEDULED, p.slug))} strategy={verticalListSortingStrategy}>

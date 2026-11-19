@@ -96,7 +96,10 @@ export function HomeHero({
               "lg:bg-[image:linear-gradient(90deg,rgb(20_42_39/0.9)_0%,rgb(20_42_39/0.84)_40%,rgb(20_42_39/0.36)_60%,rgb(20_42_39/0)_76%),linear-gradient(0deg,rgb(20_42_39/0.55)_0%,rgb(20_42_39/0)_40%)]",
             )}
           />
-          <div className="grid min-w-0 max-w-[640px] gap-4 px-4 pt-8 pb-3 sm:px-8 sm:pt-12 sm:pb-8 lg:px-16 lg:pt-24 lg:pb-16">
+          {/* 704px from lg: with the 64px side padding there, 640 left the four
+              chips 47px short of one row, so the last dropped to a line of its
+              own. The title, subtitle and search keep their own narrower caps. */}
+          <div className="grid min-w-0 max-w-[640px] gap-4 px-4 pt-8 pb-3 sm:px-8 sm:pt-12 sm:pb-8 lg:max-w-[704px] lg:px-16 lg:pt-24 lg:pb-16">
             <TextAnimate
               as="h1"
               by="line"
@@ -228,7 +231,7 @@ export function HomeFeatured({ locale, dict, picks }: Props & { picks: Place[] }
           <BlurFade as="ul" stagger={0.1} delay={0.15} className="grid content-start gap-4">
             {rest.map((place) => (
               <li key={place.slug}>
-                <PlaceCardFor place={place} locale={locale} dict={dict} />
+                <PlaceCardFor place={place} locale={locale} dict={dict} summary={place.shortDescription[locale]} />
               </li>
             ))}
           </BlurFade>

@@ -110,7 +110,9 @@ export function TripHead({
 
       <Checklist progress={progress} placeCount={placeCount} />
 
-      <div className="flex flex-wrap gap-2">
+      {/* An empty plan offers the same two ways in, with the example day, just
+          below (PlanEmpty); showing them here as well put each on screen twice. */}
+      <div className={cx("flex flex-wrap gap-2", placeCount === 0 && "hidden")}>
         {aiEnabled ? (
           <Button
             variant="secondary"

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Dictionary, Locale } from "@/i18n";
+import { CONTACT_EMAIL } from "@/lib/site";
 import { cx } from "./cx";
 import { CATEGORY_ORDER } from "./icons";
 import { Logo } from "./logo";
@@ -10,7 +11,7 @@ const footerFocus = "focus-visible:outline-2 focus-visible:outline-offset-2 focu
 
 /**
  * The site footer on the forest band: the sand logo and the line the site
- * stands for, then the site map in three columns, then who made it and whose
+ * stands for, then the site map in three columns (two on a phone), then who made it and whose
  * data it shows. The weather and map credits are licence terms, so they live
  * here, on every page.
  */
@@ -50,8 +51,10 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
 
   return (
     <footer data-brand className="no-print bg-forest font-brand text-on-forest">
-      <Wrap className="grid gap-8 pt-16 pb-8 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-6">
-        <div>
+      {/* Two columns of links on a phone: in one, fourteen 44px rows made the
+          footer three screens long. */}
+      <Wrap className="grid grid-cols-2 gap-x-6 gap-y-8 pt-16 pb-8 md:grid-cols-[1.4fr_repeat(3,1fr)] md:gap-6">
+        <div className="col-span-2 md:col-span-1">
           <Logo href={home} label={dict.ui.logoHome} tone="sand" className={footerFocus} />
           <p className="mt-4 max-w-[32ch] text-body text-pretty text-on-forest-soft">{dict.shell.tagline}</p>
         </div>
@@ -81,6 +84,18 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
         <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-cmj-paper/14 py-6 text-small text-on-forest-soft">
           <span>
             © {year} Chiangmai Journey · {dict.shell.madeAt}
+          </span>
+          <span>
+            {dict.shell.contact}{" "}
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className={cx(
+                "rounded-sm text-on-forest underline decoration-[1px] underline-offset-4 hover:decoration-2",
+                footerFocus,
+              )}
+            >
+              {CONTACT_EMAIL}
+            </a>
           </span>
           <span>{dict.shell.dataCredit}</span>
         </div>

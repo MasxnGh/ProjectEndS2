@@ -210,26 +210,8 @@
   [data-brand] .maplibregl-popup-anchor-top .maplibregl-popup-tip {
     border-bottom-color: var(--cmj-panel);
   }
-  [data-brand] .maplibregl-ctrl-group {
-    border-radius: 999px;
-    overflow: hidden;
-    background: var(--cmj-panel);
-    box-shadow: var(--cmj-float);
-  }
-  [data-brand] .maplibregl-ctrl-group button {
-    width: 40px;
-    height: 40px;
-  }
-  [data-brand] .maplibregl-ctrl-group button + button {
-    border-top-color: var(--cmj-line);
-  }
-  :where(.dark) [data-brand] .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
-    filter: invert(0.92);
-  }
-  /* Credits stay MapLibre's size, in the brand face. */
-  [data-brand] .maplibregl-ctrl-attrib {
-    font-family: var(--font-prompt), system-ui, sans-serif;
-  }
+  /* The zoom buttons and credit line are restyled at the end of this file,
+     outside the layer, where they can win over maplibre-gl.css. */
 
   /* A page with the phone action dock (the place page) keeps room under the
      footer, so the dock never covers its last lines. */
@@ -359,4 +341,35 @@
       }
     }
   }
+}
+
+/*
+ * MapLibre's zoom buttons and credit line, in board dress: one floating pill of
+ * two 44px buttons (DESIGN.md: every pressable control is at least 44px).
+ *
+ * Outside every @layer on purpose. maplibre-gl.css is imported by the map
+ * components and is not in a layer, and unlayered rules beat layered ones
+ * whatever their specificity. Inside the components layer these rules never
+ * applied: the buttons stayed 29px white squares, and in the dark theme the
+ * inverted icon sat on that white ground. Here the extra [data-brand] wins.
+ */
+[data-brand] .maplibregl-ctrl-group {
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--cmj-panel);
+  box-shadow: var(--cmj-float);
+}
+[data-brand] .maplibregl-ctrl-group button {
+  width: 44px;
+  height: 44px;
+}
+[data-brand] .maplibregl-ctrl-group button + button {
+  border-top-color: var(--cmj-line);
+}
+:where(.dark) [data-brand] .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(0.92);
+}
+/* Credits stay MapLibre's size, in the brand face. */
+[data-brand] .maplibregl-ctrl-attrib {
+  font-family: var(--font-prompt), system-ui, sans-serif;
 }

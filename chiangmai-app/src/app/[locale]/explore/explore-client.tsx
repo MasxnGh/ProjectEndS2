@@ -16,7 +16,8 @@ import {
   Wind,
   X,
 } from "lucide-react";
-import type { BestTime, District, Place, PlaceCategory, PriceLevel } from "@/data/types";
+import type { BestTime, District, PlaceCategory, PriceLevel } from "@/data/types";
+import type { ExplorePlace } from "@/lib/explore/explore-place";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore } from "@/lib/trip-store";
 import type { SquareBucket } from "@/lib/city-square";
@@ -131,7 +132,7 @@ export function ExploreClient({
   initialView,
   plannerDayNumber,
 }: {
-  places: Place[];
+  places: ExplorePlace[];
   initialCategory: PlaceCategory | null;
   initialZone: SquareBucket | null;
   initialQuery: string;
@@ -279,10 +280,10 @@ export function ExploreClient({
   // Memoised as one unit: the map frames whatever this returns, so a fresh
   // array on every render (a hover, say) would re-aim the camera each time.
   const { filtered, categoryCounts, zoneCounts } = useMemo(() => {
-    const passes = (place: Place, skip?: ExploreFilterKey) =>
+    const passes = (place: ExplorePlace, skip?: ExploreFilterKey) =>
       (!nearby || nearby.has(place.slug)) && matchesFilters(place, factsBySlug.get(place.slug)!, filters, terms, skip);
     /** How many results each choice would give under everything else that is on. */
-    const countBy = (key: "category" | "zone", value: (place: Place) => string) => {
+    const countBy = (key: "category" | "zone", value: (place: ExplorePlace) => string) => {
       const counts = new Map<string, number>();
       for (const place of places) {
         if (!passes(place, key)) continue;
@@ -314,7 +315,7 @@ export function ExploreClient({
   const visible = sorted.slice(0, visibleCount);
 
   const comparePlaces = useMemo(
-    () => compareSlugs.map((slug) => places.find((p) => p.slug === slug)).filter((p): p is Place => Boolean(p)),
+    () => compareSlugs.map((slug) => places.find((p) => p.slug === slug)).filter((p): p is ExplorePlace => Boolean(p)),
     [places, compareSlugs],
   );
   const mapPlaces = compareSlugs.length > 0 ? comparePlaces : filtered;

@@ -2,15 +2,22 @@ import type { Metadata } from "next";
 import type { Locale } from "@/i18n";
 import { SITE_URL } from "@/lib/site";
 
-/** Self-referencing canonical + full hreflang set for a given path (no locale prefix, e.g. "/place/wat-umong"). */
+/**
+ * Self-referencing canonical + full hreflang set for a given path (no locale prefix, e.g. "/place/wat-umong").
+ *
+ * Language codes without a region: the pages are for anyone who reads the
+ * language, not one country ("en-US" left every reader outside the US
+ * unmatched, and the English copy is British anyway). x-default is English
+ * because that is where the proxy sends a browser that asks for neither.
+ */
 export function buildAlternates(locale: Locale, path: string): Metadata["alternates"] {
   const en = `${SITE_URL}/en${path}`;
   const th = `${SITE_URL}/th${path}`;
   return {
     canonical: locale === "th" ? th : en,
     languages: {
-      "en-US": en,
-      "th-TH": th,
+      en,
+      th,
       "x-default": en,
     },
   };

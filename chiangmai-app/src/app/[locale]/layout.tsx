@@ -18,6 +18,7 @@ import type { PlaceCategory } from "@/data/types";
 import { PwaRegister } from "@/components/pwa-register";
 import { locales, isLocale, getDictionary } from "@/i18n";
 import { SITE_URL } from "@/lib/site";
+import { fill } from "@/components/brand/place-text";
 import { AuthSessionProvider } from "@/components/providers/auth-session-provider";
 import { FavoritesProvider } from "@/lib/favorites/favorites-provider";
 
@@ -52,25 +53,26 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const dict = isLocale(locale) ? getDictionary(locale) : getDictionary("en");
+  const description = fill(dict.meta.description, { count: places.length });
 
   return {
     metadataBase: new URL(SITE_URL),
-    title: { default: dict.meta.titleSuffix, template: `%s — ${dict.meta.siteName}` },
-    description: dict.home.intro.body,
+    title: { default: dict.meta.homeTitle, template: `%s — ${dict.meta.siteName}` },
+    description,
     alternates: {
       languages: { en: "/en", th: "/th" },
     },
     openGraph: {
-      title: dict.meta.titleSuffix,
-      description: dict.home.intro.body,
+      title: dict.meta.homeTitle,
+      description,
       locale: locale === "th" ? "th_TH" : "en_US",
       type: "website",
       siteName: dict.meta.siteName,
     },
     twitter: {
       card: "summary_large_image",
-      title: dict.meta.titleSuffix,
-      description: dict.home.intro.body,
+      title: dict.meta.homeTitle,
+      description,
     },
     robots: { index: true, follow: true },
     manifest: "/manifest.webmanifest",

@@ -19,7 +19,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { GripVertical, List, Map as MapIcon, Navigation, Route, Sun, Sunset, Trash2 } from "lucide-react";
+import { GripVertical, List, Map as MapIcon, Navigation, Route, Sun, Sunset, Trash2, TriangleAlert } from "lucide-react";
 import { places as catalogue } from "@/data/places";
 import type { Place } from "@/data/types";
 import { useLocale } from "@/components/providers/locale-provider";
@@ -35,6 +35,7 @@ import { buildDayTimeline, resolveSunTimes, type DayTimeline } from "@/lib/plann
 import { checkDayFeasibility, suggestDayFixes } from "@/lib/planner/feasibility";
 import { computeDayPace, suggestPaceRelief } from "@/lib/planner/pace";
 import { derivePlanProgress } from "@/lib/planner/plan-progress";
+import { farthestWalkLeg } from "@/lib/planner/walk-check";
 import { useTripCloudSync } from "@/lib/planner/use-trip-cloud-sync";
 import { useWeatherBundle } from "@/lib/weather/use-weather";
 import { findDailyForecast, isBadWeatherDay, isBurningSeasonDate, resolveDayDate } from "@/lib/weather/day-forecast";
@@ -263,6 +264,7 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
   const timeline = timelines.get(day.id)!;
   const schedule = buildSchedule(day.places);
   const stats = dayStats(day.places);
+  const farWalk = farthestWalkLeg(day.places, travelMode);
   const dayChoices = resolvedDays.map((d) => ({ id: d.id, dayNumber: d.dayNumber }));
   const mapsLink = dayMapsLink(day.places, dict);
   const weather = useDayWeather({
@@ -724,6 +726,23 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
                           {weather.badges}
                         </div>
                         {weather.advice}
+                        {farWalk ? (
+                          // Hop times are a ride by road whatever mode is chosen
+                          // (the mode sets the fare). With "walk" chosen and a
+                          // hop too far to walk, say so instead of letting
+                          // "walk" sit beside a 27-minute, 13 km hop.
+                          <p className="flex items-start gap-2.5 rounded-md bg-[color-mix(in_oklab,var(--cmj-sunset)_22%,var(--cmj-panel))] px-4 py-3 text-small text-pretty text-ink">
+                            <TriangleAlert aria-hidden strokeWidth={ICON_STROKE} className="mt-0.5 size-4 flex-none text-brand" />
+                            <span>
+                              {fill(dict.plan.farWalk, {
+                                from: farWalk.from.name[locale],
+                                to: farWalk.to.name[locale],
+                                km: formatDistance(farWalk.distanceKm, dict),
+                                walk: formatDuration(farWalk.walkMinutes, dict),
+                              })}
+                            </span>
+                          </p>
+                        ) : null}
                       </div>
 
                       <StopList

@@ -23,12 +23,16 @@ export async function generateMetadata({
   const { locale } = await params;
   const loc = isLocale(locale) ? locale : "en";
   const dict = getDictionary(loc);
-  return buildPageMetadata({
-    locale: loc,
-    path: "/login",
-    title: dict.auth.login.title,
-    description: dict.auth.login.intro,
-  });
+  return {
+    ...buildPageMetadata({
+      locale: loc,
+      path: "/login",
+      title: dict.auth.login.metaTitle,
+      description: dict.auth.login.intro,
+    }),
+    // A sign-in form is no answer to a search; links from it may still be followed.
+    robots: { index: false, follow: true },
+  };
 }
 
 export default async function LoginPage({

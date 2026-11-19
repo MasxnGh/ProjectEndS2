@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   ASSUMED_MEAL_THB,
   categorySpendBreakdown,
+  dayStats,
   estimateTripCostThb,
+  placeSpendThb,
   SPEND_ESTIMATE_THB,
 } from "./trip-calculations";
 import type { Place, PlaceCategory } from "@/data/types";
+import { places } from "@/data/places";
 import { compareVehicleModes } from "./planner/vehicle-comparison";
 
 function makePlace(category: PlaceCategory, overrides: Partial<Place> = {}): Place {
@@ -84,6 +87,42 @@ describe("categorySpendBreakdown", () => {
     // This pair is done by 11:15, before any meal window opens.
     expect(pair.assumedMeals).toBe(0);
     expect(pair.total).toBe(pair.entry + pair.food + pair.transport + pair.assumedMeals);
+  });
+});
+
+// A city gate's card said "open at all hours, free" beside a ฿250 charge,
+// because the catalogue only knew its price level.
+describe("a stop with free entry", () => {
+  const gate = makePlace("village", { slug: "gate", freeEntry: true });
+  const temple = makePlace("temple", { slug: "temple" });
+
+  it("is budgeted at nothing, whatever its price level", () => {
+    expect(placeSpendThb(gate)).toBe(0);
+    expect(placeSpendThb({ priceLevel: 3, freeEntry: true })).toBe(0);
+    expect(placeSpendThb(temple)).toBe(SPEND_ESTIMATE_THB[1]);
+  });
+
+  it("adds nothing to the day card's spend", () => {
+    expect(dayStats([temple, gate]).budgetThb).toBe(SPEND_ESTIMATE_THB[1]);
+  });
+
+  it("adds nothing to the trip budget, so both figures agree", () => {
+    const breakdown = categorySpendBreakdown([{ places: [temple, gate] }]);
+    expect(breakdown.entry).toBe(dayStats([temple, gate]).budgetThb);
+  });
+});
+
+// Only places whose own hours line says so are flagged, so the flag can never
+// be the catalogue's guess.
+describe("free-entry flags in the catalogue", () => {
+  const flagged = places.filter((p) => p.freeEntry);
+
+  it("are only on places whose entry says free", () => {
+    expect(flagged.length).toBeGreaterThan(0);
+    for (const place of flagged) {
+      expect(place.openingHoursText.en.toLowerCase(), place.slug).toContain("free");
+      expect(place.priceLevel, place.slug).toBe(1);
+    }
   });
 });
 

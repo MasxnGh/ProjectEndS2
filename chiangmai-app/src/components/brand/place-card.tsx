@@ -40,7 +40,8 @@ const BODY: Record<PlaceCardLayout, string> = {
  *
  * Controls sit above that link: `favorite` on the photo's corner, and `footer`
  * — add to plan, compare — along the bottom, which replaces the decorative
- * arrow. `note` is an extra line of fact, such as the distance from a point.
+ * arrow. `note` is an extra line of fact, such as the distance from a point;
+ * `summary` is the place's one-line description, shown from 640px up.
  * `active` rings the card, e.g. while its dot is pointed at on the map.
  */
 export function PlaceCard({
@@ -52,6 +53,7 @@ export function PlaceCard({
   favorite,
   footer,
   note,
+  summary,
   active = false,
   layout = "row",
   headingLevel = "h3",
@@ -67,6 +69,8 @@ export function PlaceCard({
   favorite?: ReactNode;
   footer?: ReactNode;
   note?: ReactNode;
+  /** One line about the place, for a card with room to spare (the home page's picks). */
+  summary?: string;
   active?: boolean;
   layout?: PlaceCardLayout;
   headingLevel?: "h2" | "h3" | "h4";
@@ -102,15 +106,19 @@ export function PlaceCard({
           <MapPin aria-hidden strokeWidth={ICON_STROKE} className="mt-[3px] size-4 flex-none" />
           {where}
         </p>
+        {summary ? (
+          // From 640px only: a row card on a phone has no room for it, and there
+          // the card's text column would end up taller than its photo.
+          <p className="hidden text-small text-pretty text-ink-soft sm:line-clamp-2">{summary}</p>
+        ) : null}
         {note ? <div className="text-small text-brand tabular-nums">{note}</div> : null}
-        <p className={cx("text-small text-ink-soft tabular-nums", footer ? "" : "mt-auto pr-13")}>
-          {/* Each fact stays on one line, so "1 ชม. 30 นาที" never leaves "นาที" alone. */}
-          {meta.split(" · ").map((part, i) => (
-            <span key={i}>
-              {i ? " · " : null}
-              <span className="whitespace-nowrap">{part}</span>
-            </span>
-          ))}
+        <p className={cx("overflow-hidden text-small text-ink-soft tabular-nums", footer ? "" : "mt-auto pr-13")}>
+          {/* Each fact stays on one line, so "1 ชม. 30 นาที" never leaves "นาที"
+              alone. Each carries its dot in front, and the row is pulled left
+              by that width under the paragraph's clip: the dot of whichever
+              fact starts a line is cut off, so a wrapped line neither ends nor
+              begins with one. */}
+          <Facts parts={meta.split(" · ")} />
         </p>
         {footer ? (
           // Above the stretched link, so these are their own targets.
@@ -129,6 +137,43 @@ export function PlaceCard({
   );
 }
 
+const FACT = "relative min-w-0 pl-[1em] before:absolute before:left-0 before:w-[1em] before:text-center before:content-['·']";
+
+/**
+ * The meta line's facts, dot-separated, wrapping between facts. Each fact is a
+ * flex item, so it moves to the next line whole ("1 ชม. 30 นาที" stays together)
+ * and breaks inside only when it is wider than the line by itself, as on a
+ * 320px phone, instead of running under the arrow or being cut off.
+ *
+ * The last two (how long, what it costs) wrap as a pair first, so the price
+ * symbol is not left on a line by itself while there is room to keep it beside
+ * the duration; only when the pair is wider than the whole line does it split.
+ */
+function Facts({ parts }: { parts: string[] }) {
+  const lead = parts.length > 2 ? parts.slice(0, -2) : [];
+  const pair = parts.length > 2 ? parts.slice(-2) : parts;
+  return (
+    <span className="-ml-[1em] flex flex-wrap">
+      {lead.map((part, i) => (
+        <span key={i} className={FACT}>
+          {part}
+        </span>
+      ))}
+      <span className={cx(FACT, "max-w-full")}>
+        <span className="block overflow-hidden">
+          <span className="-ml-[1em] flex flex-wrap">
+            {pair.map((part, i) => (
+              <span key={i} className={FACT}>
+                {part}
+              </span>
+            ))}
+          </span>
+        </span>
+      </span>
+    </span>
+  );
+}
+
 const SIZES: Record<PlaceCardLayout, string> = {
   row: "(max-width: 640px) 34vw, 220px",
   stack: "(max-width: 640px) 92vw, (max-width: 1024px) 45vw, 400px",
@@ -144,7 +189,8 @@ export function PlaceCardFor({
   sizes,
   ...rest
 }: {
-  place: Place;
+  /** Only what the card shows; Explore passes its trimmed places. */
+  place: Pick<Place, "slug" | "name" | "category" | "district" | "coordinates" | "durationMinutes" | "priceLevel">;
   locale: Locale;
   dict: Dictionary;
   layout?: PlaceCardLayout;

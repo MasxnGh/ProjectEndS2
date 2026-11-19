@@ -10,6 +10,19 @@ export const SPEND_ESTIMATE_THB: Record<Place["priceLevel"], number> = {
   3: 1800,
 };
 
+/**
+ * What one traveller is budgeted to spend at a stop.
+ *
+ * The catalogue holds a price level, not a ticket price, so this is an
+ * allowance (entry, an activity, something small bought there), not a quote.
+ * The one exception is a place whose own entry says it is free: that stop is
+ * ฿0. Every total in the planner goes through here, so the day card, the trip
+ * budget and the AI planner's estimate cannot disagree about a stop.
+ */
+export function placeSpendThb(place: Pick<Place, "priceLevel" | "freeEntry">): number {
+  return place.freeEntry ? 0 : SPEND_ESTIMATE_THB[place.priceLevel];
+}
+
 /** Terrain-adjusted road-time estimate — same basis as schedule.ts/golden-hour.ts, so the day cards, budget, and Timeline never disagree. */
 export function estimateTravelMinutes(a: Place, b: Place) {
   return estimateRoadTravelMinutes(a.coordinates, b.coordinates, terrainBetween(a, b));
@@ -21,7 +34,7 @@ export function dayStats(dayPlaces: Place[]) {
   for (let i = 0; i < dayPlaces.length - 1; i++) {
     travelMinutes += estimateTravelMinutes(dayPlaces[i], dayPlaces[i + 1]);
   }
-  const budgetThb = dayPlaces.reduce((sum, p) => sum + SPEND_ESTIMATE_THB[p.priceLevel], 0);
+  const budgetThb = dayPlaces.reduce((sum, p) => sum + placeSpendThb(p), 0);
   return {
     onSiteMinutes,
     travelMinutes,
@@ -61,7 +74,7 @@ export function categorySpendBreakdown(
 
   for (const day of days) {
     for (const place of day.places) {
-      const spend = SPEND_ESTIMATE_THB[place.priceLevel];
+      const spend = placeSpendThb(place);
       if (categoryBucket(place.category) === "food") food += spend;
       else entry += spend;
     }

@@ -2,7 +2,11 @@ const en = {
   meta: {
     siteName: "Chiangmai Journey",
     tagline: "Chiang Mai, curated.",
-    titleSuffix: "Chiangmai Journey — Chiang Mai",
+    /** The home page's title, and the fallback for any page without one. */
+    homeTitle: "Chiangmai Journey — Chiang Mai travel guide and trip planner",
+    /** Search-result length (under ~160 characters); {count} is the number of places. */
+    description:
+      "A Chiang Mai guide to {count} hand-picked places, with credited photos and a trip planner that times the travel between stops. No account needed.",
   },
   nav: {
     home: "Home",
@@ -16,6 +20,8 @@ const en = {
   auth: {
     login: {
       title: "Sign in to Chiangmai Journey",
+      /** The tab title: the site name follows it already. */
+      metaTitle: "Sign in",
       intro:
         "Save your trip plans and favourite places across devices. The Trip Planner works fully without an account — signing in is only needed when you choose to save.",
       googleCta: "Continue with Google",
@@ -74,7 +80,7 @@ const en = {
     },
     hints: {
       estimatedCost: {
-        text: "Entry and activities, food stops, transport for your chosen travel mode, any accommodation you entered, plus an allowance for meals your itinerary runs through but has not named yet.",
+        text: "An allowance for each stop (places with free entry count as ฿0), food stops, transport for your chosen travel mode, any accommodation you entered, plus an allowance for meals your itinerary runs through but has not named yet.",
       },
     },
     districts: {
@@ -476,7 +482,7 @@ const en = {
         remaining: "Remaining",
         overBudget: "Over budget by",
         categories: {
-          entry: "Entry & activities",
+          entry: "Allowance at the stops",
           transport: "Transport",
           food: "Food & drink",
           assumedMeals: "Unplanned meals",
@@ -752,6 +758,8 @@ const en = {
     },
     creditsLink: "See all photo and data credits",
     makerTitle: "Made by",
+    /** The address follows it. */
+    contactBody: "Found something wrong about a place, or know one we should add? Write to",
   },
   guidesPage: {
     intro: "Worth reading before you go. Each guide leads to places you can open straight away.",
@@ -816,8 +824,11 @@ const en = {
   },
   legal: {
     updated: "Last updated",
-    updatedDate: "August 2026",
+    updatedDate: "November 2026",
+    /** The last numbered section of both pages; the address follows the body. */
+    contactHeading: "Contact us",
     privacy: {
+      contact: "Questions about your data, or need help correcting or removing it? Write to",
       title: "Privacy Policy",
       intro:
         "Chiangmai Journey (\"we\", \"us\") respects your privacy. This page explains what information we collect through this site and how we use it.",
@@ -865,6 +876,7 @@ const en = {
       ],
     },
     terms: {
+      contact: "Questions about these terms, or found something wrong about a place? Write to",
       title: "Terms of Use",
       intro: "By using this site, you agree to the following terms.",
       sections: [
@@ -936,6 +948,7 @@ const en = {
     footerPlan: "Plan",
     footerAbout: "About",
     madeAt: "A graduation project, Chiang Mai Technical College",
+    contact: "Contact",
     dataCredit: "Weather data from Open-Meteo · Map © MapTiler © OpenStreetMap",
   },
   /** The rebuild's home page. `home` above still feeds the page metadata. */
@@ -1144,9 +1157,11 @@ const en = {
     leaveBase: "Leave where you're staying",
     leaveBaseHint: "Set where you're staying to see when to leave in the morning.",
     leg: "About {duration} on the road",
+    farWalk:
+      "You chose walking, but {from} → {to} is about {km}: roughly {walk} on foot. The times in this plan are for a ride by road. Change the travel mode above if you will not walk it.",
     wait: "{duration} free before this stop",
     until: "to {time}",
-    open: "Open {hours}",
+    open: "Hours: {hours}",
     locked: "You set this time",
     stopOptions: "Options for {place}",
     stopsLabel: "Stops on day {day}, in order",
