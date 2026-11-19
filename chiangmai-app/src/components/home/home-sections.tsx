@@ -460,13 +460,15 @@ export function HomeClosing({ locale, dict, place }: Props & { place: Place }) {
             )}
           />
           <div className="grid max-w-[760px] content-center gap-4 self-center px-4 pt-12 pb-4 sm:px-8 sm:py-12 lg:p-16">
-            {/* Written by hand, left to right, as it comes into view. */}
+            {/* Written by hand, left to right, as it comes into view. The
+                reveal watches the <p>; only the inner block is clipped (see
+                .cmj-write in motion.css for why). */}
             <Reveal
               as="p"
               lang="en"
               className="cmj-write font-script text-[clamp(2.5rem,1.9rem+2.6vw,4rem)] leading-[1.15] text-cmj-paper"
             >
-              {t.closingScript}
+              <span className="cmj-write-ink block">{t.closingScript}</span>
             </Reveal>
             <BlurFade as="p" delay={0.9} className="max-w-[34ch] text-[1.125rem] leading-[1.6] text-pretty">
               <Phrases text={t.closingBody} />

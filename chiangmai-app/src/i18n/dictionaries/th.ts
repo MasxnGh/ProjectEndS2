@@ -976,7 +976,8 @@ const th: Dictionary = {
     },
     closingLabel: "ปิดท้าย",
     closingScript: "Chiang Mai… a journey that stays with you",
-    closingBody: "เชียงใหม่ใจดีกับคนที่ไม่รีบ ไปไม่กี่ที่ แต่ไปให้ถึงจริงๆ",
+    // Says what the handwritten English line above it says (closingScript).
+    closingBody: "เชียงใหม่… การเดินทางที่จะอยู่ในใจคุณไปอีกนาน",
     closingCta: "เริ่มวางแผนทริป",
   },
   browse: {
