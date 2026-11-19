@@ -276,9 +276,6 @@
   width: 2.6mm;
   height: 2.6mm;
 }
-.tp-check .tp-blank {
-  height: 7.5mm;
-}
 /* Emergency numbers: one line across the sheet, under the money and the packing list. */
 .tp-sos {
   display: flex;
