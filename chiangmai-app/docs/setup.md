@@ -69,8 +69,11 @@ JS.
      to avoid the open network rule, at the cost of more setup.
 4. **Connect** → **Drivers** → copy the connection string (`mongodb+srv://...`),
    put your database user's username/password in it, and add a database name to the
-   path, e.g. `mongodb+srv://user:pass@cluster.mongodb.net/doi-and-delta?retryWrites=true&w=majority`.
-   That's your `MONGODB_URI`.
+   path, e.g. `mongodb+srv://user:pass@cluster.mongodb.net/chiangmai-journey?retryWrites=true&w=majority`.
+   That's your `MONGODB_URI`. Name the same database locally and on Vercel. The string
+   Atlas hands out has no name there; the app then uses `chiangmai-journey` rather
+   than the driver's default `test` (`databaseName()` in `lib/db/mongodb.ts`), but
+   naming it keeps every environment visibly on the same database.
 
 **Security notes:**
 - Never commit `.env.local` (it already isn't — see `.gitignore`) or paste the
