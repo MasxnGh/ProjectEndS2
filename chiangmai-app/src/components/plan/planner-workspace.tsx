@@ -835,6 +835,8 @@ function Workspace({ aiEnabled }: { aiEnabled: boolean }) {
                       signedIn={cloudSync.isSignedIn}
                       onSave={handleSave}
                       onShared={() => setShared(true)}
+                      tripName={tripName}
+                      days={printDays}
                     />
                   </div>
 

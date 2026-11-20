@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import QRCode from "qrcode";
-import { Check, Printer, QrCode, RotateCw, Save, Share2 } from "lucide-react";
+import { Check, MessageSquareText, Printer, QrCode, RotateCw, Save, Share2 } from "lucide-react";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useToast } from "@/components/toast/toast-provider";
 import { useTripStore } from "@/lib/trip-store";
@@ -10,6 +10,7 @@ import { Button } from "@/components/brand/button";
 import { Dialog } from "@/components/brand/dialog";
 import { ICON_STROKE } from "@/components/brand/icons";
 import { RouteDots } from "@/components/brand/loaders";
+import { buildPlanChatText, type ChatTextDay } from "./plan-chat-text";
 
 export type SaveState = "local" | "saving" | "saved" | "failed";
 
@@ -46,6 +47,45 @@ export function useSharePlan(onShared: () => void) {
       onShared();
     } catch {
       window.prompt(dict.planner.share, url);
+    }
+  };
+}
+
+/**
+ * The plan as text for a group chat: the share sheet where there is one,
+ * otherwise copied with a toast. The link to the full plan rides inside the
+ * text, since some apps drop a separate url when text comes with it.
+ */
+function useSendPlanText(tripName: string, days: ChatTextDay[], onShared: () => void) {
+  const { dict, locale } = useLocale();
+  const { showToast } = useToast();
+  return async () => {
+    const { dayIds, containers, travelers, travelMode, accommodationThb } = useTripStore.getState();
+    const text = buildPlanChatText({
+      title: tripName,
+      days,
+      travelers,
+      travelMode,
+      accommodationThb,
+      url: shareUrlFor(dayIds, containers),
+      dict,
+      locale,
+    });
+    if (navigator.share) {
+      try {
+        await navigator.share({ text });
+        onShared();
+      } catch {
+        // Closing the sheet is not an error worth showing.
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast({ message: dict.plan.finish.textCopied });
+      onShared();
+    } catch {
+      window.prompt(dict.plan.finish.text, text);
     }
   };
 }
@@ -114,15 +154,20 @@ export function FinishSection({
   signedIn,
   onSave,
   onShared,
+  tripName,
+  days,
 }: {
   saveState: SaveState;
   signedIn: boolean;
   onSave: () => void;
   onShared: () => void;
+  tripName: string;
+  days: ChatTextDay[];
 }) {
   const { dict } = useLocale();
   const t = dict.plan.finish;
   const share = useSharePlan(onShared);
+  const sendText = useSendPlanText(tripName, days, onShared);
   const [qr, setQr] = useState<string | null>(null);
   const qrTitleId = useId();
 
@@ -144,6 +189,15 @@ export function FinishSection({
         </Button>
         <Button variant="secondary" size="sm" onClick={openQr} className="px-4" icon={<QrCode aria-hidden strokeWidth={ICON_STROKE} className={icon} />}>
           {dict.planner.qr.button}
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={sendText}
+          className="col-span-2 px-4"
+          icon={<MessageSquareText aria-hidden strokeWidth={ICON_STROKE} className={icon} />}
+        >
+          {t.text}
         </Button>
         <Button
           variant="ghost"

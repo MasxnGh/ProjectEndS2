@@ -1231,6 +1231,13 @@ const en = {
       localNote: "This plan is kept on this device. Sign in with Google to open it on another one.",
       cloudNote: "This plan is saved to your account, so it opens on any device you sign in on.",
       shareTitle: "My Chiang Mai trip plan",
+      text: "Send as text",
+      textCopied: "Plan summary copied. Paste it into your chat.",
+    },
+    chat: {
+      outsideHours: "(outside opening hours)",
+      estimates: "Times and costs are estimates.",
+      fullPlan: "Full plan: {url}",
     },
     qrTitle: "Open this plan on another device",
     /** The printout ("Print or PDF"): a summary sheet, then one sheet per day. */
