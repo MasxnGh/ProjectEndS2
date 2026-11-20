@@ -8,6 +8,7 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   Clock,
   Ellipsis,
+  ExternalLink,
   GripVertical,
   House,
   Lock,
@@ -25,7 +26,8 @@ import { minutesToClock } from "@/lib/opening-hours";
 import { useLocale } from "@/components/providers/locale-provider";
 import { useTripStore, UNSCHEDULED } from "@/lib/trip-store";
 import { useToast } from "@/components/toast/toast-provider";
-import { Button, ButtonLink } from "@/components/brand/button";
+import { Button, ButtonLink, buttonStyles } from "@/components/brand/button";
+import { googleMapsReviewsUrl } from "@/lib/google-maps";
 import { ICON_STROKE, categoryIcon } from "@/components/brand/icons";
 import { NoPhoto, PlacePhoto } from "@/components/brand/place-photo";
 import { Select } from "@/components/brand/select";
@@ -514,6 +516,7 @@ function StopTools({
   const containers = useTripStore((s) => s.containers);
   const slug = stop.place.slug;
   const name = stop.place.name[locale];
+  const reviewsUrl = googleMapsReviewsUrl(stop.place);
   const moveId = useId();
 
   // The row these tools sit in leaves the list, taking the focused control
@@ -607,6 +610,17 @@ function StopTools({
         <ButtonLink href={`/${locale}/place/${slug}`} variant="ghost" size="sm" className="px-3">
           {t.viewPlace}
         </ButtonLink>
+        {reviewsUrl ? (
+          <a
+            href={reviewsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cx(buttonStyles({ variant: "ghost", size: "sm" }), "px-3")}
+          >
+            {t.reviews}
+            <ExternalLink aria-hidden strokeWidth={ICON_STROKE} className="size-3.5" />
+          </a>
+        ) : null}
         <Button
           variant="ghost"
           size="sm"

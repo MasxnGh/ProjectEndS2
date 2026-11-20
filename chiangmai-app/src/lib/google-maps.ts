@@ -94,3 +94,20 @@ export function googleMapsDirectionsUrl(
 export function googleMapsPlaceUrl(place: Place): string {
   return `https://www.google.com/maps/search/?api=1&query=${coord(place)}`;
 }
+
+/**
+ * A search for the place by name, so the visitor lands on its Google listing
+ * with reviews and photos, which this guide deliberately doesn't carry.
+ *
+ * The one link here that searches by name: coordinates open a bare pin with
+ * no reviews. The English name is used in both languages because Google
+ * matches it far more often than our Thai spelling of a shop's name
+ * ("Ristr8to" opens the shop, "ริสเตรทโต้" gives a list). A chain with several
+ * branches still opens a list of its branches. Null for a place with no single
+ * listing (`mapsListing: false`), where a name search finds someone else.
+ */
+export function googleMapsReviewsUrl(place: Place): string | null {
+  if (place.mapsListing === false) return null;
+  const params = new URLSearchParams({ api: "1", query: `${place.name.en}, Chiang Mai` });
+  return `https://www.google.com/maps/search/?${params.toString()}`;
+}

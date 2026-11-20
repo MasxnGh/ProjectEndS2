@@ -612,6 +612,11 @@ const th: Dictionary = {
       fixThisDay: "ย้ายไปวันที่เหมาะกว่า",
       fixThisDayOne: "ย้าย {place} ไปวันที่ {toDay}",
       fixThisDayMany: "ย้าย {count} แห่งไปวันที่เหมาะกว่า",
+      anchorEarly: "วันนี้จัดเวลาตามช่วงที่ดีที่สุดของ {place} ที่ที่อยู่ก่อนหน้าจึงถูกนับย้อนให้เริ่ม {time} ซึ่งบางแห่งยังไม่เปิด",
+      anchorFirstAll: "ย้าย {place} ขึ้นเป็นจุดแรก แล้วทุกที่จะเปิดตอนไปถึง",
+      anchorFirstSome: "ย้าย {place} ขึ้นเป็นจุดแรก ที่ที่ยังไม่เปิดตอนไปถึงจะเหลือ {count} แห่ง",
+      anchorFirstButton: "ย้ายขึ้นเป็นจุดแรก",
+      anchorFirstApplied: "ย้าย {place} ขึ้นเป็นจุดแรกของวันที่ {day} แล้ว",
     },
     festival: {
       dismiss: "ปิด",
@@ -1064,6 +1069,9 @@ const th: Dictionary = {
     costValue: { 1: "ต่ำกว่า ฿300 ต่อคน", 2: "฿300–1,000 ต่อคน", 3: "มากกว่า ฿1,000 ต่อคน" },
     address: "ที่ตั้ง",
     directions: "เส้นทางใน Google Maps",
+    reviewsTerm: "เสียงจากคนที่เคยไป",
+    reviewsLink: "ดูรีวิวและรูปใน Google Maps",
+    reviewsHint: "เปิดด้วยการค้นชื่อ รีวิวเขียนโดยผู้ใช้ Google ไม่ใช่โดยเรา",
     share: "แชร์",
     shareCopied: "คัดลอกลิงก์แล้ว",
     noPhoto: "ยังไม่มีภาพถ่ายที่ยืนยันได้ว่าเป็นที่นี่ เราจึงไม่ใส่ภาพที่ไม่ใช่",
@@ -1195,6 +1203,7 @@ const th: Dictionary = {
     moveTo: "ย้ายไป",
     moveToDay: "วันที่ {day}",
     viewPlace: "เปิดหน้าสถานที่",
+    reviews: "รีวิวใน Google Maps",
     addToDay: "เพิ่มสถานที่ลงวันที่ {day}",
     emptyDay: "วันนี้ยังว่าง เพิ่มสถานที่ หรือลากจากด้านล่างมาวาง",
     checks: {
@@ -1216,6 +1225,13 @@ const th: Dictionary = {
       localNote: "แผนถูกเก็บไว้ในเครื่องนี้แล้ว เข้าสู่ระบบด้วย Google เพื่อเปิดจากเครื่องอื่น",
       cloudNote: "แผนนี้บันทึกในบัญชีของคุณแล้ว เปิดได้จากทุกเครื่องที่เข้าสู่ระบบ",
       shareTitle: "แผนเที่ยวเชียงใหม่ของฉัน",
+      text: "ส่งเป็นข้อความ",
+      textCopied: "คัดลอกสรุปแผนแล้ว วางในแชตได้เลย",
+    },
+    chat: {
+      outsideHours: "(นอกเวลาเปิด)",
+      estimates: "เวลาและค่าใช้จ่ายเป็นค่าประมาณ",
+      fullPlan: "แผนเต็ม: {url}",
     },
     qrTitle: "เปิดแผนนี้ในอีกเครื่อง",
     print: {

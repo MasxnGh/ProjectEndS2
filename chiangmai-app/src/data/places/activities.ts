@@ -4,6 +4,7 @@ export const activities: Place[] = [
   {
     slug: "thai-cooking-class",
     name: { en: "Northern Thai Cooking Class", th: "คลาสทำอาหารเหนือ" },
+    mapsListing: false,
     category: "activity",
     district: "old-city",
     bestTime: ["morning"],
@@ -61,6 +62,7 @@ export const activities: Place[] = [
   {
     slug: "thai-massage-spa",
     name: { en: "Traditional Thai Massage & Spa", th: "นวดแผนไทยและสปา" },
+    mapsListing: false,
     category: "activity",
     district: "old-city",
     bestTime: ["afternoon", "evening"],
@@ -102,6 +104,7 @@ export const activities: Place[] = [
   {
     slug: "ethical-elephant-sanctuary",
     name: { en: "Ethical Elephant Sanctuary", th: "ปางช้างเชิงอนุรักษ์" },
+    mapsListing: false,
     category: "activity",
     district: "mae-rim",
     bestTime: ["morning"],
@@ -143,6 +146,7 @@ export const activities: Place[] = [
   {
     slug: "mae-ping-river-cruise",
     name: { en: "Mae Ping River Cruise", th: "ล่องเรือแม่ปิง" },
+    mapsListing: false,
     category: "activity",
     district: "chang-klan",
     bestTime: ["evening"],

@@ -166,6 +166,13 @@ export interface Place {
    * that is slightly high is safer than a budget that comes up short.
    */
   freeEntry?: true;
+  /**
+   * False where the name is not one listing on Google Maps: an area, a trail,
+   * or a kind of activity many businesses offer. A name search for those opens
+   * other people's businesses, so they get no "reviews on Google Maps" link.
+   * Leave unset for a named place.
+   */
+  mapsListing?: false;
   rating: number;
   shortDescription: LocalizedText;
   description: LocalizedText;

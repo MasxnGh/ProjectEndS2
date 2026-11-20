@@ -46,6 +46,7 @@ export const cafes: Place[] = [
   {
     slug: "riverside-ping",
     name: { en: "Riverside on the Ping", th: "ริมปิง" },
+    mapsListing: false,
     category: "cafe",
     district: "chiang-mai-city",
     bestTime: ["evening"],
@@ -95,6 +96,7 @@ export const cafes: Place[] = [
   {
     slug: "old-city-coffee-trail",
     name: { en: "Old City Coffee Trail", th: "เส้นทางคาเฟ่เมืองเก่า" },
+    mapsListing: false,
     category: "cafe",
     district: "old-city",
     bestTime: ["morning"],

@@ -611,6 +611,11 @@ const en = {
       fixThisDay: "Move to a day that works",
       fixThisDayOne: "Moves {place} to day {toDay}.",
       fixThisDayMany: "Moves {count} places to days that work.",
+      anchorEarly: "This day is timed around the best hours at {place}, so the stops before it are counted back to {time}, while some of them are still closed.",
+      anchorFirstAll: "Move {place} to the start and every stop is open when you arrive.",
+      anchorFirstSome: "Move {place} to the start. Stops still closed when you arrive: {count}.",
+      anchorFirstButton: "Move to the start",
+      anchorFirstApplied: "{place} is now the first stop of day {day}.",
     },
     festival: {
       dismiss: "Dismiss",
@@ -1069,6 +1074,9 @@ const en = {
     costValue: { 1: "under ฿300 per person", 2: "฿300–1,000 per person", 3: "over ฿1,000 per person" },
     address: "Address",
     directions: "Directions in Google Maps",
+    reviewsTerm: "From people who have been",
+    reviewsLink: "Reviews and photos on Google Maps",
+    reviewsHint: "Opened by a name search. Reviews are written by Google users, not by us.",
     share: "Share",
     shareCopied: "Link copied",
     noPhoto: "No photo yet that we can confirm shows this place, so we have not used one that doesn't.",
@@ -1201,6 +1209,7 @@ const en = {
     moveTo: "Move to",
     moveToDay: "Day {day}",
     viewPlace: "Open the place page",
+    reviews: "Reviews on Google Maps",
     addToDay: "Add a place to day {day}",
     emptyDay: "Nothing on this day yet. Add a place, or drag one in from below.",
     checks: {
@@ -1222,6 +1231,13 @@ const en = {
       localNote: "This plan is kept on this device. Sign in with Google to open it on another one.",
       cloudNote: "This plan is saved to your account, so it opens on any device you sign in on.",
       shareTitle: "My Chiang Mai trip plan",
+      text: "Send as text",
+      textCopied: "Plan summary copied. Paste it into your chat.",
+    },
+    chat: {
+      outsideHours: "(outside opening hours)",
+      estimates: "Times and costs are estimates.",
+      fullPlan: "Full plan: {url}",
     },
     qrTitle: "Open this plan on another device",
     /** The printout ("Print or PDF"): a summary sheet, then one sheet per day. */

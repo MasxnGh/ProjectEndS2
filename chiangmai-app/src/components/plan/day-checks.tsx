@@ -10,6 +10,7 @@ import { useToast } from "@/components/toast/toast-provider";
 import { compareOptimization, type DaySchedule, type OptimizationComparison } from "@/lib/planner/schedule";
 import { fetchDurationMatrix } from "@/lib/routing/fetch-matrix";
 import type { FeasibilityIssue } from "@/lib/planner/feasibility";
+import type { AnchorFirstSuggestion } from "@/lib/planner/anchor-first";
 import type { DayPace } from "@/lib/planner/pace";
 import { findMealGaps, suggestMealPlaces, type MealGap } from "@/lib/planner/meals";
 import { findLongestLeg, findOnRouteStops } from "@/lib/planner/detours";
@@ -39,6 +40,8 @@ export function DayChecks({
   issues,
   relocations,
   onApplyRelocations,
+  anchorFirst,
+  onApplyAnchorFirst,
   paceEaseLabel,
   onEasePace,
 }: {
@@ -51,6 +54,8 @@ export function DayChecks({
   issues: FeasibilityIssue[];
   relocations?: { placeSlug: string; toDayNumber: number }[];
   onApplyRelocations: () => void;
+  anchorFirst?: AnchorFirstSuggestion;
+  onApplyAnchorFirst?: () => void;
   paceEaseLabel?: string;
   onEasePace?: () => void;
 }) {
@@ -61,11 +66,11 @@ export function DayChecks({
   if (places.length === 0) return null;
 
   const nameOf = (slug: string) => places.find((p) => p.slug === slug)?.name[locale] ?? slug;
-  const hasWarnings = schedule.exceedsTenHours || issues.length > 0;
+  const hasWarnings = schedule.exceedsTenHours || issues.length > 0 || Boolean(anchorFirst);
 
   return (
     <section aria-labelledby={`${dayId}-checks`} className="grid gap-3">
-      <h3 id={`${dayId}-checks`} className="text-label text-brand">
+      <h3 id={`${dayId}-checks`} tabIndex={-1} className="text-label text-brand">
         {t.checks.title}
       </h3>
 
@@ -76,6 +81,15 @@ export function DayChecks({
               <li className="flex items-start gap-2">
                 <TriangleAlert aria-hidden strokeWidth={ICON_STROKE} className="mt-0.5 size-4 flex-none text-brand" />
                 {dict.planner.route.exceedsTenHours}
+              </li>
+            ) : null}
+            {anchorFirst ? (
+              <li className="flex items-start gap-2">
+                <TriangleAlert aria-hidden strokeWidth={ICON_STROKE} className="mt-0.5 size-4 flex-none text-brand" />
+                {fill(f.anchorEarly, {
+                  place: nameOf(anchorFirst.placeSlug),
+                  time: minutesToClock(anchorFirst.currentStartMinutes),
+                })}
               </li>
             ) : null}
             {issues.map((issue) => {
@@ -96,7 +110,19 @@ export function DayChecks({
               );
             })}
           </ul>
-          {/* The fix sits beside the problem it fixes and moves only this day's places. */}
+          {/* Each fix sits beside the problem it fixes and moves only this day's places. */}
+          {anchorFirst && onApplyAnchorFirst ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+              <p className="text-small text-pretty">
+                {anchorFirst.closedAfter === 0
+                  ? fill(f.anchorFirstAll, { place: nameOf(anchorFirst.placeSlug) })
+                  : fill(f.anchorFirstSome, { place: nameOf(anchorFirst.placeSlug), count: anchorFirst.closedAfter })}
+              </p>
+              <Button variant="secondary" size="sm" onClick={onApplyAnchorFirst}>
+                {f.anchorFirstButton}
+              </Button>
+            </div>
+          ) : null}
           {relocations && relocations.length > 0 ? (
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
               <p className="text-small">
