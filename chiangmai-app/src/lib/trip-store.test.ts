@@ -190,3 +190,26 @@ describe("cover", () => {
     expect(buildWritableTripPayload(useTripStore.getState()).cover).toBeNull();
   });
 });
+
+describe("loadPlan and pinned times", () => {
+  const itinerary = { dayIds: ["day-1"], containers: { [UNSCHEDULED]: [], "day-1": ["wat-phra-singh"] } };
+
+  it("keeps pinned times when none are given, as removing a day and its Undo expect", () => {
+    useTripStore.getState().loadPlan(itinerary);
+    useTripStore.getState().setLockedTime("day-1", "wat-phra-singh", "10:30");
+    useTripStore.getState().loadPlan(itinerary);
+    expect(useTripStore.getState().lockedTimes).toEqual({ "day-1::wat-phra-singh": "10:30" });
+  });
+
+  it("replaces them when a new plan brings its own, and an Undo can put the old ones back", () => {
+    useTripStore.getState().loadPlan(itinerary);
+    useTripStore.getState().setLockedTime("day-1", "wat-phra-singh", "10:30");
+    const previous = { ...itinerary, lockedTimes: { ...useTripStore.getState().lockedTimes } };
+
+    useTripStore.getState().loadPlan({ ...itinerary, lockedTimes: {} });
+    expect(useTripStore.getState().lockedTimes).toEqual({});
+
+    useTripStore.getState().loadPlan(previous);
+    expect(useTripStore.getState().lockedTimes).toEqual({ "day-1::wat-phra-singh": "10:30" });
+  });
+});

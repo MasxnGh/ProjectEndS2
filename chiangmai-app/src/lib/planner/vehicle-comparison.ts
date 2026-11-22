@@ -16,13 +16,15 @@ export const VEHICLE_SPEED_KMH: Record<TravelMode, number> = {
   "rented-car": 35,
 };
 
-const SONGTHAEW_FARE_PER_LEG_THB = 30;
-const GRAB_BASE_FARE_THB = 45;
-const GRAB_PER_KM_THB = 9;
-const BIKE_RENTAL_PER_DAY_THB = 200;
-const BIKE_FUEL_PER_KM_THB = 1.5;
-const CAR_RENTAL_PER_DAY_THB = 900;
-const CAR_FUEL_PER_KM_THB = 3;
+// Exported for the AI planner's prompt, which quotes these rates so the
+// model budgets with the same fares modeCostThb charges.
+export const SONGTHAEW_FARE_PER_LEG_THB = 30;
+export const GRAB_BASE_FARE_THB = 45;
+export const GRAB_PER_KM_THB = 9;
+export const BIKE_RENTAL_PER_DAY_THB = 200;
+export const BIKE_FUEL_PER_KM_THB = 1.5;
+export const CAR_RENTAL_PER_DAY_THB = 900;
+export const CAR_FUEL_PER_KM_THB = 3;
 
 export interface VehicleComparisonRow {
   mode: TravelMode;

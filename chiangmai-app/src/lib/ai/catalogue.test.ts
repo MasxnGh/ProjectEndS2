@@ -44,5 +44,20 @@ describe("buildPlaceCatalogue", () => {
     expect(catalogue).toContain("closed Wed");
     // Per-person spend, or it cannot respect a budget.
     expect(catalogue).toContain("Per-person spend estimate");
+    // The meal allowance the planner adds, with its windows.
+    expect(catalogue).toContain("lunch 11:30–14:00, dinner 18:00–20:30");
+    expect(catalogue).toContain("250 THB per person for that meal");
+    // No flat per-km fare: transport depends on the trip's mode.
+    expect(catalogue).not.toContain("8 THB per km");
+  });
+
+  it("gives the best time the planner page times a day around", () => {
+    const catalogue = buildPlaceCatalogue();
+    const row = (slug: string) => catalogue.split("\n").find((l) => l.startsWith(`${slug} |`))!;
+    expect(row("huen-phen")).toContain("| best 17:00-18:30 |");
+    expect(row("wat-suan-dok")).toContain("| best sunset-30min to sunset+15min |");
+    expect(row("wat-chiang-man")).toContain("| best sunrise-30min to sunrise+90min |");
+    // Only an ideal window anchors a day, so a place with none has no best time.
+    expect(row("wat-chedi-luang")).not.toContain("best ");
   });
 });

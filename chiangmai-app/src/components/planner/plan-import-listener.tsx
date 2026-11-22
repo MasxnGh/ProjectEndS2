@@ -20,7 +20,9 @@ export function PlanImportListener() {
     try {
       const decoded = JSON.parse(atob(decodeURIComponent(encoded)));
       if (decoded && Array.isArray(decoded.dayIds) && decoded.containers) {
-        loadPlan(decoded);
+        // Only the itinerary: a share link carries no pinned times, and
+        // whatever else a hand-edited link holds should not reach the store.
+        loadPlan({ dayIds: decoded.dayIds, containers: decoded.containers });
       }
     } catch {
       // ignore malformed share links
