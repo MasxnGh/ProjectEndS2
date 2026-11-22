@@ -69,6 +69,6 @@ export const anthropicProvider: TripPlanProvider = {
         "unparseable"
       );
     }
-    return parsed.data;
+    return { plan: parsed.data, model: response.model || this.model };
   },
 };

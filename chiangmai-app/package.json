@@ -9,6 +9,7 @@
     "lint": "eslint",
     "generate:blur": "node scripts/generate-blur-placeholders.mjs",
     "test": "vitest run",
+    "eval:ai": "vitest run --config vitest.eval.config.ts",
     "fetch:photos": "node scripts/fetch-commons-photos.mjs && npm run generate:photos && npm run generate:blur",
     "generate:photos": "node scripts/generate-photo-data.mjs"
   },

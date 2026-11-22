@@ -4,7 +4,7 @@ import { estimateTravelMinutes } from "@/lib/geo/travelTime";
 import { optimizeRoute } from "@/lib/geo/route";
 import { isOutsideHours } from "@/lib/opening-hours";
 
-const DEFAULT_DAY_START = "09:00";
+export const DEFAULT_DAY_START = "09:00";
 const TEN_HOURS_MINUTES = 600;
 
 export interface ScheduleStop {

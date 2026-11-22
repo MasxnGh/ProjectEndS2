@@ -77,7 +77,16 @@ export interface TripState {
   }) => void;
   reorderDay: (dayId: string, orderedSlugs: string[]) => void;
   clearAll: () => void;
-  loadPlan: (data: { dayIds: string[]; containers: Record<string, string[]> }) => void;
+  /**
+   * Replaces the itinerary. Pinned times stay as they are unless `lockedTimes`
+   * is given — pass `{}` when the new plan is a different trip, so a pin from
+   * the old one cannot land on whatever stop now shares its day and place.
+   */
+  loadPlan: (data: {
+    dayIds: string[];
+    containers: Record<string, string[]>;
+    lockedTimes?: Record<string, string>;
+  }) => void;
   setTripName: (name: string) => void;
   setCover: (cover: TripCover | null) => void;
   setTravelDate: (date: string) => void;
@@ -319,6 +328,7 @@ export const useTripStore = create<TripState>()(
         set({
           dayIds: data.dayIds,
           containers: data.containers,
+          ...(data.lockedTimes ? { lockedTimes: data.lockedTimes } : {}),
           nextDayNumber:
             data.dayIds.reduce((max, id) => {
               const n = Number(id.replace("day-", ""));
